@@ -1,0 +1,84 @@
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<script>
+    (function () {
+        const sidebar = document.getElementById('adminSidebar');
+        const mobileActions = document.getElementById('adminMobileActions');
+        const body = document.body;
+        const toggles = document.querySelectorAll('[data-admin-toggle]');
+
+        const updateNavState = () => {
+            const active = body.dataset.page;
+            if (!active) return;
+            document.querySelectorAll('.admin-nav-item').forEach(item => {
+                if (item.dataset.adminNav === active) {
+                    item.classList.add('bg-primary/10', 'text-primary', 'shadow-sm');
+                } else {
+                    item.classList.remove('bg-primary/10', 'text-primary', 'shadow-sm');
+                }
+            });
+        };
+
+        const toggleSidebar = (show) => {
+            if (!sidebar) return;
+            const isVisible = !sidebar.hasAttribute('hidden') && !sidebar.classList.contains('translate-x-full');
+            const shouldShow = typeof show === 'boolean' ? show : !isVisible;
+            if (shouldShow) {
+                sidebar.removeAttribute('hidden');
+                requestAnimationFrame(() => sidebar.classList.remove('translate-x-full'));
+                body.classList.add('overflow-hidden');
+            } else {
+                sidebar.classList.add('translate-x-full');
+                sidebar.addEventListener('transitionend', function handler() {
+                    sidebar.setAttribute('hidden', '');
+                    sidebar.removeEventListener('transitionend', handler);
+                }, { once: true });
+                body.classList.remove('overflow-hidden');
+            }
+        };
+
+        toggles.forEach(btn => {
+            const type = btn.dataset.adminToggle;
+            btn.addEventListener('click', () => {
+                if (type === 'sidebar') {
+                    toggleSidebar();
+                }
+                if (type === 'actions' && mobileActions) {
+                    const isHidden = mobileActions.hasAttribute('hidden');
+                    if (isHidden) {
+                        mobileActions.removeAttribute('hidden');
+                    } else {
+                        mobileActions.setAttribute('hidden', '');
+                    }
+                }
+            });
+        });
+
+        if (sidebar) {
+            sidebar.addEventListener('click', (event) => {
+                if (event.target.closest('.admin-nav-item') && window.innerWidth < 1024) {
+                    toggleSidebar(false);
+                }
+            });
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('translate-x-full');
+                sidebar.setAttribute('hidden', '');
+            } else {
+                sidebar.classList.remove('translate-x-full');
+                sidebar.removeAttribute('hidden');
+            }
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) {
+                    sidebar.classList.remove('translate-x-full');
+                    sidebar.removeAttribute('hidden');
+                    body.classList.remove('overflow-hidden');
+                } else {
+                    sidebar.classList.add('translate-x-full');
+                    sidebar.setAttribute('hidden', '');
+                }
+            });
+        }
+
+        updateNavState();
+    })();
+</script>
+

@@ -1,0 +1,36 @@
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<!-- Header -->
+<header class="fixed top-0 w-full z-50 glass shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="<%= request.getContextPath() %>/" class="text-2xl font-bold text-blue-700 tracking-tight">
+            VSTEP System
+        </a>
+        <nav class="hidden md:flex space-x-8 text-lg font-medium">
+            <a href="<%= request.getContextPath() %>/" class="hover:text-blue-700 transition">Trang chủ</a>
+            <a href="<%= request.getContextPath() %>/lop" class="hover:text-blue-700 transition">Lớp ôn</a>
+            <a href="<%= request.getContextPath() %>/ca" class="hover:text-blue-700 transition">Ca thi</a>
+            <a href="<%= request.getContextPath() %>/dang-nhap" class="hover:text-blue-700 transition">Đăng nhập</a>
+        </nav>
+        <!-- Mobile menu button -->
+        <button class="md:hidden focus:outline-none text-blue-700" onclick="togglePublicMenu()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="publicMobileMenu" class="hidden md:hidden glass border-t border-gray-200">
+        <a href="<%= request.getContextPath() %>/" class="block px-6 py-3 hover:bg-blue-50">Trang chủ</a>
+        <a href="<%= request.getContextPath() %>/lop" class="block px-6 py-3 hover:bg-blue-50">Lớp ôn</a>
+        <a href="<%= request.getContextPath() %>/ca" class="block px-6 py-3 hover:bg-blue-50">Ca thi</a>
+        <a href="<%= request.getContextPath() %>/dang-nhap" class="block px-6 py-3 hover:bg-blue-50">Đăng nhập</a>
+    </div>
+</header>
+
+<script>
+    function togglePublicMenu() {
+        document.getElementById('publicMobileMenu').classList.toggle('hidden');
+    }
+</script>
+
