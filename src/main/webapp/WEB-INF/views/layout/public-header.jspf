@@ -1,16 +1,47 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+    com.vstep.model.NguoiDung headerUser = (com.vstep.model.NguoiDung) session.getAttribute("userLogin");
+%>
+
 <!-- Header -->
 <header class="fixed top-0 w-full z-50 glass shadow-sm border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         <a href="<%= request.getContextPath() %>/" class="text-2xl font-bold text-blue-700 tracking-tight">
             VSTEP System
         </a>
-        <nav class="hidden md:flex space-x-8 text-lg font-medium">
+
+        <nav class="hidden md:flex space-x-8 text-lg font-medium items-center">
             <a href="<%= request.getContextPath() %>/" class="hover:text-blue-700 transition">Trang chủ</a>
             <a href="<%= request.getContextPath() %>/lop" class="hover:text-blue-700 transition">Lớp ôn</a>
             <a href="<%= request.getContextPath() %>/ca" class="hover:text-blue-700 transition">Ca thi</a>
+
+            <% if(headerUser != null) { %>
+            <!-- User info + dropdown -->
+            <div class="relative">
+                <button id="userMenuButton" class="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 hover:bg-blue-100 transition focus:outline-none"
+                        onclick="document.getElementById('userDropdown').classList.toggle('hidden')">
+                    <span class="font-semibold text-blue-700"><%= headerUser.getHoTen() %></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <!-- Dropdown menu -->
+                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    <a href="<%= request.getContextPath() %>/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Hồ sơ</a>
+                    <a href="<%= request.getContextPath() %>/lop-da-dang-ky" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Lớp đã đăng ký</a>
+                    <a href="<%= request.getContextPath() %>/ca-da-dang-ky" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Ca thi đã đăng ký</a>
+                    <% if("admin".equals(headerUser.getVaiTro())) { %>
+                    <a href="<%= request.getContextPath() %>/admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Quản trị</a>
+                    <% } %>
+                    <a href="<%= request.getContextPath() %>/dang-xuat" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Đăng xuất</a>
+                </div>
+            </div>
+            <% } else { %>
             <a href="<%= request.getContextPath() %>/dang-nhap" class="hover:text-blue-700 transition">Đăng nhập</a>
+            <% } %>
         </nav>
+
         <!-- Mobile menu button -->
         <button class="md:hidden focus:outline-none text-blue-700" onclick="togglePublicMenu()">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -24,7 +55,12 @@
         <a href="<%= request.getContextPath() %>/" class="block px-6 py-3 hover:bg-blue-50">Trang chủ</a>
         <a href="<%= request.getContextPath() %>/lop" class="block px-6 py-3 hover:bg-blue-50">Lớp ôn</a>
         <a href="<%= request.getContextPath() %>/ca" class="block px-6 py-3 hover:bg-blue-50">Ca thi</a>
+        <% if(headerUser != null) { %>
+        <a href="<%= request.getContextPath() %>/profile" class="block px-6 py-3 hover:bg-blue-50">Hồ sơ</a>
+        <a href="<%= request.getContextPath() %>/dang-xuat" class="block px-6 py-3 hover:bg-red-50 text-red-600">Đăng xuất</a>
+        <% } else { %>
         <a href="<%= request.getContextPath() %>/dang-nhap" class="block px-6 py-3 hover:bg-blue-50">Đăng nhập</a>
+        <% } %>
     </div>
 </header>
 
@@ -32,5 +68,13 @@
     function togglePublicMenu() {
         document.getElementById('publicMobileMenu').classList.toggle('hidden');
     }
-</script>
 
+    // Ẩn dropdown khi click ngoài
+    window.addEventListener('click', function(e){
+        const dropdown = document.getElementById('userDropdown');
+        const button = document.getElementById('userMenuButton');
+        if(dropdown && button && !button.contains(e.target) && !dropdown.contains(e.target)){
+            dropdown.classList.add('hidden');
+        }
+    });
+</script>

@@ -21,27 +21,174 @@
     };
 </script>
 <style>
-    :root {
-        color-scheme: light;
+:root {
+    color-scheme: light;
+    --admin-header-height: 88px;
+    --admin-sidebar-width: 16rem;
+}
+body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(160deg, #f9fbff 0%, #ffffff 45%, #f4f8ff 100%);
+    color: #1f2937;
+}
+body.admin-shell {
+    min-height: 100vh;
+    padding-top: var(--admin-header-offset, var(--admin-header-height));
+}
+.admin-shell .admin-layout {
+    padding-top: 4rem;
+    width: 100%;
+}
+.admin-main-wrapper {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 1.75rem 1.25rem 4rem;
+}
+@media (min-width: 640px) {
+    .admin-main-wrapper {
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
-    body {
-        font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: linear-gradient(160deg, #f9fbff 0%, #ffffff 45%, #f4f8ff 100%);
-        color: #1f2937;
+}
+@media (min-width: 1024px) {
+    .admin-main-wrapper {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
     }
-    .glass-panel {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(18px);
+}
+@media (min-width: 1280px) {
+    .admin-main-wrapper {
+        padding-left: 3rem;
+        padding-right: 3rem;
     }
-    .admin-shell {
-        min-height: 100vh;
+}
+.glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(18px);
+}
+.admin-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.admin-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(37, 99, 235, 0.25);
+    border-radius: 999px;
+}
+#adminSidebar {
+    width: var(--admin-sidebar-width);
+    top: var(--admin-header-offset, var(--admin-header-height));
+    height: calc(100vh - var(--admin-header-offset, var(--admin-header-height)));
+}
+@media (min-width: 1024px) {
+    body.admin-shell {
+        padding-top: calc(var(--admin-header-offset, var(--admin-header-height)) + 1.5rem);
     }
-    .admin-scrollbar::-webkit-scrollbar {
-        width: 8px;
+    .admin-shell .admin-layout {
+        padding-left: var(--admin-sidebar-width);
     }
-    .admin-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(37, 99, 235, 0.25);
-        border-radius: 999px;
+    #adminSidebar {
+        position: fixed;
     }
+}
+body.admin-sidebar-mini {
+    --admin-sidebar-width: 4.5rem;
+}
+body.admin-sidebar-mini #adminSidebar {
+    border-right-color: rgba(15, 23, 42, 0.05);
+}
+body.admin-sidebar-mini #adminSidebar .admin-sidebar-content {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
+    gap: 1.75rem;
+}
+body.admin-sidebar-mini #adminSidebar .admin-sidebar-heading,
+body.admin-sidebar-mini #adminSidebar .admin-sidebar-extra,
+body.admin-sidebar-mini #adminSidebar .admin-nav-label {
+    display: none;
+}
+body.admin-sidebar-mini #adminSidebar .admin-nav-item {
+    justify-content: center;
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+    position: relative;
+}
+body.admin-sidebar-mini #adminSidebar .admin-nav-icon {
+    margin-right: 0;
+}
+body.admin-sidebar-mini #adminSidebar .admin-nav-item::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 0.75rem);
+    top: 50%;
+    transform: translateY(-50%) scale(0.95);
+    background: rgba(15, 23, 42, 0.92);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    white-space: nowrap;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 40;
+}
+body.admin-sidebar-mini #adminSidebar .admin-nav-item::before {
+    content: '';
+    position: absolute;
+    left: calc(100% + 0.35rem);
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent rgba(15, 23, 42, 0.92) transparent transparent;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 40;
+}
+body.admin-sidebar-mini #adminSidebar .admin-nav-item:hover::after,
+body.admin-sidebar-mini #adminSidebar .admin-nav-item:hover::before {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+}
+.tooltip-right {
+    position: relative;
+}
+.tooltip-right::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 0.65rem);
+    right: 50%;
+    transform: translateX(50%) translateY(-0.2rem);
+    background: rgba(15, 23, 42, 0.92);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    white-space: nowrap;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.tooltip-right::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + 0.2rem);
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(15, 23, 42, 0.92) transparent transparent transparent;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.tooltip-right:hover::after,
+.tooltip-right:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
 </style>
 

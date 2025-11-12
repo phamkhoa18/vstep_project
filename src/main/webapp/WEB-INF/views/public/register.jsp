@@ -58,7 +58,8 @@
             <div class="glass rounded-3xl border border-blue-100 px-6 sm:px-12 py-12 shadow-soft grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
                 <div class="space-y-6">
                     <div class="rounded-3xl border border-blue-100 bg-white px-6 py-6 shadow-soft">
-                        <form action="<%= request.getContextPath() %>/dang-ky" method="post" class="space-y-5">
+
+                        <form action="<%= request.getContextPath() %>/dang-ky" method="post">
                             <div class="grid gap-4 sm:grid-cols-2">
                                 <div>
                                     <label for="fullName" class="text-sm font-semibold text-slate-700">Họ và tên</label>
@@ -93,33 +94,37 @@
                                            placeholder="••••••••">
                                 </div>
                             </div>
-                            <div class="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label for="goal" class="text-sm font-semibold text-slate-700">Mục tiêu</label>
-                                    <select id="goal" name="goal"
-                                            class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                                        <option>Đăng ký lớp ôn</option>
-                                        <option>Đăng ký ca thi</option>
-                                        <option>Theo dõi kết quả</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="level" class="text-sm font-semibold text-slate-700">Trình độ hiện tại</label>
-                                    <select id="level" name="level"
-                                            class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                                        <option>Chưa thi VSTEP</option>
-                                        <option>B1</option>
-                                        <option>B2</option>
-                                        <option>C1</option>
-                                    </select>
-                                </div>
+
+
+                            <% if(request.getAttribute("error") != null) { %>
+                            <div class="flex items-start gap-2 rounded-lg my-4 border border-red-300 bg-red-50 px-4 py-3 text-red-700 shadow-sm animate-fade-in">
+                                <!-- Icon lỗi -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                <span class="text-sm"><%= request.getAttribute("error") %></span>
                             </div>
-                            <label class="inline-flex items-start gap-3 text-xs text-slate-500">
-                                <input type="checkbox" class="mt-0.5 h-4 w-4 rounded border-blue-100 text-primary focus:ring-primary/30" required>
-                                Tôi đồng ý với <a href="#" class="ml-1 font-semibold text-primary hover:text-primary/80 transition">Điều khoản sử dụng</a> và cam kết bảo mật của VSTEP.
-                            </label>
+                            <% } %>
+
+                            <% if(request.getAttribute("success") != null) { %>
+                            <div class="flex items-start gap-2 rounded-lg my-4 border border-green-300 bg-green-50 px-4 py-3 text-green-700 shadow-sm animate-fade-in">
+                                <!-- Icon thành công -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-sm"><%= request.getAttribute("success") %></span>
+                            </div>
+                            <% } %>
+
+
+
+
                             <button type="submit"
-                                    class="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                                    class="w-full inline-flex mt-4 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
                                 Tạo tài khoản
                             </button>
                         </form>

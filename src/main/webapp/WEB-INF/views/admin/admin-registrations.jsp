@@ -9,10 +9,11 @@
 </head>
 <body data-page="registrations" class="admin-shell">
 <%@ include file="layout/admin-header.jspf" %>
-<%@ include file="layout/admin-sidebar.jspf" %>
 
-<div class="pt-[90px] lg:pl-[14rem]">
-    <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-16 space-y-10">
+<div class="admin-layout">
+    <%@ include file="layout/admin-sidebar.jspf" %>
+    <div class="admin-main-wrapper">
+        <main class="space-y-10 pb-16">
         <section class="space-y-4">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
@@ -364,7 +365,8 @@
                 </div>
             </div>
         </section>
-    </main>
+        </main>
+    </div>
 </div>
 
 <!-- Detail modal -->

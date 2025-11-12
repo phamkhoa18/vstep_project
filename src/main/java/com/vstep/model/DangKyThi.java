@@ -3,56 +3,41 @@ package com.vstep.model;
 import java.sql.Timestamp;
 
 public class DangKyThi {
-    private int id;
-    private int idNguoiDung;
-    private int idCaThi;
-    private Timestamp ngayDangKy;
+    private long id;
+    private long nguoiDungId;
+    private long caThiId;
+    private boolean daTungThi;
+    private long mucGiam;
+    private long soTienPhaiTra;
     private String trangThai;
-    private boolean laThiLai;
-    private double lePhiThucTe;
-    private boolean daThanhToan;
-    private String maGiaoDich;
+    private Timestamp ngayDangKy;
+    private String maXacNhan;
 
-    public DangKyThi() {}
+    // Getters & Setters
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
 
-    public DangKyThi(int id, int idNguoiDung, int idCaThi, Timestamp ngayDangKy,
-                     String trangThai, boolean laThiLai, double lePhiThucTe,
-                     boolean daThanhToan, String maGiaoDich) {
-        this.id = id;
-        this.idNguoiDung = idNguoiDung;
-        this.idCaThi = idCaThi;
-        this.ngayDangKy = ngayDangKy;
-        this.trangThai = trangThai;
-        this.laThiLai = laThiLai;
-        this.lePhiThucTe = lePhiThucTe;
-        this.daThanhToan = daThanhToan;
-        this.maGiaoDich = maGiaoDich;
-    }
+    public long getNguoiDungId() { return nguoiDungId; }
+    public void setNguoiDungId(long nguoiDungId) { this.nguoiDungId = nguoiDungId; }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public long getCaThiId() { return caThiId; }
+    public void setCaThiId(long caThiId) { this.caThiId = caThiId; }
 
-    public int getIdNguoiDung() { return idNguoiDung; }
-    public void setIdNguoiDung(int idNguoiDung) { this.idNguoiDung = idNguoiDung; }
+    public boolean isDaTungThi() { return daTungThi; }
+    public void setDaTungThi(boolean daTungThi) { this.daTungThi = daTungThi; }
 
-    public int getIdCaThi() { return idCaThi; }
-    public void setIdCaThi(int idCaThi) { this.idCaThi = idCaThi; }
+    public long getMucGiam() { return mucGiam; }
+    public void setMucGiam(long mucGiam) { this.mucGiam = mucGiam; }
 
-    public Timestamp getNgayDangKy() { return ngayDangKy; }
-    public void setNgayDangKy(Timestamp ngayDangKy) { this.ngayDangKy = ngayDangKy; }
+    public long getSoTienPhaiTra() { return soTienPhaiTra; }
+    public void setSoTienPhaiTra(long soTienPhaiTra) { this.soTienPhaiTra = soTienPhaiTra; }
 
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 
-    public boolean isLaThiLai() { return laThiLai; }
-    public void setLaThiLai(boolean laThiLai) { this.laThiLai = laThiLai; }
+    public Timestamp getNgayDangKy() { return ngayDangKy; }
+    public void setNgayDangKy(Timestamp ngayDangKy) { this.ngayDangKy = ngayDangKy; }
 
-    public double getLePhiThucTe() { return lePhiThucTe; }
-    public void setLePhiThucTe(double lePhiThucTe) { this.lePhiThucTe = lePhiThucTe; }
-
-    public boolean isDaThanhToan() { return daThanhToan; }
-    public void setDaThanhToan(boolean daThanhToan) { this.daThanhToan = daThanhToan; }
-
-    public String getMaGiaoDich() { return maGiaoDich; }
-    public void setMaGiaoDich(String maGiaoDich) { this.maGiaoDich = maGiaoDich; }
+    public String getMaXacNhan() { return maXacNhan; }
+    public void setMaXacNhan(String maXacNhan) { this.maXacNhan = maXacNhan; }
 }

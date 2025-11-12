@@ -20,11 +20,10 @@ public class PublicDispatcherServlet extends HttpServlet {
         VIEW_MAP.put("/", "/index.jsp");
         VIEW_MAP.put("/index", "/index.jsp");
         VIEW_MAP.put("/lop", "/WEB-INF/views/public/lop-list.jsp");
+        VIEW_MAP.put("/404", "/WEB-INF/views/public/404.jsp");
         VIEW_MAP.put("/lop/chi-tiet", "/WEB-INF/views/public/lop-detail.jsp");
         VIEW_MAP.put("/ca", "/WEB-INF/views/public/ca-list.jsp");
         VIEW_MAP.put("/ca/chi-tiet", "/WEB-INF/views/public/ca-detail.jsp");
-        VIEW_MAP.put("/dang-nhap", "/WEB-INF/views/public/login.jsp");
-        VIEW_MAP.put("/dang-ky", "/WEB-INF/views/public/register.jsp");
         VIEW_MAP.put("/dang-ky-thanh-cong", "/WEB-INF/views/public/success.jsp");
     }
 

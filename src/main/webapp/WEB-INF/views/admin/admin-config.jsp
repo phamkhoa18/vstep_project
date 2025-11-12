@@ -9,10 +9,11 @@
 </head>
 <body data-page="config" class="admin-shell">
 <%@ include file="layout/admin-header.jspf" %>
-<%@ include file="layout/admin-sidebar.jspf" %>
 
-<div class="pt-[90px] lg:pl-[14rem]">
-    <main class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 pb-16 space-y-10">
+<div class="admin-layout">
+    <%@ include file="layout/admin-sidebar.jspf" %>
+    <div class="admin-main-wrapper">
+        <main class="max-w-[1200px] mx-auto space-y-10 pb-16">
         <section class="space-y-4">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
@@ -227,7 +228,8 @@
                 </div>
             </aside>
         </section>
-    </main>
+        </main>
+    </div>
 </div>
 
 <!-- Publish modal -->

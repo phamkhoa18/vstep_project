@@ -55,12 +55,9 @@
                 <div class="space-y-6">
                     <div class="rounded-3xl border border-blue-100 bg-white px-6 py-6 shadow-soft space-y-4">
                         <div class="flex items-center gap-3">
-                            <button class="flex-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white shadow-soft">
-                                Thí sinh
-                            </button>
-                            <button class="flex-1 rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-slate-500 hover:text-primary transition">
-                                Quản trị viên
-                            </button>
+                            <div class="flex-1 bg-white px-4 py-2 text-lg text-center font-semibold text-slate-500 hover:text-primary transition">
+                                Đăng nhập vào hệ thống
+                            </div>
                         </div>
                         <form action="<%= request.getContextPath() %>/dang-nhap" method="post" class="space-y-5">
                             <div>
@@ -97,10 +94,31 @@
                                     </button>
                                 </div>
                             </div>
-                            <label class="inline-flex items-center gap-3 text-xs text-slate-500">
-                                <input type="checkbox" class="h-4 w-4 rounded border-blue-100 text-primary focus:ring-primary/30">
-                                Ghi nhớ đăng nhập trên thiết bị này
-                            </label>
+
+                            <% if(request.getAttribute("error") != null) { %>
+                            <div class="flex items-start gap-2 rounded-lg my-4 border border-red-300 bg-red-50 px-4 py-3 text-red-700 shadow-sm animate-fade-in">
+                                <!-- Icon lỗi -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                <span class="text-sm"><%= request.getAttribute("error") %></span>
+                            </div>
+                            <% } %>
+
+                            <% if(request.getAttribute("success") != null) { %>
+                            <div class="flex items-start gap-2 rounded-lg my-4 border border-green-300 bg-green-50 px-4 py-3 text-green-700 shadow-sm animate-fade-in">
+                                <!-- Icon thành công -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-sm"><%= request.getAttribute("success") %></span>
+                            </div>
+                            <% } %>
+
                             <button type="submit"
                                     class="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
                                 Đăng nhập

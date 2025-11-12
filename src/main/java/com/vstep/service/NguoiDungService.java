@@ -5,11 +5,10 @@ import com.vstep.model.NguoiDung;
 import java.util.List;
 
 public interface NguoiDungService {
-    NguoiDung findByTitle(String title);
-    //    Book create(Book entity);
+    NguoiDung findByEmail(String email); // thay vì findByTitle, hợp lý hơn cho user
     boolean create(NguoiDung entity);
     List<NguoiDung> findAll();
-    NguoiDung findById(int id);
+    NguoiDung findById(long id);
     boolean update(NguoiDung entity);
-    boolean deleteById(int id);
+    boolean deleteById(long id);
 }

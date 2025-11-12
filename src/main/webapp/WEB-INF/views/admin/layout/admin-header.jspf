@@ -1,5 +1,12 @@
+
+
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
-<header class="fixed top-0 inset-x-0 z-40 glass-panel border-b border-blue-100/60 shadow-sm">
+
+<%
+    com.vstep.model.NguoiDung headerUser = (com.vstep.model.NguoiDung) session.getAttribute("userLogin");
+%>
+
+<header class="admin-header fixed top-0 inset-x-0 z-40 glass-panel border-b border-blue-100/60 shadow-sm">
     <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-2 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <button type="button"
@@ -10,6 +17,25 @@
                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4 6h16M4 12h12M4 18h10"/>
                 </svg>
+            </button>
+            <button type="button"
+                    class="hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-blue-100 bg-white/90 text-primary hover:text-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/30 tooltip-right"
+                    data-admin-toggle="sidebar-desktop"
+                    data-tooltip="Thu gọn menu"
+                    aria-label="Thu gọn thanh điều hướng"
+                    aria-expanded="true">
+                <span data-icon="expanded" class="flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M15 5 8 12l7 7"/>
+                    </svg>
+                </span>
+                <span data-icon="collapsed" class="hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="m9 5 7 7-7 7"/>
+                    </svg>
+                </span>
             </button>
             <div>
                 <p class="text-sm uppercase font-semibold text-primary/70">VSTEP SYSTEM</p>
@@ -40,8 +66,8 @@
             </button>
             <div class="flex items-center gap-3">
                 <div class="text-right">
-                    <p class="text-sm font-semibold text-slate-800">Nguyễn Thị Ánh</p>
-                    <p class="text-xs text-slate-500">Quản trị viên cao cấp</p>
+                    <p class="text-sm font-semibold text-slate-800"><%= headerUser.getHoTen() %></p>
+                    <p class="text-xs text-slate-500">Vai trò: <%= headerUser.getVaiTro() %></p>
                 </div>
                 <img src="https://i.pravatar.cc/120?img=47" alt="Avatar"
                      class="h-11 w-11 rounded-full border border-blue-100 shadow-sm">

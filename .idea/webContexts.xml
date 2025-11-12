@@ -4,6 +4,8 @@
     <option name="state">
       <map>
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/public/lop-detail.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/public" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/public/register.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/public" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/user/user-dashboard.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/user" />
       </map>
     </option>
   </component>

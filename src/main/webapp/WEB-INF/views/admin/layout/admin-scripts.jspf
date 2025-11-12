@@ -2,9 +2,19 @@
 <script>
     (function () {
         const sidebar = document.getElementById('adminSidebar');
+        const header = document.querySelector('.admin-header');
         const mobileActions = document.getElementById('adminMobileActions');
         const body = document.body;
         const toggles = document.querySelectorAll('[data-admin-toggle]');
+        const desktopToggle = document.querySelector('[data-admin-toggle="sidebar-desktop"]');
+        const DESKTOP_COLLAPSE_KEY = 'adminSidebarCollapsed';
+        let desktopSidebarCollapsed = false;
+
+        const setHeaderOffset = () => {
+            if (!header) return;
+            const headerHeight = header.offsetHeight;
+            body.style.setProperty('--admin-header-offset', `${headerHeight}px`);
+        };
 
         const updateNavState = () => {
             const active = body.dataset.page;
@@ -26,6 +36,7 @@
                 sidebar.removeAttribute('hidden');
                 requestAnimationFrame(() => sidebar.classList.remove('translate-x-full'));
                 body.classList.add('overflow-hidden');
+                body.classList.add('admin-sidebar-open');
             } else {
                 sidebar.classList.add('translate-x-full');
                 sidebar.addEventListener('transitionend', function handler() {
@@ -33,25 +44,76 @@
                     sidebar.removeEventListener('transitionend', handler);
                 }, { once: true });
                 body.classList.remove('overflow-hidden');
+                body.classList.remove('admin-sidebar-open');
             }
+        };
+
+        const updateDesktopToggleVisual = (collapsed) => {
+            if (!desktopToggle) return;
+            desktopToggle.setAttribute('aria-expanded', (!collapsed).toString());
+            desktopToggle.dataset.tooltip = collapsed ? 'Mở rộng menu' : 'Thu gọn menu';
+            const expandedIcon = desktopToggle.querySelector('[data-icon="expanded"]');
+            const collapsedIcon = desktopToggle.querySelector('[data-icon="collapsed"]');
+            if (expandedIcon && collapsedIcon) {
+                expandedIcon.classList.toggle('hidden', collapsed);
+                collapsedIcon.classList.toggle('hidden', !collapsed);
+            }
+        };
+
+        const applyDesktopSidebarState = (collapsed) => {
+            desktopSidebarCollapsed = collapsed;
+            if (window.innerWidth >= 1024) {
+                body.classList.toggle('admin-sidebar-mini', collapsed);
+            } else {
+                body.classList.remove('admin-sidebar-mini');
+            }
+            updateDesktopToggleVisual(collapsed);
         };
 
         toggles.forEach(btn => {
             const type = btn.dataset.adminToggle;
             btn.addEventListener('click', () => {
-                if (type === 'sidebar') {
-                    toggleSidebar();
-                }
-                if (type === 'actions' && mobileActions) {
-                    const isHidden = mobileActions.hasAttribute('hidden');
-                    if (isHidden) {
-                        mobileActions.removeAttribute('hidden');
-                    } else {
-                        mobileActions.setAttribute('hidden', '');
-                    }
+                switch (type) {
+                    case 'sidebar':
+                        toggleSidebar();
+                        break;
+                    case 'actions':
+                        if (!mobileActions) break;
+                        const isHidden = mobileActions.hasAttribute('hidden');
+                        if (isHidden) {
+                            mobileActions.removeAttribute('hidden');
+                        } else {
+                            mobileActions.setAttribute('hidden', '');
+                        }
+                        break;
+                    case 'sidebar-desktop':
+                        const nextState = !desktopSidebarCollapsed;
+                        applyDesktopSidebarState(nextState);
+                        try {
+                            localStorage.setItem(DESKTOP_COLLAPSE_KEY, String(nextState));
+                        } catch (e) {
+                            console.warn('Không thể lưu trạng thái sidebar:', e);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             });
         });
+
+        const handleResponsiveSidebar = () => {
+            if (!sidebar) return;
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('translate-x-full');
+                sidebar.setAttribute('hidden', '');
+            } else {
+                sidebar.classList.remove('translate-x-full');
+                sidebar.removeAttribute('hidden');
+                body.classList.remove('overflow-hidden');
+                body.classList.remove('admin-sidebar-open');
+            }
+            applyDesktopSidebarState(desktopSidebarCollapsed);
+        };
 
         if (sidebar) {
             sidebar.addEventListener('click', (event) => {
@@ -59,26 +121,34 @@
                     toggleSidebar(false);
                 }
             });
-            if (window.innerWidth < 1024) {
-                sidebar.classList.add('translate-x-full');
-                sidebar.setAttribute('hidden', '');
-            } else {
-                sidebar.classList.remove('translate-x-full');
-                sidebar.removeAttribute('hidden');
-            }
-            window.addEventListener('resize', () => {
-                if (window.innerWidth >= 1024) {
-                    sidebar.classList.remove('translate-x-full');
-                    sidebar.removeAttribute('hidden');
-                    body.classList.remove('overflow-hidden');
-                } else {
-                    sidebar.classList.add('translate-x-full');
-                    sidebar.setAttribute('hidden', '');
-                }
-            });
+            handleResponsiveSidebar();
+            window.addEventListener('resize', handleResponsiveSidebar);
         }
 
+        const handleResize = () => {
+            setHeaderOffset();
+            if (sidebar && window.innerWidth < 1024 && !sidebar.classList.contains('translate-x-full')) {
+                toggleSidebar(false);
+            }
+            if (window.innerWidth >= 1024) {
+                applyDesktopSidebarState(desktopSidebarCollapsed);
+            }
+        };
+
+        try {
+            const storedState = localStorage.getItem(DESKTOP_COLLAPSE_KEY);
+            if (storedState !== null) {
+                desktopSidebarCollapsed = storedState === 'true';
+            }
+        } catch (e) {
+            console.warn('Không thể đọc trạng thái sidebar:', e);
+        }
+
+        setHeaderOffset();
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('load', setHeaderOffset);
         updateNavState();
+        applyDesktopSidebarState(desktopSidebarCollapsed);
     })();
 </script>
 

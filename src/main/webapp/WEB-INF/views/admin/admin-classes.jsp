@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -9,10 +12,17 @@
 </head>
 <body data-page="classes" class="admin-shell">
 <%@ include file="layout/admin-header.jspf" %>
-<%@ include file="layout/admin-sidebar.jspf" %>
 
-<div class="pt-[90px] lg:pl-[14rem]">
-    <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-16 space-y-10">
+<div class="admin-layout">
+    <%@ include file="layout/admin-sidebar.jspf" %>
+    <div class="admin-main-wrapper">
+        <main class="space-y-10 pb-16">
+        <c:set var="classCountVal" value="${empty classCount ? 0 : classCount}" />
+        <c:set var="avgCapacityVal" value="${empty averageCapacity ? 0 : averageCapacity}" />
+        <c:set var="dangMoCountVal" value="${empty dangMoCount ? 0 : dangMoCount}" />
+        <c:set var="sapMoCountVal" value="${empty sapMoCount ? 0 : sapMoCount}" />
+        <c:set var="daKetThucCountVal" value="${empty daKetThucCount ? 0 : daKetThucCount}" />
+        <c:set var="nearlyFullCountVal" value="${empty nearlyFullCount ? 0 : nearlyFullCount}" />
         <section class="space-y-4">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
@@ -20,7 +30,7 @@
                     <p class="text-sm text-slate-500 mt-1">Theo dõi tình trạng lớp học, sĩ số và lịch giảng dạy.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
-                    <button data-modal-target="class-import-modal"
+                    <button data-modal-target="class-import-modal" type="button"
                             class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm hover:border-primary/40 hover:bg-primary/5 transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -30,7 +40,7 @@
                         </svg>
                         Nhập danh sách
                     </button>
-                    <button data-modal-target="class-modal"
+                    <a href="<c:url value='/admin/classes/create' />"
                             class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -38,59 +48,73 @@
                             <path d="M6 12h12"/>
                         </svg>
                         Tạo lớp mới
-                    </button>
+                    </a>
                 </div>
             </div>
-            <div class="flex flex-wrap gap-3 text-xs text-slate-500">
-                <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
-                    Cập nhật 09/11/2025 · 14:30
-                </span>
-                <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 border border-blue-100 text-slate-500">
-                    4 lớp cần quan tâm ngay lập tức
-                </span>
-            </div>
+            <c:if test="${not empty classFlashMessage}">
+                <c:set var="flashType" value="${empty classFlashType ? 'info' : classFlashType}" />
+                <c:set var="flashClasses"
+                       value="${flashType eq 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                               flashType eq 'error' ? 'bg-rose-50 border-rose-200 text-rose-600' :
+                               'bg-blue-50 border-blue-200 text-blue-600'}" />
+                <div class="rounded-2xl border px-4 py-3 text-sm font-medium ${flashClasses}">
+                    ${classFlashMessage}
+                </div>
+            </c:if>
         </section>
 
         <section class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Tổng lớp đang mở</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Tổng số lớp</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">26 lớp</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-                        +3 lớp mới
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <c:out value="${classCountVal}" /> lớp
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">Bao gồm 8 lớp cơ bản · 10 nâng cao · 4 cấp tốc · 4 online.</p>
+                <p class="text-xs text-slate-400">
+                    Sĩ số tối đa trung bình
+                    <fmt:formatNumber value="${avgCapacityVal}" maxFractionDigits="1" minFractionDigits="0"/> học viên.
+                </p>
             </div>
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Sĩ số trung bình</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Lớp đang mở</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">34 học viên</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-                        +6%
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <c:out value="${dangMoCountVal}" /> lớp
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">Giới hạn chuẩn 40 học viên · 6 lớp vượt 90% sức chứa.</p>
+                <p class="text-xs text-slate-400">
+                    <c:choose>
+                        <c:when test="${nearlyFullCountVal > 0}">
+                            Có <c:out value="${nearlyFullCountVal}" /> lớp đạt ≥ 40 chỗ.
+                        </c:when>
+                        <c:otherwise>
+                            Chưa có lớp nào vượt ngưỡng sĩ số cao.
+                        </c:otherwise>
+                    </c:choose>
+                </p>
             </div>
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Lớp sắp đầy</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Lớp sắp mở</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">4 lớp</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-semibold text-orange-500">
-                        Ưu tiên cập nhật
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <c:out value="${sapMoCountVal}" /> lớp
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">CB1-B · NE3-A · ONL-2205 · CT-6W cần cân nhắc mở thêm lịch.</p>
+                <p class="text-xs text-slate-400">
+                    Ưu tiên cập nhật lịch giảng viên và truyền thông trước khai giảng.
+                </p>
             </div>
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Tỉ lệ giữ chân</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Lớp đã kết thúc</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">86%</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-                        +4.2%
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <c:out value="${daKetThucCountVal}" /> lớp
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">52 học viên đăng ký tiếp khóa nâng cao trong 7 ngày.</p>
+                <p class="text-xs text-slate-400">
+                    Theo dõi phản hồi học viên và cân nhắc mở lớp kế tiếp.
+                </p>
             </div>
         </section>
 
@@ -160,135 +184,147 @@
                 <table class="min-w-full divide-y divide-blue-50 text-sm text-slate-600">
                     <thead class="bg-primary.pale/60 text-xs uppercase text-slate-500 tracking-widest">
                     <tr>
-                        <th class="px-6 py-4 text-left font-semibold">Lớp / Mã lớp</th>
-                        <th class="px-6 py-4 text-left font-semibold">Cấp độ</th>
-                        <th class="px-6 py-4 text-left font-semibold">Giảng viên</th>
-                        <th class="px-6 py-4 text-left font-semibold">Sĩ số</th>
-                        <th class="px-6 py-4 text-left font-semibold">Lịch học</th>
-                        <th class="px-6 py-4 text-left font-semibold">Tiến độ</th>
+                        <th class="px-6 py-4 text-left font-semibold">Lớp / Mô tả</th>
+                        <th class="px-6 py-4 text-left font-semibold">Hình thức</th>
+                        <th class="px-6 py-4 text-left font-semibold">Nhịp độ</th>
+                        <th class="px-6 py-4 text-left font-semibold">Thời gian</th>
+                        <th class="px-6 py-4 text-left font-semibold">Số buổi</th>
+                        <th class="px-6 py-4 text-left font-semibold">Sĩ số tối đa</th>
+                        <th class="px-6 py-4 text-left font-semibold">Học phí</th>
+                        <th class="px-6 py-4 text-right font-semibold">Tình trạng</th>
                         <th class="px-6 py-4 text-right font-semibold">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-blue-50 bg-white">
-                    <tr>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-900">NE3 · Giao tiếp nâng cao</p>
-                            <p class="text-xs text-slate-400 mt-1">Mã: LOP-NE3-2025</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-xs font-semibold text-primary">Nâng cao</span>
-                        </td>
-                        <td class="px-6 py-5 space-y-1">
-                            <p class="font-semibold text-slate-800">Lê Thảo</p>
-                            <p class="text-xs text-slate-400">0987 123 456 · lethao@vstep.edu.vn</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">32 / 36</p>
-                            <span class="text-xs font-semibold text-emerald-500">Còn 4 chỗ</span>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">Thứ 3 · 5 · 18:00 - 20:00</p>
-                            <p class="text-xs text-slate-400">Phòng B205 · 09/10 → 12/12</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <div class="w-40 h-2 rounded-full bg-primary.pale">
-                                <div class="h-full rounded-full bg-primary" style="width: 45%;"></div>
-                            </div>
-                            <p class="text-xs text-slate-400 mt-2">Hoàn thành 9/20 buổi</p>
-                        </td>
-                        <td class="px-6 py-5 text-right space-x-2">
-                            <button data-modal-target="class-modal"
-                                    class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                                Sửa
-                            </button>
-                            <button class="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-500 hover:bg-rose-100 transition">
-                                Xoá
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-900">CB1 · Nền tảng VSTEP</p>
-                            <p class="text-xs text-slate-400 mt-1">Mã: LOP-CB1-2025</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">Cơ bản</span>
-                        </td>
-                        <td class="px-6 py-5 space-y-1">
-                            <p class="font-semibold text-slate-800">Nguyễn Phi</p>
-                            <p class="text-xs text-slate-400">0974 555 999 · nguyenphi@vstep.edu.vn</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">40 / 40</p>
-                            <span class="text-xs font-semibold text-orange-500">Đã đầy</span>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">Thứ 2 · 4 · 6 · 08:00 - 10:00</p>
-                            <p class="text-xs text-slate-400">Phòng A103 · 04/10 → 18/12</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <div class="w-40 h-2 rounded-full bg-primary.pale">
-                                <div class="h-full rounded-full bg-emerald-400" style="width: 72%;"></div>
-                            </div>
-                            <p class="text-xs text-slate-400 mt-2">Hoàn thành 14/20 buổi</p>
-                        </td>
-                        <td class="px-6 py-5 text-right space-x-2">
-                            <button data-modal-target="class-modal"
-                                    class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                                Sửa
-                            </button>
-                            <button class="inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50 px-4 py-2 text-xs font-semibold text-orange-500 hover:bg-orange-100 transition">
-                                Mở thêm
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-900">CT2 · Cấp tốc 6 tuần</p>
-                            <p class="text-xs text-slate-400 mt-1">Mã: LOP-CT2-2025</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-500">Cấp tốc</span>
-                        </td>
-                        <td class="px-6 py-5 space-y-1">
-                            <p class="font-semibold text-slate-800">Võ An</p>
-                            <p class="text-xs text-slate-400">0907 888 221 · voan@vstep.edu.vn</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">28 / 30</p>
-                            <span class="text-xs font-semibold text-emerald-500">Còn 2 chỗ</span>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">Thứ 7 · CN · 13:00 - 17:00</p>
-                            <p class="text-xs text-slate-400">Phòng C201 · 20/10 → 01/12</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <div class="w-40 h-2 rounded-full bg-primary.pale">
-                                <div class="h-full rounded-full bg-orange-400" style="width: 20%;"></div>
-                            </div>
-                            <p class="text-xs text-slate-400 mt-2">Hoàn thành 2/10 buổi</p>
-                        </td>
-                        <td class="px-6 py-5 text-right space-x-2">
-                            <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                                Sửa
-                            </button>
-                            <button class="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-500 hover:bg-emerald-100 transition">
-                                Gửi nhắc
-                            </button>
-                        </td>
-                    </tr>
+                    <c:if test="${empty lopOnList}">
+                        <tr>
+                            <td colspan="9" class="px-6 py-10 text-center text-sm text-slate-400">
+                                Chưa có lớp ôn nào. Nhấn "Tạo lớp mới" để thêm dữ liệu đầu tiên.
+                            </td>
+                        </tr>
+                    </c:if>
+                    <c:forEach var="lop" items="${lopOnList}">
+                        <fmt:formatDate value="${lop.ngayKhaiGiang}" pattern="dd/MM/yyyy" var="ngayKhaiGiangDisplay" />
+                        <fmt:formatDate value="${lop.ngayKhaiGiang}" pattern="yyyy-MM-dd" var="ngayKhaiGiangIso" />
+                        <fmt:formatDate value="${lop.ngayHetHanDangKy}" pattern="dd/MM/yyyy" var="ngayHetHanDisplay" />
+                        <fmt:formatDate value="${lop.ngayHetHanDangKy}" pattern="yyyy-MM-dd" var="ngayHetHanIso" />
+                        <c:set var="statusText" value="${empty lop.tinhTrang ? 'Không xác định' : lop.tinhTrang}" />
+                        <c:set var="statusLower" value="${fn:toLowerCase(statusText)}" />
+                        <c:set var="statusBadgeClass" value="bg-slate-100 text-slate-600" />
+                        <c:choose>
+                            <c:when test="${fn:contains(statusLower, 'đang') or fn:contains(statusLower, 'dang')}">
+                                <c:set var="statusBadgeClass" value="bg-emerald-100 text-emerald-600" />
+                            </c:when>
+                            <c:when test="${fn:contains(statusLower, 'sắp') or fn:contains(statusLower, 'sap')}">
+                                <c:set var="statusBadgeClass" value="bg-orange-100 text-orange-500" />
+                            </c:when>
+                            <c:when test="${fn:contains(statusLower, 'kết') or fn:contains(statusLower, 'ket')}">
+                                <c:set var="statusBadgeClass" value="bg-slate-200 text-slate-600" />
+                            </c:when>
+                        </c:choose>
+                        <tr>
+                            <td class="px-6 py-5">
+                                <p class="font-semibold text-slate-900">
+                                    <c:out value="${lop.tieuDe}" />
+                                </p>
+                                <c:if test="${not empty lop.moTaNgan}">
+                                    <p class="text-xs text-slate-400 mt-1">
+                                        <c:out value="${lop.moTaNgan}" />
+                                    </p>
+                                </c:if>
+                            </td>
+                            <td class="px-6 py-5">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-xs font-semibold text-primary/80">
+                                    <c:out value="${empty lop.hinhThuc ? '—' : lop.hinhThuc}" />
+                                </span>
+                            </td>
+                            <td class="px-6 py-5">
+                                <p class="font-semibold text-slate-800">
+                                    <c:out value="${empty lop.nhipDo ? '—' : lop.nhipDo}" />
+                                </p>
+                                <p class="text-xs text-slate-400 mt-1">
+                                    <c:out value="${lop.gioMoiBuoi}" /> giờ/buổi
+                                </p>
+                            </td>
+                            <td class="px-6 py-5">
+                                <p class="font-semibold text-slate-800">
+                                    <c:choose>
+                                        <c:when test="${not empty ngayKhaiGiangDisplay}">
+                                            Bắt đầu: <c:out value="${ngayKhaiGiangDisplay}" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            Bắt đầu: —
+                                        </c:otherwise>
+                                    </c:choose>
+                                </p>
+                                <p class="text-xs text-slate-400 mt-1">
+                                    <c:choose>
+                                        <c:when test="${not empty ngayHetHanDisplay}">
+                                            Hạn đăng ký: <c:out value="${ngayHetHanDisplay}" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            Hạn đăng ký: —
+                                        </c:otherwise>
+                                    </c:choose>
+                                </p>
+                            </td>
+                            <td class="px-6 py-5">
+                                <p class="font-semibold text-slate-800">
+                                    <c:out value="${lop.soBuoi}" /> buổi
+                                </p>
+                            </td>
+                            <td class="px-6 py-5">
+                                <p class="font-semibold text-slate-800">
+                                    <c:out value="${lop.siSoToiDa}" /> học viên
+                                </p>
+                            </td>
+                            <td class="px-6 py-5">
+                                <p class="font-semibold text-slate-800">
+                                    <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />
+                                    <span class="text-xs text-slate-500 ml-1">VND</span>
+                                </p>
+                            </td>
+                            <td class="px-6 py-5 text-right">
+                                <span class="inline-flex items-center justify-end gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusBadgeClass}">
+                                    <c:out value="${statusText}" />
+                                </span>
+                            </td>
+                            <td class="px-6 py-5 text-right space-x-2">
+                                <button type="button"
+                                        class="js-edit-class inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition"
+                                        data-id="${lop.id}"
+                                        data-tieu-de="${fn:escapeXml(lop.tieuDe)}"
+                                        data-mo-ta-ngan="${fn:escapeXml(lop.moTaNgan)}"
+                                        data-hinh-thuc="${fn:escapeXml(lop.hinhThuc)}"
+                                        data-nhip-do="${fn:escapeXml(lop.nhipDo)}"
+                                        data-ngay-khai-giang="${ngayKhaiGiangIso}"
+                                        data-ngay-het-han="${ngayHetHanIso}"
+                                        data-so-buoi="${lop.soBuoi}"
+                                        data-gio-moi-buoi="${lop.gioMoiBuoi}"
+                                        data-hoc-phi="${lop.hocPhi}"
+                                        data-si-so="${lop.siSoToiDa}"
+                                        data-tinh-trang="${fn:escapeXml(lop.tinhTrang)}"
+                                        data-noi-dung="${fn:escapeXml(lop.noiDungChiTiet)}">
+                                    Sửa
+                                </button>
+                                <form method="post" action="<c:url value='/admin/lop-on' />" class="inline">
+                                    <input type="hidden" name="action" value="delete"/>
+                                    <input type="hidden" name="id" value="${lop.id}"/>
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-500 hover:bg-rose-100 transition"
+                                            onclick="return confirm('Bạn có chắc chắn muốn xoá lớp &quot;${fn:escapeXml(lop.tieuDe)}&quot;?');">
+                                        Xoá
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </c:forEach>
                     </tbody>
                 </table>
             </div>
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-t border-blue-50 bg-primary.pale/40 text-xs text-slate-500">
-                <p>Hiển thị 1 – 10 trên 26 lớp</p>
-                <div class="inline-flex items-center rounded-full border border-blue-100 bg-white shadow-sm">
-                    <button class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-l-full">Trước</button>
-                    <button class="px-3 py-2 text-white bg-primary rounded-full shadow-soft">1</button>
-                    <button class="px-3 py-2 text-slate-400 hover:text-primary transition">2</button>
-                    <button class="px-3 py-2 text-slate-400 hover:text-primary transition">3</button>
-                    <button class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-r-full">Sau</button>
-                </div>
+                <p>Hiển thị <c:out value="${empty lopOnList ? 0 : fn:length(lopOnList)}" /> lớp ôn.</p>
+                <p class="text-xs text-slate-400">Tính năng phân trang sẽ được cập nhật khi dữ liệu lớn hơn.</p>
             </div>
         </section>
 
@@ -326,7 +362,7 @@
                         </ul>
                     </article>
                     <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <div class="flex items-center justify_between">
+                        <div class="flex items-center justify-between">
                             <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">CT2 · Tuần 2</span>
                             <span class="text-xs font-semibold text-orange-500">Tiến độ 20%</span>
                         </div>
@@ -373,7 +409,8 @@
                 </button>
             </div>
         </section>
-    </main>
+        </main>
+    </div>
 </div>
 
 <!-- Create/Edit class modal -->
@@ -381,7 +418,7 @@
     <div class="max-w-3xl w-full mx-4 rounded-3xl bg-white shadow-2xl border border-blue-50 overflow-hidden">
         <div class="flex items-center justify-between px-6 py-5 border-b border-blue-50 bg-primary.pale/60">
             <div>
-                <h3 class="text-xl font-semibold text-slate-900">Thêm hoặc chỉnh sửa lớp ôn</h3>
+                <h3 class="text-xl font-semibold text-slate-900" data-modal-title>Thêm hoặc chỉnh sửa lớp ôn</h3>
                 <p class="text-xs text-slate-500 mt-1">Điền thông tin chi tiết để tạo mới hoặc cập nhật lớp học.</p>
             </div>
             <button data-modal-close="class-modal"
@@ -389,71 +426,96 @@
                 ×
             </button>
         </div>
-        <form class="px-6 py-6 space-y-6">
+        <form id="class-form" method="post" action="<c:url value='/admin/lop-on' />" class="px-6 py-6 space-y-6">
+            <input type="hidden" name="action" value="create">
+            <input type="hidden" name="id" value="">
             <div class="grid gap-6 md:grid-cols-2">
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Tên lớp</label>
-                    <input type="text" placeholder="Ví dụ: NE3 - Giao tiếp nâng cao"
+                    <label for="class-title" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Tên lớp</label>
+                    <input id="class-title" name="tieuDe" type="text" required
+                           placeholder="Ví dụ: NE3 - Giao tiếp nâng cao"
                            class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
                 </div>
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Mã lớp</label>
-                    <input type="text" placeholder="LOP-NE3-2025"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Cấp độ</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Chọn cấp độ</option>
-                        <option>Cơ bản</option>
-                        <option>Trung cấp</option>
-                        <option>Nâng cao</option>
-                        <option>Cấp tốc</option>
+                    <label for="class-status" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Tình trạng</label>
+                    <select id="class-status" name="tinhTrang" required
+                            class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <option value="">Chọn tình trạng</option>
+                        <option value="Đang mở">Đang mở</option>
+                        <option value="Sắp mở">Sắp mở</option>
+                        <option value="Đã kết thúc">Đã kết thúc</option>
                     </select>
                 </div>
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Giảng viên phụ trách</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Chọn giảng viên</option>
-                        <option>Nguyễn Phi</option>
-                        <option>Lê Thảo</option>
-                        <option>Võ An</option>
-                        <option>Đặng Nhi</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Sĩ số tối đa</label>
-                    <input type="number" min="10" max="60" value="36"
+                    <label for="class-format" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Hình thức</label>
+                    <input id="class-format" name="hinhThuc" type="text"
+                           placeholder="Ví dụ: Offline · Online · Hybrid"
                            class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
                 </div>
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ngày khai giảng</label>
-                    <input type="date"
+                    <label for="class-pace" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Nhịp độ / Lịch học</label>
+                    <input id="class-pace" name="nhipDo" type="text"
+                           placeholder="Ví dụ: Thứ 3 · 5 · 18:00 - 20:00"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label for="class-start" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ngày khai giảng</label>
+                    <input id="class-start" name="ngayKhaiGiang" type="date"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label for="class-deadline" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Hạn đăng ký</label>
+                    <input id="class-deadline" name="ngayHetHanDangKy" type="date"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label for="class-sessions" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Số buổi</label>
+                    <input id="class-sessions" name="soBuoi" type="number" min="1" step="1"
+                           placeholder="Ví dụ: 20"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label for="class-duration" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Giờ mỗi buổi</label>
+                    <input id="class-duration" name="gioMoiBuoi" type="number" min="0.5" step="0.5"
+                           placeholder="Ví dụ: 2"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label for="class-fee" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Học phí (VND)</label>
+                    <input id="class-fee" name="hocPhi" type="number" min="0" step="50000"
+                           placeholder="Ví dụ: 4500000"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label for="class-capacity" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Sĩ số tối đa</label>
+                    <input id="class-capacity" name="siSoToiDa" type="number" min="5" step="1"
+                           placeholder="Ví dụ: 36"
                            class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
                 </div>
             </div>
             <div>
-                <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Lịch học</label>
-                <textarea rows="3" placeholder="Ví dụ: Thứ 3 - 5 (18:00 - 20:00) · Phòng B205"
+                <label for="class-description" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Mô tả ngắn</label>
+                <textarea id="class-description" name="moTaNgan" rows="3"
+                          placeholder="Nhập mô tả nổi bật để hiển thị trong danh sách."
                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30"></textarea>
             </div>
             <div>
-                <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ghi chú nội bộ</label>
-                <textarea rows="3" placeholder="Nhập thông tin cần nhắc nhở giảng viên, học viên..."
+                <label for="class-content-editor" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Nội dung chi tiết</label>
+                <textarea id="class-content-editor" name="noiDungChiTiet" rows="6"
+                          placeholder="Soạn nội dung chi tiết cho lớp, hỗ trợ định dạng với CKEditor."
                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30"></textarea>
             </div>
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <label class="inline-flex items-center gap-3 text-xs text-slate-500">
-                    <input type="checkbox" class="h-4 w-4 rounded border-blue-100 text-primary focus:ring-primary/30">
-                    Tự động đồng bộ với danh sách đăng ký liên quan
-                </label>
+                <p class="text-xs text-slate-500">
+                    Các thay đổi sẽ hiển thị ngay trên bảng danh sách lớp ôn.
+                </p>
                 <div class="flex items-center gap-3">
                     <button data-modal-close="class-modal"
                             type="button"
                             class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
                         Huỷ
                     </button>
-                    <button type="submit"
+                    <button type="submit" data-submit-label
                             class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
                         Lưu thay đổi
                     </button>
@@ -500,6 +562,113 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const body = document.body;
+        const modal = document.getElementById('class-modal');
+        const form = document.getElementById('class-form');
+        const actionInput = form.querySelector('input[name="action"]');
+        const idInput = form.querySelector('input[name="id"]');
+        const modalTitle = modal.querySelector('[data-modal-title]');
+        const submitLabel = modal.querySelector('[data-submit-label]');
+        const editButtons = document.querySelectorAll('.js-edit-class');
+        const closeButtons = modal.querySelectorAll('[data-modal-close]');
+        let editorInstance = null;
+
+        const toggleModal = (show) => {
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                body.classList.add('overflow-hidden');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                body.classList.remove('overflow-hidden');
+            }
+        };
+
+        const resetForm = () => {
+            form.reset();
+            idInput.value = '';
+            if (editorInstance) {
+                editorInstance.setData('');
+            }
+        };
+
+        const setFormMode = (mode, data = {}) => {
+            resetForm();
+            if (mode === 'create') {
+                modalTitle.textContent = 'Tạo lớp ôn mới';
+                submitLabel.textContent = 'Tạo lớp';
+                actionInput.value = 'create';
+            } else {
+                modalTitle.textContent = 'Cập nhật lớp ôn';
+                submitLabel.textContent = 'Lưu thay đổi';
+                actionInput.value = 'update';
+                idInput.value = data.id || '';
+                form.querySelector('[name="tieuDe"]').value = data.tieuDe || '';
+                form.querySelector('[name="moTaNgan"]').value = data.moTaNgan || '';
+                form.querySelector('[name="hinhThuc"]').value = data.hinhThuc || '';
+                form.querySelector('[name="nhipDo"]').value = data.nhipDo || '';
+                form.querySelector('[name="ngayKhaiGiang"]').value = data.ngayKhaiGiang || '';
+                form.querySelector('[name="ngayHetHanDangKy"]').value = data.ngayHetHan || '';
+                form.querySelector('[name="soBuoi"]').value = data.soBuoi || '';
+                form.querySelector('[name="gioMoiBuoi"]').value = data.gioMoiBuoi || '';
+                form.querySelector('[name="hocPhi"]').value = data.hocPhi || '';
+                form.querySelector('[name="siSoToiDa"]').value = data.siSo || '';
+                form.querySelector('[name="tinhTrang"]').value = data.tinhTrang || '';
+                if (editorInstance) {
+                    editorInstance.setData(data.noiDungChiTiet || '');
+                } else if (window.CKEDITOR && CKEDITOR.instances['class-content-editor']) {
+                    CKEDITOR.instances['class-content-editor'].setData(data.noiDungChiTiet || '');
+                } else {
+                    form.querySelector('[name="noiDungChiTiet"]').value = data.noiDungChiTiet || '';
+                }
+            }
+        };
+
+        editButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const { id, tieuDe, moTaNgan, hinhThuc, nhipDo, ngayKhaiGiang, ngayHetHan, soBuoi, gioMoiBuoi, hocPhi, siSo, tinhTrang } = btn.dataset;
+                const noiDungChiTiet = btn.dataset.noiDung || '';
+                setFormMode('update', {
+                    id,
+                    tieuDe,
+                    moTaNgan,
+                    hinhThuc,
+                    nhipDo,
+                    ngayKhaiGiang,
+                    ngayHetHan,
+                    soBuoi,
+                    gioMoiBuoi,
+                    hocPhi,
+                    siSo,
+                    tinhTrang,
+                    noiDungChiTiet
+                });
+                toggleModal(true);
+            });
+        });
+
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => toggleModal(false));
+        });
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                toggleModal(false);
+            }
+        });
+
+        editorInstance = CKEDITOR.replace('class-content-editor', {
+            height: 300,
+            filebrowserUploadUrl: '<c:url value="/admin/upload-ckeditor" />',
+            filebrowserUploadMethod: 'form'
+        });
+    });
+</script>
 
 <%@ include file="layout/admin-scripts.jspf" %>
 </body>
