@@ -1,14 +1,34 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NE3 · Giao tiếp nâng cao | VSTEP</title>
+    <title><c:out value="${not empty lop ? lop.tieuDe : 'Chi tiết lớp ôn'}" /> | VSTEP</title>
     <%@ include file="../layout/public-theme.jspf" %>
 </head>
 <body class="text-gray-800">
 <%@ include file="../layout/public-header.jspf" %>
+
+<c:if test="${notFound}">
+    <main>
+        <section class="max-w-6xl mx-auto px-6 py-24 text-center">
+            <h1 class="text-4xl font-bold text-slate-900 mb-4">Không tìm thấy lớp ôn</h1>
+            <p class="text-slate-500 mb-6">Lớp ôn bạn đang tìm không tồn tại hoặc đã bị xóa.</p>
+            <a href="${pageContext.request.contextPath}/lop" class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                Quay lại danh sách lớp
+            </a>
+        </section>
+    </main>
+    <%@ include file="../layout/public-footer.jspf" %>
+</body>
+</html>
+</c:if>
+
+<c:if test="${empty notFound and not empty lop}">
 
 <main>
     <section class="relative overflow-hidden bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white">
@@ -17,52 +37,80 @@
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
                 <div class="space-y-5 max-w-3xl">
                     <div class="flex flex-wrap items-center gap-3 text-xs">
-                        <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 font-semibold uppercase tracking-[0.3em]">
-                            Lớp nâng cao
-                        </span>
-                        <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold">
-                            Khai giảng 12/11/2025
-                        </span>
-                        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-400/20 px-3 py-1 font-semibold text-emerald-50 border border-emerald-200/40">
-                            Còn 4 chỗ
-                        </span>
+                        <c:if test="${not empty lop.nhipDo}">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 font-semibold uppercase tracking-[0.3em]">
+                                <c:out value="${lop.nhipDo}" />
+                            </span>
+                        </c:if>
+                        <c:if test="${not empty lop.ngayKhaiGiang}">
+                            <fmt:formatDate value="${lop.ngayKhaiGiang}" pattern="dd/MM/yyyy" var="ngayKhaiGiangDisplay" />
+                            <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold">
+                                Khai giảng <c:out value="${ngayKhaiGiangDisplay}" />
+                            </span>
+                        </c:if>
+                        <c:if test="${not empty lop.tinhTrang}">
+                            <c:set var="statusLower" value="${fn:toLowerCase(lop.tinhTrang)}" />
+                            <c:choose>
+                                <c:when test="${fn:contains(statusLower, 'dang mo') or fn:contains(statusLower, 'dangmo')}">
+                                    <span class="inline-flex items-center gap-2 rounded-full bg-emerald-400/20 px-3 py-1 font-semibold text-emerald-50 border border-emerald-200/40">
+                                        Đang mở đăng ký
+                                    </span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold">
+                                        <c:out value="${lop.tinhTrang}" />
+                                    </span>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
                     </div>
                     <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">
-                        NE3 · Giao tiếp nâng cao
+                        <c:out value="${lop.tieuDe}" />
                     </h1>
-                    <p class="text-sm sm:text-base text-white/80 leading-relaxed">
-                        Luyện giao tiếp phản xạ theo chuẩn đề thi VSTEP 2025 cùng giảng viên đầu ngành. Lộ trình 8 tuần, mỗi học viên được kèm sát và nhận phản hồi cá nhân hóa sau từng buổi học.
-                    </p>
                     <div class="flex flex-wrap gap-3 text-xs text-blue-50">
-                        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
-                            Thứ 3 · 5 · 18:00 - 20:00
-                        </span>
-                        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
-                            20 buổi · 40 giờ học
-                        </span>
-                        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
-                            Cơ sở Quận 10 · Studio Live
-                        </span>
+                        <c:if test="${not empty lop.thoiGianHoc}">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
+                                <c:out value="${lop.thoiGianHoc}" />
+                                <c:if test="${not empty lop.gioMoiBuoi}">
+                                    <fmt:formatDate value="${lop.gioMoiBuoi}" pattern="HH:mm" var="gioMoiBuoiDisplay" />
+                                    · <c:out value="${gioMoiBuoiDisplay}" />
+                                </c:if>
+                            </span>
+                        </c:if>
+                        <c:if test="${lop.soBuoi > 0}">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
+                                <c:out value="${lop.soBuoi}" /> buổi
+                            </span>
+                        </c:if>
+                        <c:if test="${not empty lop.hinhThuc}">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
+                                <c:out value="${lop.hinhThuc}" />
+                            </span>
+                        </c:if>
                     </div>
                 </div>
                 <div class="glass rounded-3xl border border-white/30 px-7 py-8 shadow-soft text-slate-700 bg-white/90 w-full max-w-xs">
                     <p class="text-sm font-semibold text-slate-900">Học phí trọn khóa</p>
-                    <p class="mt-2 text-3xl font-bold text-primary">3.200.000đ</p>
+                    <p class="mt-2 text-3xl font-bold text-primary">
+                        <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
+                    </p>
                     <div class="mt-4 space-y-3 text-xs text-slate-500">
+                        <c:if test="${not empty lop.maLop}">
+                            <div class="flex items-center justify-between">
+                                <span>Mã lớp</span>
+                                <span class="font-semibold text-slate-800"><c:out value="${lop.maLop}" /></span>
+                            </div>
+                        </c:if>
                         <div class="flex items-center justify-between">
-                            <span>Mã lớp</span>
-                            <span class="font-semibold text-slate-800">LOP-NE3-2025</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span>Sĩ số hiện tại</span>
-                            <span class="font-semibold text-slate-800">32 / 36</span>
+                            <span>Sĩ số tối đa</span>
+                            <span class="font-semibold text-slate-800"><c:out value="${lop.siSoToiDa}" /> học viên</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span>Hỗ trợ</span>
                             <span class="font-semibold text-slate-800">Tư vấn 24/7</span>
                         </div>
                     </div>
-                    <a href="../user/user-register-class.jsp"
+                    <a href="${pageContext.request.contextPath}/dang-ky-lop?lopId=${lop.id}"
                        class="mt-5 block text-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
                         Đăng ký ngay
                     </a>
@@ -82,21 +130,10 @@
                         <header class="space-y-3">
                             <h2 class="text-xl font-semibold text-slate-900">Tổng quan khóa học</h2>
                             <p class="text-sm text-slate-500 leading-relaxed">
-                                Khóa học tập trung vào kỹ năng Speaking & Listening nâng cao với phương pháp phản xạ nhanh. Học viên được chia nhóm nhỏ, thực hành với tình huống sát đề thi và nhận feedback chi tiết sau từng buổi học.
+                                <c:out value="${not empty lop.moTaNgan ? lop.moTaNgan : 'Lớp ôn luyện VSTEP chất lượng cao với lộ trình rõ ràng và giảng viên giàu kinh nghiệm.'}" />
                             </p>
                         </header>
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <div class="rounded-2xl border border-blue-100 bg-primary.pale/60 px-5 py-4 text-sm text-slate-600 space-y-2">
-                                <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Giảng viên phụ trách</p>
-                                <p class="font-semibold text-slate-800">ThS. Lê Thảo</p>
-                                <p class="text-xs text-slate-500">IELTS 8.5 Speaking · 10+ năm đào tạo VSTEP</p>
-                            </div>
-                            <div class="rounded-2xl border border-blue-100 bg-white px-5 py-4 text-sm text-slate-600 space-y-2 shadow-sm">
-                                <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Cam kết đầu ra</p>
-                                <p class="font-semibold text-slate-800">Đạt tối thiểu B2</p>
-                                <p class="text-xs text-slate-500">Học lại miễn phí 50% thời lượng nếu chưa đạt</p>
-                            </div>
-                        </div>
+
                         <div class="rounded-2xl border border-dashed border-blue-200 px-5 py-4 text-sm text-slate-600 space-y-2">
                             <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Điểm nổi bật</p>
                             <ul class="space-y-2 text-xs">
@@ -116,79 +153,43 @@
                         </div>
                     </article>
 
-                    <article class="glass rounded-3xl border border-blue-100 px-6 sm:px-10 py-8 shadow-soft space-y-6">
-                        <header>
-                            <h2 class="text-xl font-semibold text-slate-900">Lịch học chi tiết</h2>
-                            <p class="mt-2 text-sm text-slate-500 leading-relaxed">
-                                Lịch học linh hoạt kết hợp lý thuyết, thực hành và đánh giá tiến bộ.
-                            </p>
-                        </header>
-                        <div class="overflow-hidden rounded-2xl border border-blue-100">
-                            <table class="w-full text-sm text-slate-600">
-                                <thead class="bg-primary.pale/60 text-xs uppercase tracking-widest text-slate-500">
-                                <tr>
-                                    <th class="px-4 py-3 text-left font-semibold">Tuần</th>
-                                    <th class="px-4 py-3 text-left font-semibold">Chủ đề</th>
-                                    <th class="px-4 py-3 text-left font-semibold">Kết quả mong đợi</th>
-                                </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-blue-50">
-                                <tr class="hover:bg-blue-50/50 transition">
-                                    <td class="px-4 py-3 font-semibold text-slate-800">1 - 2</td>
-                                    <td class="px-4 py-3">Nền tảng phát âm, nghe chủ động</td>
-                                    <td class="px-4 py-3 text-xs text-slate-500">Sửa lỗi phát âm cơ bản, tăng tốc độ phản xạ.</td>
-                                </tr>
-                                <tr class="hover:bg-blue-50/50 transition">
-                                    <td class="px-4 py-3 font-semibold text-slate-800">3 - 4</td>
-                                    <td class="px-4 py-3">Speaking Part 2 · Story-telling</td>
-                                    <td class="px-4 py-3 text-xs text-slate-500">Xây dựng ý nhanh, diễn đạt 2 phút tự tin.</td>
-                                </tr>
-                                <tr class="hover:bg-blue-50/50 transition">
-                                    <td class="px-4 py-3 font-semibold text-slate-800">5 - 6</td>
-                                    <td class="px-4 py-3">Speaking Part 3 · Debate & Opinion</td>
-                                    <td class_n="px-4 py-3 text-xs text-slate-500">Phát triển lập luận, sử dụng cấu trúc nâng cao.</td>
-                                </tr>
-                                <tr class="hover:bg-blue-50/50 transition">
-                                    <td class="px-4 py-3 font-semibold text-slate-800">7 - 8</td>
-                                    <td class="px-4 py-3">Mock test · Feedback cá nhân</td>
-                                    <td class="px-4 py-3 text-xs text-slate-500">Hoàn thiện điểm yếu, chốt chiến thuật thi.</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="rounded-2xl border border-blue-100 bg-white px-5 py-4 text-xs text-slate-500 space-y-2 shadow-sm">
-                            <p class="font-semibold text-slate-700">Chính sách linh hoạt</p>
-                            <p>• Học viên nghỉ buổi được hỗ trợ học bù online hoặc gửi bài tập + feedback riêng.</p>
-                            <p>• Miễn phí chuyển lớp khi báo trước 5 ngày và còn chỗ trống.</p>
-                        </div>
-                    </article>
+                    <c:if test="${not empty lop.noiDungChiTiet}">
+                        <article class="glass rounded-3xl border border-blue-100 px-6 sm:px-10 py-8 shadow-soft space-y-6">
+                            <header>
+                                <h2 class="text-xl font-semibold text-slate-900">Nội dung chi tiết</h2>
+                            </header>
+                            <div class="prose prose-slate max-w-none text-sm text-slate-600 leading-relaxed">
+                                <c:out value="${lop.noiDungChiTiet}" escapeXml="false" />
+                            </div>
+                        </article>
 
-                    <article class="glass rounded-3xl border border-blue-100 px-6 sm:px-10 py-8 shadow-soft space-y-6">
-                        <header>
-                            <h2 class="text-xl font-semibold text-slate-900">Tài nguyên & hỗ trợ</h2>
-                            <p class="mt-2 text-sm text-slate-500 leading-relaxed">
-                                Toàn bộ tài nguyên được update hàng tuần theo đề thi mới nhất.
-                            </p>
-                        </header>
-                        <div class="grid gap-4 md:grid-cols-2">
-                            <div class="rounded-2xl border border-blue-100 bg-primary.pale/50 px-4 py-4 text-sm text-slate-600 space-y-2">
-                                <p class="font-semibold text-slate-800">Tài liệu độc quyền</p>
-                                <p class="text-xs text-slate-500">12 bộ đề chuẩn hóa, audio luyện nghe, flashcard online.</p>
+                        <article class="glass rounded-3xl border border-blue-100 px-6 sm:px-10 py-8 shadow-soft space-y-6">
+                            <header>
+                                <h2 class="text-xl font-semibold text-slate-900">Tài nguyên & hỗ trợ</h2>
+                                <p class="mt-2 text-sm text-slate-500 leading-relaxed">
+                                    Toàn bộ tài nguyên được update hàng tuần theo đề thi mới nhất.
+                                </p>
+                            </header>
+                            <div class="grid gap-4 md:grid-cols-2">
+                                <div class="rounded-2xl border border-blue-100 bg-primary.pale/50 px-4 py-4 text-sm text-slate-600 space-y-2">
+                                    <p class="font-semibold text-slate-800">Tài liệu độc quyền</p>
+                                    <p class="text-xs text-slate-500">12 bộ đề chuẩn hóa, audio luyện nghe, flashcard online.</p>
+                                </div>
+                                <div class="rounded-2xl border border-blue-100 bg-white px-4 py-4 text-sm text-slate-600 space-y-2 shadow-sm">
+                                    <p class="font-semibold text-slate-800">Mentoring cá nhân</p>
+                                    <p class="text-xs text-slate-500">1 buổi 1:1 mỗi 2 tuần để rà tiến độ và chỉnh lỗi.</p>
+                                </div>
+                                <div class="rounded-2xl border border-blue-100 bg-white px-4 py-4 text-sm text-slate-600 space-y-2 shadow-sm">
+                                    <p class="font-semibold text-slate-800">Community học viên</p>
+                                    <p class="text-xs text-slate-500">Group Zalo riêng, luyện speaking hàng tối với trợ giảng.</p>
+                                </div>
+                                <div class="rounded-2xl border border-blue-100 bg-primary.pale/60 px-4 py-4 text-sm text-slate-600 space-y-2">
+                                    <p class="font-semibold text-slate-800">Hỗ trợ đăng ký thi</p>
+                                    <p class="text-xs text-slate-500">Được ưu tiên chọn ca thi nội bộ, giảm 5% phí đăng ký.</p>
+                                </div>
                             </div>
-                            <div class="rounded-2xl border border-blue-100 bg-white px-4 py-4 text-sm text-slate-600 space-y-2 shadow-sm">
-                                <p class="font-semibold text-slate-800">Mentoring cá nhân</p>
-                                <p class="text-xs text-slate-500">1 buổi 1:1 mỗi 2 tuần để rà tiến độ và chỉnh lỗi.</p>
-                            </div>
-                            <div class="rounded-2xl border border-blue-100 bg-white px-4 py-4 text-sm text-slate-600 space-y-2 shadow-sm">
-                                <p class="font-semibold text-slate-800">Community học viên</p>
-                                <p class="text-xs text-slate-500">Group Zalo riêng, luyện speaking hàng tối với trợ giảng.</p>
-                            </div>
-                            <div class="rounded-2xl border border-blue-100 bg-primary.pale/60 px-4 py-4 text-sm text-slate-600 space-y-2">
-                                <p class="font-semibold text-slate-800">Hỗ trợ đăng ký thi</p>
-                                <p class="text-xs text-slate-500">Được ưu tiên chọn ca thi nội bộ, giảm 5% phí đăng ký.</p>
-                            </div>
-                        </div>
-                    </article>
+                        </article>
+                    </c:if>
 
                     <article class="glass rounded-3xl border border-blue-100 px-6 sm:px-10 py-8 shadow-soft space-y-6">
                         <header>
@@ -227,48 +228,38 @@
                 </div>
 
                 <aside class="space-y-6">
-                    <div class="glass rounded-3xl border border-blue-100 px-6 py-6 shadow-soft bg-white">
-                        <h3 class="text-sm font-semibold uppercase tracking-widest text-slate-500">Hồ sơ giảng viên</h3>
-                        <div class="mt-4 flex items-center gap-4">
-                            <img src="https://i.pravatar.cc/120?img=57" alt="Giảng viên" class="h-14 w-14 rounded-full border border-blue-100">
-                            <div>
-                                <p class="text-sm font-semibold text-slate-800">ThS. Lê Thảo</p>
-                                <p class="text-xs text-slate-500">IELTS Speaking 8.5 · Giảng viên ĐH Sư phạm</p>
-                            </div>
-                        </div>
-                        <p class="mt-4 text-xs text-slate-500 leading-relaxed">
-                            10+ năm huấn luyện VSTEP · Coach cho đội tuyển học sinh giỏi tiếng Anh TP.HCM · Đã đồng hành cùng 300+ học viên đạt B2 - C1.
-                        </p>
-                        <div class="mt-4 space-y-2 text-xs text-slate-500">
-                            <p class="font-semibold text-slate-700">Thành tích nổi bật</p>
-                            <ul class="space-y-1">
-                                <li>• Diễn giả khách mời VSTEP Summit 2024</li>
-                                <li>• Tác giả ebook “Chiến thuật Speaking VSTEP”</li>
-                            </ul>
-                        </div>
-                    </div>
 
                     <div class="glass rounded-3xl border border-blue-100 px-6 py-6 shadow-soft bg-white space-y-4">
                         <h3 class="text-sm font-semibold uppercase tracking-widest text-slate-500">Thông tin nhanh</h3>
                         <div class="space-y-3 text-sm text-slate-600">
-                            <div class="flex items-center justify-between rounded-2xl bg-primary.pale/60 px-4 py-3">
-                                <span class="text-xs text-slate-500 uppercase tracking-widest">Hình thức</span>
-                                <span class="font-semibold text-slate-800">Trực tiếp</span>
-                            </div>
-                            <div class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 border border-blue-100">
-                                <span class="text-xs text-slate-500 uppercase tracking-widest">Số buổi</span>
-                                <span class="font-semibold text-slate-800">20 buổi</span>
-                            </div>
+                            <c:if test="${not empty lop.hinhThuc}">
+                                <div class="flex items-center justify-between rounded-2xl bg-primary.pale/60 px-4 py-3">
+                                    <span class="text-xs text-slate-500 uppercase tracking-widest">Hình thức</span>
+                                    <span class="font-semibold text-slate-800"><c:out value="${lop.hinhThuc}" /></span>
+                                </div>
+                            </c:if>
+                            <c:if test="${lop.soBuoi > 0}">
+                                <div class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 border border-blue-100">
+                                    <span class="text-xs text-slate-500 uppercase tracking-widest">Số buổi</span>
+                                    <span class="font-semibold text-slate-800"><c:out value="${lop.soBuoi}" /> buổi</span>
+                                </div>
+                            </c:if>
                             <div class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 border border-blue-100">
                                 <span class="text-xs text-slate-500 uppercase tracking-widest">Sĩ số tối đa</span>
-                                <span class="font-semibold text-slate-800">36 học viên</span>
+                                <span class="font-semibold text-slate-800"><c:out value="${lop.siSoToiDa}" /> học viên</span>
                             </div>
+                            <c:if test="${not empty lop.nhipDo}">
+                                <div class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 border border-blue-100">
+                                    <span class="text-xs text-slate-500 uppercase tracking-widest">Nhịp độ</span>
+                                    <span class="font-semibold text-slate-800"><c:out value="${lop.nhipDo}" /></span>
+                                </div>
+                            </c:if>
                             <div class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 border border-blue-100">
                                 <span class="text-xs text-slate-500 uppercase tracking-widest">Ưu đãi</span>
                                 <span class="font-semibold text-primary">Giảm 10% cho học viên cũ</span>
                             </div>
                         </div>
-                        <a href="<%= request.getContextPath() %>/lop"
+                        <a href="${pageContext.request.contextPath}/lop"
                            class="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition">
                             Xem thêm lớp khác
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
@@ -298,6 +289,7 @@
 </main>
 
 <%@ include file="../layout/public-footer.jspf" %>
+</c:if>
 </body>
 </html>
 

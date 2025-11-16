@@ -49,4 +49,14 @@ public class NguoiDungServiceImpl implements NguoiDungService {
         }
         return null;
     }
+
+    @Override
+    public List<NguoiDung> findByVaiTro(String vaiTro) {
+        return repository.findByVaiTro(vaiTro);
+    }
+
+    @Override
+    public NguoiDung findByActivationToken(String token) {
+        return repository.findByActivationToken(token);
+    }
 }

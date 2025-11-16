@@ -12,8 +12,8 @@ public class NguoiDungRepositoryImpl implements NguoiDungRepository {
 
     @Override
     public boolean create(NguoiDung nguoiDung) {
-        String sql = "INSERT INTO nguoi_dung (ho_ten, email, so_dien_thoai, don_vi, mat_khau, vai_tro, kich_hoat, ngay_tao) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        String sql = "INSERT INTO nguoi_dung (ho_ten, email, so_dien_thoai, don_vi, mat_khau, vai_tro, kich_hoat, activation_token, ngay_tao) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
         try (Connection conn = DataSourceUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nguoiDung.getHoTen());
@@ -23,6 +23,7 @@ public class NguoiDungRepositoryImpl implements NguoiDungRepository {
             ps.setString(5, nguoiDung.getMatKhau());
             ps.setString(6, nguoiDung.getVaiTro());
             ps.setBoolean(7, nguoiDung.isKichHoat());
+            ps.setString(8, nguoiDung.getActivationToken());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -45,7 +46,7 @@ public class NguoiDungRepositoryImpl implements NguoiDungRepository {
 
     @Override
     public boolean update(NguoiDung nguoiDung) {
-        String sql = "UPDATE nguoi_dung SET ho_ten=?, email=?, so_dien_thoai=?, don_vi=?, mat_khau=?, vai_tro=?, kich_hoat=? WHERE id=?";
+        String sql = "UPDATE nguoi_dung SET ho_ten=?, email=?, so_dien_thoai=?, don_vi=?, mat_khau=?, vai_tro=?, kich_hoat=?, activation_token=? WHERE id=?";
         try (Connection conn = DataSourceUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nguoiDung.getHoTen());
@@ -55,7 +56,8 @@ public class NguoiDungRepositoryImpl implements NguoiDungRepository {
             ps.setString(5, nguoiDung.getMatKhau());
             ps.setString(6, nguoiDung.getVaiTro());
             ps.setBoolean(7, nguoiDung.isKichHoat());
-            ps.setLong(8, nguoiDung.getId());
+            ps.setString(8, nguoiDung.getActivationToken());
+            ps.setLong(9, nguoiDung.getId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -95,6 +97,23 @@ public class NguoiDungRepositoryImpl implements NguoiDungRepository {
         return list;
     }
 
+    @Override
+    public List<NguoiDung> findByVaiTro(String vaiTro) {
+        List<NguoiDung> list = new ArrayList<>();
+        String sql = "SELECT * FROM nguoi_dung WHERE vai_tro = ? AND kich_hoat = true";
+        try (Connection conn = DataSourceUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, vaiTro);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToNguoiDung(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // Helper function chuyển ResultSet → NguoiDung
     private NguoiDung mapResultSetToNguoiDung(ResultSet rs) throws SQLException {
         NguoiDung nd = new NguoiDung();
@@ -106,7 +125,25 @@ public class NguoiDungRepositoryImpl implements NguoiDungRepository {
         nd.setMatKhau(rs.getString("mat_khau"));
         nd.setVaiTro(rs.getString("vai_tro"));
         nd.setKichHoat(rs.getBoolean("kich_hoat"));
+        nd.setActivationToken(rs.getString("activation_token"));
         nd.setNgayTao(rs.getTimestamp("ngay_tao"));
         return nd;
+    }
+    
+    // Tìm kiếm người dùng theo activation token
+    @Override
+    public NguoiDung findByActivationToken(String token) {
+        String sql = "SELECT * FROM nguoi_dung WHERE activation_token = ?";
+        try (Connection conn = DataSourceUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, token);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToNguoiDung(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

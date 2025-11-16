@@ -1,12 +1,18 @@
 package com.vstep.controller.Filter;
 
+import java.io.IOException;
+
 import com.vstep.model.NguoiDung;
-import jakarta.servlet.*;
+
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
 
 @WebFilter("/*") // Áp dụng cho tất cả URL
 public class AuthFilter implements Filter {
@@ -22,6 +28,22 @@ public class AuthFilter implements Filter {
 
         // Các trang công khai
         String[] publicPages = {"/", "/dang-nhap", "/dang-ky", "/lop", "/ca", "/css/", "/js/", "/images/"};
+        
+        // Các trang cần đăng nhập nhưng không cần admin
+        if (path.startsWith("/dang-ky-lop") || path.startsWith("/user/register-class") || 
+            path.startsWith("/lop-da-dang-ky") || path.startsWith("/ca-da-dang-ky")) {
+            if (session == null || session.getAttribute("userLogin") == null) {
+                String redirectUrl = req.getRequestURI();
+                if (req.getQueryString() != null) {
+                    redirectUrl += "?" + req.getQueryString();
+                }
+                res.sendRedirect(req.getContextPath() + "/dang-nhap?redirect=" + 
+                    java.net.URLEncoder.encode(redirectUrl, "UTF-8"));
+                return;
+            }
+            chain.doFilter(request, response);
+            return;
+        }
         for(String p : publicPages){
             if(path.startsWith(p)){
                 // Nếu đã login và vào login page → redirect theo vai trò

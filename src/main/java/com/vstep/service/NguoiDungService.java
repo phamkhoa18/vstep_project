@@ -11,4 +11,6 @@ public interface NguoiDungService {
     NguoiDung findById(long id);
     boolean update(NguoiDung entity);
     boolean deleteById(long id);
+    List<NguoiDung> findByVaiTro(String vaiTro);
+    NguoiDung findByActivationToken(String token);
 }

@@ -2,6 +2,8 @@ package com.vstep.controller.admin;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.sql.Time;
+import java.util.Random;
 
 import com.vstep.model.LopOn;
 import com.vstep.service.LopOnService;
@@ -88,18 +90,29 @@ public class AdminLopOnServlet extends HttpServlet {
         LopOn lopOn = new LopOn();
         if (includeId) {
             lopOn.setId(parseLong(req.getParameter("id")));
+            lopOn.setMaLop(trimOrNull(req.getParameter("maLop")));
+        } else {
+            lopOn.setMaLop(generateMaLop());
         }
         lopOn.setTieuDe(trimOrNull(req.getParameter("tieuDe")));
+        String rawSlug = trimOrNull(req.getParameter("slug"));
+        if (includeId) {
+            lopOn.setSlug(rawSlug);
+        } else {
+            lopOn.setSlug(addRandomSuffixToSlug(rawSlug));
+        }
         lopOn.setMoTaNgan(trimOrNull(req.getParameter("moTaNgan")));
         lopOn.setHinhThuc(trimOrNull(req.getParameter("hinhThuc")));
         lopOn.setNhipDo(trimOrNull(req.getParameter("nhipDo")));
         lopOn.setNgayKhaiGiang(parseSqlDate(req.getParameter("ngayKhaiGiang")));
-        lopOn.setNgayHetHanDangKy(parseSqlDate(req.getParameter("ngayHetHanDangKy")));
+        lopOn.setNgayKetThuc(parseSqlDate(req.getParameter("ngayKetThuc")));
         lopOn.setSoBuoi(parseInt(req.getParameter("soBuoi")));
-        lopOn.setGioMoiBuoi(parseDouble(req.getParameter("gioMoiBuoi")));
+        lopOn.setGioMoiBuoi((parseSqlTime(req.getParameter("gioMoiBuoi"))));
         lopOn.setHocPhi(parseLong(req.getParameter("hocPhi")));
         lopOn.setSiSoToiDa(parseInt(req.getParameter("siSoToiDa")));
         lopOn.setTinhTrang(trimOrNull(req.getParameter("tinhTrang")));
+        lopOn.setThoiGianHoc(trimOrNull(req.getParameter("thoiGianHoc")));
+
         lopOn.setNoiDungChiTiet(req.getParameter("noiDungChiTiet"));
         return lopOn;
     }
@@ -111,6 +124,31 @@ public class AdminLopOnServlet extends HttpServlet {
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
     }
+
+    private static final Random RANDOM = new Random();
+
+    /**
+     * Sinh mã lớp duy nhất theo dạng "lop_123456789"
+     */
+    public static String generateMaLop() {
+        long timestamp = System.currentTimeMillis(); // thời gian hiện tại
+        int randomSuffix = 100 + RANDOM.nextInt(900); // 3 chữ số ngẫu nhiên từ 100-999
+        return "lop_" + timestamp + randomSuffix;
+    }
+
+    public String addRandomSuffixToSlug(String slug) {
+        if (slug == null || slug.trim().isEmpty()) {
+            return null;
+        }
+
+        slug = slug.trim().toLowerCase();
+
+        // Tạo số ngẫu nhiên 4 chữ
+        int randomNum = (int)(Math.random() * 9000) + 1000; // từ 1000 đến 9999
+
+        return slug + "-" + randomNum;
+    }
+
 
     private Date parseSqlDate(String value) {
         if (value == null || value.isBlank()) {
@@ -145,14 +183,21 @@ public class AdminLopOnServlet extends HttpServlet {
         }
     }
 
-    private double parseDouble(String value) {
+    private Time parseSqlTime(String value) {
         if (value == null || value.isBlank()) {
-            return 0d;
+            return null;
         }
         try {
-            return Double.parseDouble(value);
+            // value phải dạng "HH:mm" hoặc "HH:mm:ss"
+            if (!value.contains(":")) return null; // kiểm tra định dạng
+            String[] parts = value.split(":");
+            int h = Integer.parseInt(parts[0]);
+            int m = Integer.parseInt(parts[1]);
+            int s = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+            String timeString = String.format("%02d:%02d:%02d", h, m, s);
+            return Time.valueOf(timeString);
         } catch (NumberFormatException ex) {
-            return 0d;
+            return null;
         }
     }
 }

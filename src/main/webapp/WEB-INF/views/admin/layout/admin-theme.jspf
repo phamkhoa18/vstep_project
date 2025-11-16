@@ -51,18 +51,6 @@ body.admin-shell {
         padding-right: 2rem;
     }
 }
-@media (min-width: 1024px) {
-    .admin-main-wrapper {
-        padding-left: 2.5rem;
-        padding-right: 2.5rem;
-    }
-}
-@media (min-width: 1280px) {
-    .admin-main-wrapper {
-        padding-left: 3rem;
-        padding-right: 3rem;
-    }
-}
 .glass-panel {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(18px);

@@ -30,6 +30,11 @@ public class LopOnServiceImpl implements LopOnService {
     }
 
     @Override
+    public LopOn findBySlug(String slug) {
+        return repository.findBySlug(slug);
+    }
+
+    @Override
     public boolean update(LopOn lopOn) {
         return repository.update(lopOn);
     }

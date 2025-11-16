@@ -95,7 +95,48 @@
                                 </div>
                             </div>
 
-                            <% if(request.getAttribute("error") != null) { %>
+                            <%
+                                // Xử lý thông báo từ URL parameters
+                                String errorParam = request.getParameter("error");
+                                String successParam = request.getParameter("success");
+                                String messageParam = request.getParameter("message");
+                                
+                                String errorMsg = null;
+                                String successMsg = null;
+                                
+                                if (request.getAttribute("error") != null) {
+                                    errorMsg = (String) request.getAttribute("error");
+                                } else if (errorParam != null) {
+                                    switch(errorParam) {
+                                        case "invalid_token":
+                                            errorMsg = "Link kích hoạt không hợp lệ hoặc đã hết hạn!";
+                                            break;
+                                        case "activation_failed":
+                                            errorMsg = "Kích hoạt tài khoản thất bại. Vui lòng thử lại hoặc liên hệ quản trị viên.";
+                                            break;
+                                        default:
+                                            errorMsg = "Email hoặc mật khẩu không đúng!";
+                                    }
+                                }
+                                
+                                if (request.getAttribute("success") != null) {
+                                    successMsg = (String) request.getAttribute("success");
+                                } else if (successParam != null) {
+                                    if ("activated".equals(successParam)) {
+                                        successMsg = "Tài khoản đã được kích hoạt thành công! Bạn có thể đăng nhập ngay bây giờ.";
+                                    } else if ("already_activated".equals(successParam)) {
+                                        successMsg = "Tài khoản của bạn đã được kích hoạt rồi. Bạn có thể đăng nhập ngay.";
+                                    } else if ("register".equals(successParam)) {
+                                        if ("activation".equals(messageParam)) {
+                                            successMsg = "Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản của bạn.";
+                                        } else {
+                                            successMsg = "Đăng ký thành công! Vui lòng đăng nhập.";
+                                        }
+                                    }
+                                }
+                            %>
+                            
+                            <% if(errorMsg != null) { %>
                             <div class="flex items-start gap-2 rounded-lg my-4 border border-red-300 bg-red-50 px-4 py-3 text-red-700 shadow-sm animate-fade-in">
                                 <!-- Icon lỗi -->
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none"
@@ -103,11 +144,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
-                                <span class="text-sm"><%= request.getAttribute("error") %></span>
+                                <span class="text-sm"><%= errorMsg %></span>
                             </div>
                             <% } %>
 
-                            <% if(request.getAttribute("success") != null) { %>
+                            <% if(successMsg != null) { %>
                             <div class="flex items-start gap-2 rounded-lg my-4 border border-green-300 bg-green-50 px-4 py-3 text-green-700 shadow-sm animate-fade-in">
                                 <!-- Icon thành công -->
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none"
@@ -115,7 +156,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M5 13l4 4L19 7"/>
                                 </svg>
-                                <span class="text-sm"><%= request.getAttribute("success") %></span>
+                                <span class="text-sm"><%= successMsg %></span>
                             </div>
                             <% } %>
 

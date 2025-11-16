@@ -8,6 +8,7 @@ public interface LopOnService {
     boolean create(LopOn lopOn);
     List<LopOn> findAll();
     LopOn findById(long id);
+    LopOn findBySlug(String slug);
     boolean update(LopOn lopOn);
     boolean deleteById(long id);
 }

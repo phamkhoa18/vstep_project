@@ -11,6 +11,7 @@ public class NguoiDung {
     private String matKhau;
     private String vaiTro;
     private boolean kichHoat;
+    private String activationToken;
     private Timestamp ngayTao;
 
     public NguoiDung() {}
@@ -54,4 +55,7 @@ public class NguoiDung {
 
     public Timestamp getNgayTao() { return ngayTao; }
     public void setNgayTao(Timestamp ngayTao) { this.ngayTao = ngayTao; }
+
+    public String getActivationToken() { return activationToken; }
+    public void setActivationToken(String activationToken) { this.activationToken = activationToken; }
 }

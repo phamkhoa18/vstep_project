@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -28,10 +31,10 @@
                     </p>
                     <div class="flex flex-wrap gap-3 text-xs text-blue-100">
                         <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
-                            26 lớp đang mở
+                            <c:out value="${empty dangMoCount ? 0 : dangMoCount}" /> lớp đang mở
                         </span>
                         <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
-                            12 lớp khai giảng trong 14 ngày
+                            <c:out value="${empty onlineCount ? 0 : onlineCount}" /> lớp trực tuyến · <c:out value="${empty offlineCount ? 0 : offlineCount}" /> lớp trực tiếp
                         </span>
                         <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
                             Cam kết hỗ trợ đến khi đạt mục tiêu
@@ -43,15 +46,15 @@
                     <ul class="mt-4 space-y-3 text-xs text-slate-600">
                         <li class="flex items-center justify-between">
                             <span>Lớp trực tiếp</span>
-                            <span class="font-semibold text-slate-900">14</span>
+                            <span class="font-semibold text-slate-900"><c:out value="${empty offlineCount ? 0 : offlineCount}" /></span>
                         </li>
                         <li class="flex items-center justify-between">
                             <span>Lớp trực tuyến</span>
-                            <span class="font-semibold text-slate-900">8</span>
+                            <span class="font-semibold text-slate-900"><c:out value="${empty onlineCount ? 0 : onlineCount}" /></span>
                         </li>
                         <li class="flex items-center justify-between">
-                            <span>Lớp kết hợp</span>
-                            <span class="font-semibold text-slate-900">4</span>
+                            <span>Tổng số lớp</span>
+                            <span class="font-semibold text-slate-900"><c:out value="${empty totalRecords ? 0 : totalRecords}" /></span>
                         </li>
                     </ul>
                 </div>
@@ -71,220 +74,253 @@
                         Có thể dùng đồng thời ba bộ lọc
                     </div>
                 </div>
-                <div class="grid gap-4 md:grid-cols-3">
-                    <div class="md:col-span-1">
-                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Từ khóa</label>
-                        <div class="mt-2 relative">
-                            <div class="absolute inset-y-0 left-4 flex items-center text-slate-300 pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
-                                    <circle cx="11" cy="11" r="7"/>
-                                    <path d="M20 20l-3-3"/>
-                                </svg>
+                <form method="get" action="${pageContext.request.contextPath}/lop" class="space-y-4" id="filter-form">
+                    <input type="hidden" name="page" value="1" />
+                    <c:if test="${not empty pageSize}">
+                        <input type="hidden" name="pageSize" value="${pageSize}" />
+                    </c:if>
+                    <div class="grid gap-4 md:grid-cols-3">
+                        <div class="md:col-span-1">
+                            <label for="filter-keyword" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Từ khóa</label>
+                            <div class="mt-2 relative">
+                                <div class="absolute inset-y-0 left-4 flex items-center text-slate-300 pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                                        <circle cx="11" cy="11" r="7"/>
+                                        <path d="M20 20l-3-3"/>
+                                    </svg>
+                                </div>
+                                <input id="filter-keyword" name="keyword" type="search" 
+                                       value="${not empty classFilterParams ? classFilterParams.keyword : ''}"
+                                       placeholder="Tên lớp, giảng viên, mã lớp..."
+                                       class="w-full rounded-full border border-blue-100 bg-white pl-12 pr-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
                             </div>
-                            <input type="search" placeholder="Tên lớp, giảng viên, mã lớp..."
-                                   class="w-full rounded-full border border-blue-100 bg-white pl-12 pr-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        </div>
+                        <div>
+                            <label for="filter-format" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Hình thức</label>
+                            <select id="filter-format" name="format" class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                <option value="">Tất cả</option>
+                                <c:forEach var="option" items="${formatOptions}">
+                                    <option value="${option}" <c:if test="${not empty classFilterParams and not empty classFilterParams.format and fn:toLowerCase(option) eq fn:toLowerCase(classFilterParams.format)}">selected</c:if>>
+                                        ${option}
+                                    </option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filter-pace" class="text-xs font-semibold uppercase tracking-widest text-slate-500">Nhịp độ</label>
+                            <select id="filter-pace" name="pace" class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                <option value="">Tất cả nhịp độ</option>
+                                <c:forEach var="option" items="${paceOptions}">
+                                    <option value="${option}" <c:if test="${not empty classFilterParams and not empty classFilterParams.pace and fn:toLowerCase(option) eq fn:toLowerCase(classFilterParams.pace)}">selected</c:if>>
+                                        ${option}
+                                    </option>
+                                </c:forEach>
+                            </select>
                         </div>
                     </div>
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Hình thức</label>
-                        <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                            <option>Tất cả</option>
-                            <option>Trực tiếp</option>
-                            <option>Trực tuyến</option>
-                            <option>Kết hợp</option>
-                        </select>
+                    <div class="flex items-center gap-3">
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                            Tìm kiếm
+                        </button>
+                        <a href="${pageContext.request.contextPath}/lop" class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
+                            Đặt lại
+                        </a>
                     </div>
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Cấp độ</label>
-                        <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                            <option>Tất cả cấp độ</option>
-                            <option>Cơ bản</option>
-                            <option>Trung cấp</option>
-                            <option>Nâng cao</option>
-                            <option>Cấp tốc</option>
-                        </select>
+                </form>
+                <c:if test="${not empty classFilterParams and hasActiveFilters}">
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <c:forEach var="chip" items="${classFilterParams.toChips(pageContext.request.contextPath + '/lop')}">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary font-semibold shadow-sm">
+                                <span class="uppercase tracking-widest text-[11px] text-primary/80">${chip.label}</span>
+                                <span class="text-slate-600 text-xs">${chip.value}</span>
+                                <a href="${chip.removeUrl}" class="hover:text-primary/70 transition" aria-label="Xoá bộ lọc ${chip.label}">×</a>
+                            </span>
+                        </c:forEach>
+                        <a href="${pageContext.request.contextPath}/lop" class="text-primary font-semibold hover:text-primary/80 transition">
+                            Xoá tất cả
+                        </a>
                     </div>
-                </div>
-                <div class="flex flex-wrap gap-2 text-xs">
-                    <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary font-semibold shadow-sm">
-                        Đang mở
-                        <button class="hover:text-primary/70" aria-label="Loại bỏ lọc">×</button>
-                    </span>
-                    <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 border border-blue-100 text-slate-500 shadow-sm">
-                        Trực tuyến
-                        <button class="hover:text-primary" aria-label="Loại bỏ lọc">×</button>
-                    </span>
-                    <a href="#" class="text-primary font-semibold hover:text-primary/80 transition">Xoá tất cả</a>
-                </div>
+                </c:if>
             </div>
 
             <div class="space-y-6">
-                <div class="grid gap-6 lg:grid-cols-2">
-                    <article class="group rounded-3xl border border-blue-100 bg-white px-6 sm:px-8 py-7 shadow-soft hover:shadow-xl transition-all">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <h2 class="text-xl font-semibold text-slate-900 group-hover:text-primary transition">
-                                    NE3 · Giao tiếp nâng cao
-                                </h2>
-                                <p class="mt-2 text-sm text-slate-500 leading-relaxed">
-                                    Luyện phản xạ nghe - nói theo đề thi mới, giảng viên ThS. Lê Thảo. 02 buổi mock test miễn phí, feedback cá nhân.
-                                </p>
-                            </div>
-                            <span class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                                Nâng cao
-                            </span>
-                        </div>
-                        <div class="mt-6 grid gap-4 md:grid-cols-2 text-sm text-slate-600">
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Lịch học</p>
-                                <p class="mt-1 font-semibold text-slate-800">Thứ 3 · 5 · 18:00 - 20:00</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Khai giảng</p>
-                                <p class="mt-1 font-semibold text-slate-800">12/11/2025 · Cơ sở Quận 10</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Giảng viên</p>
-                                <p class="mt-1 font-semibold text-slate-800">ThS. Lê Thảo · IELTS 8.5</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Sĩ số</p>
-                                <p class="mt-1 font-semibold text-slate-800">32 / 36 · <span class="text-emerald-500">Còn 4 chỗ</span></p>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <p class="text-2xl font-bold text-primary">3.200.000đ</p>
-                            <div class="flex flex-wrap gap-2">
-                                <a href="<%= request.getContextPath() %>/lop/chi-tiet"
-                                   class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition shadow-sm">
-                                    Xem chi tiết
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
-                                        <path d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </a>
-                                <a href="../user/user-register-class.jsp"
-                                   class="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                                    Đăng ký ngay
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="group rounded-3xl border border-blue-100 bg-white px-6 sm:px-8 py-7 shadow-soft hover:shadow-xl transition-all">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <h2 class="text-xl font-semibold text-slate-900 group-hover:text-primary transition">
-                                    CB1 · Nền tảng VSTEP
-                                </h2>
-                                <p class="mt-2 text-sm text-slate-500 leading-relaxed">
-                                    Ôn luyện tổng hợp 4 kỹ năng cho người mới bắt đầu. Bài tập theo khung B1, hỗ trợ trực tuyến 24/7.
-                                </p>
-                            </div>
-                            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
-                                Cơ bản
-                            </span>
-                        </div>
-                        <div class="mt-6 grid gap-4 md:grid-cols-2 text-sm text-slate-600">
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Lịch học</p>
-                                <p class="mt-1 font-semibold text-slate-800">Thứ 2 · 4 · 6 · 08:00 - 10:00</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Khai giảng</p>
-                                <p class="mt-1 font-semibold text-slate-800">05/12/2025 · Online trên LMS</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Giảng viên</p>
-                                <p class="mt-1 font-semibold text-slate-800">Nguyễn Phi · ThS TESOL</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Sĩ số</p>
-                                <p class="mt-1 font-semibold text-slate-800">40 / 40 · <span class="text-orange-500">Đang chờ</span></p>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <p class="text-2xl font-bold text-primary">2.450.000đ</p>
-                            <div class="flex flex-wrap gap-2">
-                                <a href="<%= request.getContextPath() %>/lop/chi-tiet"
-                                   class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition shadow-sm">
-                                    Xem chi tiết
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
-                                        <path d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </a>
-                                <a href="../user/user-register-class.jsp"
-                                   class="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                                    Đăng ký ngay
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="group rounded-3xl border border-blue-100 bg-white px-6 sm:px-8 py-7 shadow-soft hover:shadow-xl transition-all">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <h2 class="text-xl font-semibold text-slate-900 group-hover:text-primary transition">
-                                    CT2 · Cấp tốc 6 tuần
-                                </h2>
-                                <p class="mt-2 text-sm text-slate-500 leading-relaxed">
-                                    Lộ trình cấp tốc với mentoring 1:1, tập trung luyện đề và chiến thuật làm bài theo từng kỹ năng.
-                                </p>
-                            </div>
-                            <span class="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-500">
-                                Cấp tốc
-                            </span>
-                        </div>
-                        <div class="mt-6 grid gap-4 md:grid-cols-2 text-sm text-slate-600">
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Lịch học</p>
-                                <p class="mt-1 font-semibold text-slate-800">Thứ 7 · CN · 13:00 - 17:00</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Khai giảng</p>
-                                <p class="mt-1 font-semibold text-slate-800">22/11/2025 · Phòng C201</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Giảng viên</p>
-                                <p class="mt-1 font-semibold text-slate-800">Võ An · Chuyên gia cấp tốc</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 uppercase tracking-widest">Sĩ số</p>
-                                <p class="mt-1 font-semibold text-slate-800">28 / 30 · <span class="text-emerald-500">Còn 2 chỗ</span></p>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <p class="text-2xl font-bold text-primary">4.500.000đ</p>
-                            <div class="flex flex-wrap gap-2">
-                                <a href="<%= request.getContextPath() %>/lop/chi-tiet"
-                                   class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition shadow-sm">
-                                    Xem chi tiết
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
-                                        <path d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </a>
-                                <a href="../user/user-register-class.jsp"
-                                   class="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                                    Đăng ký ngay
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <p class="text-xs text-slate-500">Hiển thị 1 - 3 trên 26 lớp</p>
-                    <div class="inline-flex items-center rounded-full border border-blue-100 bg-white shadow-sm">
-                        <button class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-l-full">Trước</button>
-                        <button class="px-3 py-2 text-white bg-primary rounded-full shadow-soft">1</button>
-                        <button class="px-3 py-2 text-slate-400 hover:text-primary transition">2</button>
-                        <button class="px-3 py-2 text-slate-400 hover:text-primary transition">3</button>
-                        <button class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-r-full">Sau</button>
+                <c:set var="currentPage" value="${empty currentPage ? 1 : currentPage}" />
+                <c:set var="totalPages" value="${empty totalPages ? 1 : totalPages}" />
+                <c:set var="pageSize" value="${empty pageSize ? 6 : pageSize}" />
+                <c:set var="totalRecords" value="${empty totalRecords ? 0 : totalRecords}" />
+                <c:set var="startRecord" value="${empty startRecord ? 0 : startRecord}" />
+                <c:set var="endRecord" value="${empty endRecord ? 0 : endRecord}" />
+                
+                <c:if test="${empty lopOnList}">
+                    <div class="rounded-3xl border border-blue-100 bg-white px-6 py-12 text-center">
+                        <p class="text-sm text-slate-500">Không tìm thấy lớp ôn nào phù hợp với bộ lọc của bạn.</p>
+                        <a href="${pageContext.request.contextPath}/lop" class="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                            Xem tất cả lớp
+                        </a>
                     </div>
-                </div>
+                </c:if>
+                
+                <c:if test="${not empty lopOnList}">
+                    <div class="grid gap-6 lg:grid-cols-2">
+                        <c:forEach var="lop" items="${lopOnList}">
+                            <fmt:formatDate value="${lop.ngayKhaiGiang}" pattern="dd/MM/yyyy" var="ngayKhaiGiangDisplay" />
+                            <fmt:formatDate value="${lop.gioMoiBuoi}" pattern="HH:mm" var="gioMoiBuoiDisplay" />
+                            <c:set var="paceLower" value="${fn:toLowerCase(empty lop.nhipDo ? '' : lop.nhipDo)}" />
+                            <c:set var="paceBadgeClass" 
+                                   value="${paceLower eq 'cấp tốc' or paceLower eq 'cap toc' ? 'bg-orange-100 text-orange-500' :
+                                           paceLower eq 'thường' or paceLower eq 'thuong' ? 'bg-primary/10 text-primary' :
+                                           'bg-emerald-100 text-emerald-600'}" />
+                            <c:set var="paceLabel" 
+                                   value="${paceLower eq 'cấp tốc' or paceLower eq 'cap toc' ? 'Cấp tốc' :
+                                           paceLower eq 'thường' or paceLower eq 'thuong' ? 'Thường' :
+                                           (empty lop.nhipDo ? '—' : lop.nhipDo)}" />
+                            
+                            <article class="group rounded-3xl border border-blue-100 bg-white px-6 sm:px-8 py-7 shadow-soft hover:shadow-xl transition-all">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <h2 class="text-xl font-semibold text-slate-900 group-hover:text-primary transition">
+                                            <c:out value="${lop.tieuDe}" />
+                                        </h2>
+                                        <p class="mt-2 text-sm text-slate-500 leading-relaxed">
+                                            <c:out value="${empty lop.moTaNgan ? 'Lớp ôn luyện VSTEP chất lượng cao' : lop.moTaNgan}" />
+                                        </p>
+                                    </div>
+                                    <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${paceBadgeClass}">
+                                        <c:out value="${paceLabel}" />
+                                    </span>
+                                </div>
+                                <div class="mt-6 grid gap-4 md:grid-cols-2 text-sm text-slate-600">
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase tracking-widest">Lịch học</p>
+                                        <p class="mt-1 font-semibold text-slate-800">
+                                            <c:out value="${empty lop.thoiGianHoc ? 'Chưa cập nhật' : lop.thoiGianHoc}" />
+                                            <c:if test="${not empty gioMoiBuoiDisplay}">
+                                                · <c:out value="${gioMoiBuoiDisplay}" />
+                                            </c:if>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase tracking-widest">Khai giảng</p>
+                                        <p class="mt-1 font-semibold text-slate-800">
+                                            <c:out value="${empty ngayKhaiGiangDisplay ? 'Chưa xác định' : ngayKhaiGiangDisplay}" />
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase tracking-widest">Hình thức</p>
+                                        <p class="mt-1 font-semibold text-slate-800">
+                                            <c:out value="${empty lop.hinhThuc ? '—' : lop.hinhThuc}" />
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase tracking-widest">Sĩ số</p>
+                                        <p class="mt-1 font-semibold text-slate-800">
+                                            <c:out value="${lop.siSoToiDa}" /> học viên
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <p class="text-2xl font-bold text-primary">
+                                        <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <c:choose>
+                                            <c:when test="${not empty lop.slug}">
+                                                <a href="${pageContext.request.contextPath}/lop/chi-tiet/${lop.slug}"
+                                                   class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition shadow-sm">
+                                                    Xem chi tiết
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                                                        <path d="M9 5l7 7-7 7"/>
+                                                    </svg>
+                                                </a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="${pageContext.request.contextPath}/lop/chi-tiet?id=${lop.id}"
+                                                   class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition shadow-sm">
+                                                    Xem chi tiết
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                                                        <path d="M9 5l7 7-7 7"/>
+                                                    </svg>
+                                                </a>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <a href="${pageContext.request.contextPath}/dang-ky-lop?lopId=${lop.id}"
+                                           class="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                                            Đăng ký ngay
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        </c:forEach>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <p class="text-xs text-slate-500">
+                            <c:choose>
+                                <c:when test="${totalRecords > 0}">
+                                    Hiển thị <strong><c:out value="${startRecord}" /></strong> - <strong><c:out value="${endRecord}" /></strong> trên <strong><c:out value="${totalRecords}" /></strong> lớp
+                                </c:when>
+                                <c:otherwise>
+                                    Không có dữ liệu để hiển thị
+                                </c:otherwise>
+                            </c:choose>
+                        </p>
+                        <nav class="inline-flex items-center rounded-full border border-blue-100 bg-white shadow-sm">
+                            <c:set var="basePath" value="${pageContext.request.contextPath}/lop" />
+                            <c:choose>
+                                <c:when test="${not empty classFilterParams}">
+                                    <c:set var="prevQuery" value="${classFilterParams.buildQueryString(currentPage > 1 ? currentPage - 1 : 1, pageSize)}" />
+                                    <c:set var="nextQuery" value="${classFilterParams.buildQueryString(currentPage < totalPages ? currentPage + 1 : totalPages, pageSize)}" />
+                                </c:when>
+                                <c:otherwise>
+                                    <c:set var="prevQuery" value="page=${currentPage > 1 ? currentPage - 1 : 1}&pageSize=${pageSize}" />
+                                    <c:set var="nextQuery" value="page=${currentPage < totalPages ? currentPage + 1 : totalPages}&pageSize=${pageSize}" />
+                                </c:otherwise>
+                            </c:choose>
+                            <c:set var="prevUrl" value="${basePath}?${prevQuery}" />
+                            <c:set var="nextUrl" value="${basePath}?${nextQuery}" />
+                            
+                            <a href="${prevUrl}"
+                               class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-l-full ${currentPage == 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}">
+                                Trước
+                            </a>
+                            
+                            <c:forEach begin="1" end="${totalPages}" var="page">
+                                <c:choose>
+                                    <c:when test="${page == currentPage}">
+                                        <span class="px-3 py-2 text-white bg-primary rounded-full shadow-soft">
+                                            <c:out value="${page}" />
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${totalPages <= 7 || page == 1 || page == totalPages || (page >= currentPage - 2 && page <= currentPage + 2)}">
+                                        <c:choose>
+                                            <c:when test="${not empty classFilterParams}">
+                                                <c:set var="pageQuery" value="${classFilterParams.buildQueryString(page, pageSize)}" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                <c:set var="pageQuery" value="page=${page}&pageSize=${pageSize}" />
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <c:set var="pageUrl" value="${basePath}?${pageQuery}" />
+                                        <a href="${pageUrl}" class="px-3 py-2 text-slate-400 hover:text-primary transition">
+                                            <c:out value="${page}" />
+                                        </a>
+                                    </c:when>
+                                    <c:when test="${page == currentPage - 3 || page == currentPage + 3}">
+                                        <span class="px-3 py-2 text-slate-400">...</span>
+                                    </c:when>
+                                </c:choose>
+                            </c:forEach>
+                            
+                            <a href="${nextUrl}"
+                               class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-r-full ${currentPage >= totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}">
+                                Sau
+                            </a>
+                        </nav>
+                    </div>
+                </c:if>
             </div>
         </div>
     </section>

@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -52,44 +54,45 @@
 
         <section class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Tổng đăng ký (30 ngày)</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Tổng đăng ký</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">1.482</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-                        +14.5%
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <c:out value="${not empty totalRegistrations ? totalRegistrations : 0}" />
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">62% đăng ký ca thi · 38% đăng ký lớp ôn.</p>
+                <p class="text-xs text-slate-400">Tất cả đăng ký lớp ôn trong hệ thống.</p>
             </div>
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
                 <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Đăng ký chờ duyệt</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">32</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-semibold text-orange-500">
-                        +6 so với hôm qua
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <c:out value="${not empty choDuyetCount ? choDuyetCount : 0}" />
+                    </p>
+                    <c:if test="${choDuyetCount > 0}">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-semibold text-orange-500">
+                            Cần xử lý
+                        </span>
+                    </c:if>
                 </div>
-                <p class="text-xs text-slate-400">Ưu tiên xử lý trước 16:00 · 18 lớp ôn, 14 ca thi.</p>
+                <p class="text-xs text-slate-400">Ưu tiên xử lý sớm để xác nhận đăng ký.</p>
             </div>
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Tỉ lệ thanh toán đủ</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Đã duyệt</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">91%</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-                        +3.2%
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <c:out value="${not empty daDuyetCount ? daDuyetCount : 0}" />
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">43 đăng ký cần nhắc phí · 12 đăng ký dùng trả góp.</p>
+                <p class="text-xs text-slate-400">Đăng ký đã được xác nhận và duyệt.</p>
             </div>
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Yêu cầu hỗ trợ</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Tổng doanh thu</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">06</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-semibold text-rose-500">
-                        Cần xử lý
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <fmt:formatNumber value="${not empty totalRevenue ? totalRevenue : 0}" type="number" groupingUsed="true" />đ
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">Hoàn phí · chuyển lớp · cập nhật thông tin thí sinh.</p>
+                <p class="text-xs text-slate-400">Tổng số tiền đã thu từ đăng ký.</p>
             </div>
         </section>
 
@@ -122,12 +125,16 @@
                 </div>
                 <div>
                     <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Trạng thái</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Đã duyệt</option>
-                        <option>Chờ duyệt</option>
-                        <option>Đang chờ thanh toán</option>
-                        <option>Đã huỷ</option>
-                    </select>
+                    <form method="get" action="${pageContext.request.contextPath}/admin/registrations" class="mt-2">
+                        <select name="trangThai" onchange="this.form.submit()" class="w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <option value="">Tất cả</option>
+                            <c:forEach var="status" items="${statusOptions}">
+                                <option value="${status}" ${param.trangThai == status ? 'selected' : ''}>
+                                    <c:out value="${status}" />
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </form>
                 </div>
                 <div>
                     <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Từ ngày</label>
@@ -152,8 +159,13 @@
                         <path d="M20 20l-3-3"/>
                     </svg>
                 </div>
-                <input type="search" placeholder="Tìm theo tên học viên, mã đăng ký, email..."
-                       class="w-full rounded-full border border-blue-100 bg-white pl-12 pr-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <form method="get" action="${pageContext.request.contextPath}/admin/registrations" class="relative">
+                    <c:if test="${not empty param.trangThai}">
+                        <input type="hidden" name="trangThai" value="${param.trangThai}">
+                    </c:if>
+                    <input type="search" name="search" value="${param.search}" placeholder="Tìm theo tên học viên, mã đăng ký, email..."
+                           class="w-full rounded-full border border-blue-100 bg-white pl-12 pr-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </form>
             </div>
         </section>
 
@@ -172,128 +184,146 @@
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-blue-50 bg-white">
-                    <tr>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-900">Trần Gia Khang</p>
-                            <p class="text-xs text-slate-400 mt-1">Mã ĐK: DK-20251109-1023</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-xs font-semibold text-primary">
-                                Ca thi
-                            </span>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">CA-1254 · 12/11 - 08:00</p>
-                            <p class="text-xs text-slate-400">Phòng A203 · Thi giấy</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-emerald-500">Đã thanh toán</p>
-                            <p class="text-xs text-slate-400">Chuyển khoản · 1.800.000đ</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">09/11/2025</p>
-                            <p class="text-xs text-slate-400">13:24</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
-                                Đã duyệt
-                            </span>
-                        </td>
-                        <td class="px-6 py-5 text-right space-x-2">
-                            <button data-modal-target="detail-modal"
-                                    class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                                Chi tiết
-                            </button>
-                            <button class="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-500 hover:bg-rose-100 transition">
-                                Huỷ
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-900">Nguyễn Mỹ Duyên</p>
-                            <p class="text-xs text-slate-400 mt-1">Mã ĐK: DK-20251109-0955</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
-                                Lớp ôn
-                            </span>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">NE3 · Giao tiếp nâng cao</p>
-                            <p class="text-xs text-slate-400">Bắt đầu 14/11 · GV: Lê Thảo</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-orange-500">Chờ thanh toán</p>
-                            <p class="text-xs text-slate-400">Học phí: 3.200.000đ</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">09/11/2025</p>
-                            <p class="text-xs text-slate-400">09:45</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-500">
-                                Chờ duyệt
-                            </span>
-                        </td>
-                        <td class="px-6 py-5 text-right space-x-2">
-                            <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                                Duyệt
-                            </button>
-                            <button data-modal-target="reminder-modal"
-                                    class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                                Nhắc phí
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-900">Phạm Tuấn Khải</p>
-                            <p class="text-xs text-slate-400 mt-1">Mã ĐK: DK-20251108-2214</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-xs font-semibold text-primary">
-                                Ca thi
-                            </span>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">CA-1261 · 13/11 - 13:30</p>
-                            <p class="text-xs text-slate-400">Thi máy · Phòng B102</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-emerald-500">Đã thanh toán</p>
-                            <p class="text-xs text-slate-400">Ví điện tử · 1.800.000đ</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <p class="font-semibold text-slate-800">08/11/2025</p>
-                            <p class="text-xs text-slate-400">22:14</p>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-primary">
-                                Chờ phân phòng
-                            </span>
-                        </td>
-                        <td class="px-6 py-5 text-right space-x-2">
-                            <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                                Gán phòng
-                            </button>
-                            <button class="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-500 hover:bg-rose-100 transition">
-                                Huỷ
-                            </button>
-                        </td>
-                    </tr>
+                    <c:choose>
+                        <c:when test="${not empty registrations}">
+                            <c:forEach var="reg" items="${registrations}">
+                                <c:set var="dk" value="${reg.dangKy}" />
+                                <c:set var="user" value="${reg.nguoiDung}" />
+                                <c:set var="lop" value="${reg.lopOn}" />
+                                <tr>
+                                    <td class="px-6 py-5">
+                                        <p class="font-semibold text-slate-900">
+                                            <c:out value="${not empty user ? user.hoTen : 'N/A'}" />
+                                        </p>
+                                        <p class="text-xs text-slate-400 mt-1">
+                                            Mã ĐK: <c:out value="${not empty dk.maXacNhan ? dk.maXacNhan : 'N/A'}" />
+                                        </p>
+                                        <c:if test="${not empty user}">
+                                            <p class="text-xs text-slate-400">
+                                                <c:out value="${user.email}" /> · <c:out value="${user.soDienThoai}" />
+                                            </p>
+                                        </c:if>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
+                                            Lớp ôn
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <c:if test="${not empty lop}">
+                                            <p class="font-semibold text-slate-800">
+                                                <c:out value="${lop.maLop}" /> · <c:out value="${lop.tieuDe}" />
+                                            </p>
+                                            <p class="text-xs text-slate-400">
+                                                <c:if test="${not empty lop.ngayKhaiGiang}">
+                                                    <fmt:formatDate value="${lop.ngayKhaiGiang}" pattern="dd/MM/yyyy" />
+                                                </c:if>
+                                                · <c:out value="${lop.hinhThuc}" />
+                                            </p>
+                                        </c:if>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <c:choose>
+                                            <c:when test="${dk.soTienDaTra > 0}">
+                                                <p class="font-semibold text-emerald-500">Đã thanh toán</p>
+                                                <p class="text-xs text-slate-400">
+                                                    <fmt:formatNumber value="${dk.soTienDaTra}" type="number" groupingUsed="true" />đ
+                                                    <c:if test="${not empty lop && lop.hocPhi > dk.soTienDaTra}">
+                                                        / <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
+                                                    </c:if>
+                                                </p>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <p class="font-semibold text-orange-500">Chờ thanh toán</p>
+                                                <c:if test="${not empty lop}">
+                                                    <p class="text-xs text-slate-400">
+                                                        Học phí: <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
+                                                    </p>
+                                                </c:if>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <c:if test="${not empty dk.ngayDangKy}">
+                                            <p class="font-semibold text-slate-800">
+                                                <fmt:formatDate value="${dk.ngayDangKy}" pattern="dd/MM/yyyy" />
+                                            </p>
+                                            <p class="text-xs text-slate-400">
+                                                <fmt:formatDate value="${dk.ngayDangKy}" pattern="HH:mm" />
+                                            </p>
+                                        </c:if>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <c:choose>
+                                            <c:when test="${dk.trangThai == 'Chờ xác nhận'}">
+                                                <span class="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-500">
+                                                    <c:out value="${dk.trangThai}" />
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${dk.trangThai == 'Đã xác nhận' || dk.trangThai == 'Đã duyệt'}">
+                                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
+                                                    <c:out value="${dk.trangThai}" />
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-primary">
+                                                    <c:out value="${dk.trangThai}" />
+                                                </span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="px-6 py-5 text-right space-x-2">
+                                        <button data-modal-target="detail-modal-${dk.id}"
+                                                class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
+                                            Chi tiết
+                                        </button>
+                                        <c:if test="${dk.trangThai == 'Chờ xác nhận'}">
+                                            <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
+                                                Duyệt
+                                            </button>
+                                        </c:if>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                                    <p class="text-sm">Chưa có đăng ký nào</p>
+                                </td>
+                            </tr>
+                        </c:otherwise>
+                    </c:choose>
                     </tbody>
                 </table>
             </div>
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-t border-blue-50 bg-primary.pale/40 text-xs text-slate-500">
-                <p>Hiển thị 1 – 10 trên 1.482 đăng ký</p>
-                <div class="inline-flex items-center rounded-full border border-blue-100 bg-white shadow-sm">
-                    <button class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-l-full">Trước</button>
-                    <button class="px-3 py-2 text-white bg-primary rounded-full shadow-soft">1</button>
-                    <button class="px-3 py-2 text-slate-400 hover:text-primary transition">2</button>
-                    <button class="px-3 py-2 text-slate-400 hover:text-primary transition">3</button>
-                    <button class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-r-full">Sau</button>
-                </div>
+                <p>
+                    Hiển thị <c:out value="${not empty startRecord ? startRecord : 0}" /> – 
+                    <c:out value="${not empty endRecord ? endRecord : 0}" /> trên 
+                    <c:out value="${not empty totalRecords ? totalRecords : 0}" /> đăng ký
+                </p>
+                <c:if test="${not empty totalPages && totalPages > 1}">
+                    <div class="inline-flex items-center rounded-full border border-blue-100 bg-white shadow-sm">
+                        <c:if test="${currentPage > 1}">
+                            <a href="${pageContext.request.contextPath}/admin/registrations?page=${currentPage - 1}${not empty param.trangThai ? '&trangThai=' : ''}${param.trangThai}${not empty param.search ? '&search=' : ''}${param.search}"
+                               class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-l-full">Trước</a>
+                        </c:if>
+                        <c:forEach var="i" begin="1" end="${totalPages}">
+                            <c:if test="${i == currentPage}">
+                                <span class="px-3 py-2 text-white bg-primary rounded-full shadow-soft"><c:out value="${i}" /></span>
+                            </c:if>
+                            <c:if test="${i != currentPage}">
+                                <a href="${pageContext.request.contextPath}/admin/registrations?page=${i}${not empty param.trangThai ? '&trangThai=' : ''}${param.trangThai}${not empty param.search ? '&search=' : ''}${param.search}"
+                                   class="px-3 py-2 text-slate-400 hover:text-primary transition"><c:out value="${i}" /></a>
+                            </c:if>
+                        </c:forEach>
+                        <c:if test="${currentPage < totalPages}">
+                            <a href="${pageContext.request.contextPath}/admin/registrations?page=${currentPage + 1}${not empty param.trangThai ? '&trangThai=' : ''}${param.trangThai}${not empty param.search ? '&search=' : ''}${param.search}"
+                               class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-r-full">Sau</a>
+                        </c:if>
+                    </div>
+                </c:if>
             </div>
         </section>
 
