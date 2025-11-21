@@ -14,7 +14,6 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-import jakarta.mail.util.ByteArrayDataSource;
 
 public class EmailService {
     private static final Logger LOGGER = Logger.getLogger(EmailService.class.getName());
@@ -250,7 +249,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h2 style="margin: 0;">🔔 Thông báo đăng ký lớp ôn mới</h2>
+                        <h2 style="margin: 0;">Thông báo đăng ký lớp ôn mới</h2>
                     </div>
                     <div class="content">
                         <p>Xin chào Quản trị viên,</p>
@@ -342,7 +341,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h2 style="margin: 0;">🔐 Kích hoạt tài khoản VSTEP</h2>
+                        <h2 style="margin: 0;">Kích hoạt tài khoản VSTEP</h2>
                     </div>
                     <div class="content">
                         <p>Xin chào <strong>%s</strong>,</p>
@@ -420,7 +419,7 @@ public class EmailService {
                 <div class="container">
                     <div class="card">
                         <div class="header">
-                            <h2>✅ Xác nhận đăng ký lớp thành công</h2>
+                            <h2>Xác nhận đăng ký lớp thành công</h2>
                         </div>
                         <div class="content">
                             <p>Xin chào <strong>%s</strong>,</p>
@@ -482,7 +481,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h2 style="margin: 0;">🔒 Khôi phục mật khẩu VSTEP</h2>
+                        <h2 style="margin: 0;">Khôi phục mật khẩu VSTEP</h2>
                     </div>
                     <div class="content">
                         <p>Xin chào <strong>%s</strong>,</p>
@@ -566,7 +565,7 @@ public class EmailService {
                 <div class="container">
                     <div class="card">
                         <div class="header">
-                            <h2>✅ Xác nhận đăng ký ca thi thành công</h2>
+                            <h2>Xác nhận đăng ký ca thi thành công</h2>
                         </div>
                         <div class="content">
                             <p>Xin chào <strong>%s</strong>,</p>
@@ -676,7 +675,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h2 style="margin: 0;">🔔 Thông báo đăng ký ca thi mới</h2>
+                        <h2 style="margin: 0;">Thông báo đăng ký ca thi mới</h2>
                     </div>
                     <div class="content">
                         <p>Xin chào Quản trị viên,</p>

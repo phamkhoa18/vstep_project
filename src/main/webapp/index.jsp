@@ -22,11 +22,11 @@
             Đăng ký lớp ôn luyện và ca thi VSTEP nhanh chóng, tiện lợi, tự động hóa toàn diện.
         </p>
         <div class="space-x-4">
-            <a href="classes.jsp"
+            <a href="<%= request.getContextPath() %>/lop"
                class="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-8 py-3 rounded-full transition-all shadow-lg">
                 Xem lớp ôn
             </a>
-            <a href="exams.jsp"
+            <a href="<%= request.getContextPath() %>/lop"
                class="bg-white hover:bg-gray-100 text-blue-700 font-semibold px-8 py-3 rounded-full transition-all shadow-lg">
                 Xem ca thi
             </a>
@@ -87,7 +87,7 @@
 <section class="py-20 bg-gradient-to-r from-blue-600 to-blue-800 text-white text-center">
     <h3 class="text-3xl md:text-4xl font-bold mb-6">Sẵn sàng bắt đầu hành trình VSTEP?</h3>
     <p class="mb-8 text-lg opacity-90">Tham gia ngay hôm nay để luyện tập hiệu quả và đạt chứng chỉ cao nhất!</p>
-    <a href="login.jsp"
+    <a href="<%= request.getContextPath() %>/login"
        class="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-10 py-4 rounded-full transition shadow-lg">
         Đăng nhập ngay
     </a>

@@ -72,60 +72,90 @@ public class ClassFilters extends BaseFilter<LopOn> {
             return false;
         }
         
-        // Keyword search
-        if (keywordNormalized != null) {
-            boolean keywordMatched = false;
-            if (lop.getTieuDe() != null) {
-                keywordMatched = normalizeForSearch(lop.getTieuDe()).contains(keywordNormalized);
-            }
-            if (!keywordMatched && lop.getMaLop() != null) {
-                keywordMatched = normalizeForSearch(lop.getMaLop()).contains(keywordNormalized);
-            }
-            if (!keywordMatched) {
-                return false;
-            }
-        }
-        
-        // Format filter
-        if (formatNormalized != null) {
-            String value = normalizeForComparison(lop.getHinhThuc());
-            if (!formatNormalized.equals(value)) {
-                return false;
-            }
-        }
-        
-        // Pace filter
-        if (paceNormalized != null) {
-            String value = normalizeForComparison(lop.getNhipDo());
-            if (!paceNormalized.equals(value)) {
-                return false;
-            }
-        }
-        
-        // Status filter
-        if (statusNormalized != null) {
-            String value = normalizeForComparison(lop.getTinhTrang());
-            if (!statusNormalized.equals(value)) {
-                return false;
-            }
-        }
-        
-        // Date range filter
-        if (startFrom != null || startTo != null) {
-            LocalDate classStart = null;
-            if (lop.getNgayKhaiGiang() != null) {
-                classStart = lop.getNgayKhaiGiang().toLocalDate();
-            }
-            if (startFrom != null) {
-                if (classStart == null || classStart.isBefore(startFrom)) {
+        try {
+            // Keyword search
+            if (keywordNormalized != null && !keywordNormalized.isEmpty()) {
+                boolean keywordMatched = false;
+                try {
+                    if (lop.getTieuDe() != null) {
+                        keywordMatched = normalizeForSearch(lop.getTieuDe()).contains(keywordNormalized);
+                    }
+                    if (!keywordMatched && lop.getMaLop() != null) {
+                        keywordMatched = normalizeForSearch(lop.getMaLop()).contains(keywordNormalized);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    keywordMatched = false;
+                }
+                if (!keywordMatched) {
                     return false;
                 }
             }
-            if (startTo != null) {
-                if (classStart == null || classStart.isAfter(startTo)) {
+            
+            // Format filter
+            if (formatNormalized != null && !formatNormalized.isEmpty()) {
+                try {
+                    String value = normalizeForComparison(lop.getHinhThuc());
+                    if (value == null || !formatNormalized.equals(value)) {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                     return false;
                 }
             }
+            
+            // Pace filter
+            if (paceNormalized != null && !paceNormalized.isEmpty()) {
+                try {
+                    String value = normalizeForComparison(lop.getNhipDo());
+                    if (value == null || !paceNormalized.equals(value)) {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+            
+            // Status filter
+            if (statusNormalized != null && !statusNormalized.isEmpty()) {
+                try {
+                    String value = normalizeForComparison(lop.getTinhTrang());
+                    if (value == null || !statusNormalized.equals(value)) {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+            
+            // Date range filter
+            if (startFrom != null || startTo != null) {
+                try {
+                    LocalDate classStart = null;
+                    if (lop.getNgayKhaiGiang() != null) {
+                        classStart = lop.getNgayKhaiGiang().toLocalDate();
+                    }
+                    if (startFrom != null) {
+                        if (classStart == null || classStart.isBefore(startFrom)) {
+                            return false;
+                        }
+                    }
+                    if (startTo != null) {
+                        if (classStart == null || classStart.isAfter(startTo)) {
+                            return false;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
         
         return true;

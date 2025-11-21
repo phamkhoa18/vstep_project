@@ -32,7 +32,7 @@
                     <a href="<%= request.getContextPath() %>/lop-da-dang-ky" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Lớp đã đăng ký</a>
                     <a href="<%= request.getContextPath() %>/ca-da-dang-ky" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Ca thi đã đăng ký</a>
                     <% if("admin".equals(headerUser.getVaiTro())) { %>
-                    <a href="<%= request.getContextPath() %>/admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Quản trị</a>
+                    <a href="<%= request.getContextPath() %>/admin/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Quản trị</a>
                     <% } %>
                     <a href="<%= request.getContextPath() %>/dang-xuat" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Đăng xuất</a>
                 </div>

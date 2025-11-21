@@ -67,17 +67,13 @@
             
             <!-- Filter Section -->
             <div class="glass rounded-2xl border border-blue-100 px-6 py-6 shadow-soft bg-white">
-                <form method="get" action="${pageContext.request.contextPath}/lop" class="space-y-4" id="filter-form">
-                    <input type="hidden" name="page" value="1" />
-                    <c:if test="${not empty pageSize}">
-                        <input type="hidden" name="pageSize" value="${pageSize}" />
-                    </c:if>
+                <form method="get" action="${pageContext.request.contextPath}/lop" class="space-y-4">
                     
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <!-- Search -->
                         <div class="lg:col-span-2">
                             <label for="filter-keyword" class="block text-xs font-semibold text-slate-700 mb-2">Tìm kiếm</label>
-                            <div class="relative mt-2">
+                            <div class="relative pt-2">
                                 <div class="absolute inset-y-0 left-4 flex items-center text-slate-400 pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                          viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
@@ -86,7 +82,7 @@
                                     </svg>
                                 </div>
                                 <input id="filter-keyword" name="keyword" type="search" 
-                                       value="${not empty classFilterParams ? classFilterParams.keyword : ''}"
+                                       value="${keyword != null ? keyword : ''}"
                                        placeholder="Tên lớp, giảng viên, mã lớp..."
                                        class="w-full rounded-lg border border-blue-200 bg-white pl-12 pr-4 py-2.5 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition">
                             </div>
@@ -98,11 +94,13 @@
                             <select id="filter-format" name="format" 
                                     class="mt-2 w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition cursor-pointer">
                                 <option value="">Tất cả</option>
-                                <c:forEach var="option" items="${formatOptions}">
-                                    <option value="${option}" <c:if test="${not empty classFilterParams and not empty classFilterParams.format and fn:toLowerCase(option) eq fn:toLowerCase(classFilterParams.format)}">selected</c:if>>
-                                        ${option}
-                                    </option>
-                                </c:forEach>
+                                <c:if test="${not empty formatOptions}">
+                                    <c:forEach var="option" items="${formatOptions}">
+                                        <option value="${option}" ${format != null && fn:toLowerCase(option) eq fn:toLowerCase(format) ? 'selected' : ''}>
+                                            <c:out value="${option}" />
+                                        </option>
+                                    </c:forEach>
+                                </c:if>
                             </select>
                         </div>
                         
@@ -112,40 +110,71 @@
                             <select id="filter-pace" name="pace" 
                                     class="mt-2 w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition cursor-pointer">
                                 <option value="">Tất cả nhịp độ</option>
-                                <c:forEach var="option" items="${paceOptions}">
-                                    <option value="${option}" <c:if test="${not empty classFilterParams and not empty classFilterParams.pace and fn:toLowerCase(option) eq fn:toLowerCase(classFilterParams.pace)}">selected</c:if>>
-                                        ${option}
-                                    </option>
-                                </c:forEach>
+                                <c:if test="${not empty paceOptions}">
+                                    <c:forEach var="option" items="${paceOptions}">
+                                        <option value="${option}" ${pace != null && fn:toLowerCase(option) eq fn:toLowerCase(pace) ? 'selected' : ''}>
+                                            <c:out value="${option}" />
+                                        </option>
+                                    </c:forEach>
+                                </c:if>
                             </select>
                         </div>
                     </div>
                     
-                    <!-- Filter Buttons -->
-                    <div class="flex items-end gap-2">
-                        <button type="submit" 
-                                class="flex-1 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 transition">
-                            Lọc kết quả
-                        </button>
-                        <a href="${pageContext.request.contextPath}/lop" 
-                           class="flex items-center justify-center rounded-lg border border-blue-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-blue-50 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </a>
+                    <!-- Second Row Filters -->
+                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <!-- Filter Buttons -->
+                        <div class="lg:col-span-3 flex items-end gap-2">
+                            <button type="submit" 
+                                    class="flex-1 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 transition">
+                                Lọc kết quả
+                            </button>
+                            <a href="${pageContext.request.contextPath}/lop" 
+                               class="flex items-center justify-center rounded-lg border border-blue-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-blue-50 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </a>
+                        </div>
                     </div>
                 </form>
                 
-                <c:if test="${not empty classFilterParams and hasActiveFilters}">
+                <c:if test="${hasActiveFilters}">
                     <div class="flex flex-wrap items-center gap-2 pt-4 border-t border-blue-100">
                         <span class="text-xs text-slate-500">Bộ lọc đang áp dụng:</span>
-                        <c:forEach var="chip" items="${classFilterParams.toChips(pageContext.request.contextPath + '/lop')}">
+                        <c:if test="${not empty keyword}">
                             <span class="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-primary text-xs font-semibold shadow-sm">
-                                <span class="text-[11px] uppercase tracking-widest text-primary/80">${chip.label}</span>
-                                <span class="text-slate-700">${chip.value}</span>
-                                <a href="${chip.removeUrl}" class="hover:text-primary/70 transition text-slate-500 hover:text-slate-700" aria-label="Xoá bộ lọc ${chip.label}">×</a>
+                                <span class="text-[11px] uppercase tracking-widest text-primary/80">Tìm kiếm</span>
+                                <span class="text-slate-700"><c:out value="${keyword}" /></span>
+                                <c:url var="removeKeywordUrl" value="/lop">
+                                    <c:if test="${not empty format}"><c:param name="format" value="${format}"/></c:if>
+                                    <c:if test="${not empty pace}"><c:param name="pace" value="${pace}"/></c:if>
+                                </c:url>
+                                <a href="${pageContext.request.contextPath}${removeKeywordUrl}" class="hover:text-primary/70 transition text-slate-500 hover:text-slate-700" aria-label="Xoá bộ lọc Tìm kiếm">×</a>
                             </span>
-                        </c:forEach>
+                        </c:if>
+                        <c:if test="${not empty format}">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-primary text-xs font-semibold shadow-sm">
+                                <span class="text-[11px] uppercase tracking-widest text-primary/80">Hình thức</span>
+                                <span class="text-slate-700"><c:out value="${format}" /></span>
+                                <c:url var="removeFormatUrl" value="/lop">
+                                    <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                                    <c:if test="${not empty pace}"><c:param name="pace" value="${pace}"/></c:if>
+                                </c:url>
+                                <a href="${pageContext.request.contextPath}${removeFormatUrl}" class="hover:text-primary/70 transition text-slate-500 hover:text-slate-700" aria-label="Xoá bộ lọc Hình thức">×</a>
+                            </span>
+                        </c:if>
+                        <c:if test="${not empty pace}">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-primary text-xs font-semibold shadow-sm">
+                                <span class="text-[11px] uppercase tracking-widest text-primary/80">Nhịp độ</span>
+                                <span class="text-slate-700"><c:out value="${pace}" /></span>
+                                <c:url var="removePaceUrl" value="/lop">
+                                    <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                                    <c:if test="${not empty format}"><c:param name="format" value="${format}"/></c:if>
+                                </c:url>
+                                <a href="${pageContext.request.contextPath}${removePaceUrl}" class="hover:text-primary/70 transition text-slate-500 hover:text-slate-700" aria-label="Xoá bộ lọc Nhịp độ">×</a>
+                            </span>
+                        </c:if>
                         <a href="${pageContext.request.contextPath}/lop" class="text-xs text-primary font-semibold hover:text-primary/80 transition">
                             Xoá tất cả
                         </a>
@@ -157,7 +186,7 @@
             <div class="flex items-center justify-between text-sm text-slate-600">
                 <div>
                     <span class="font-semibold text-slate-900"><c:out value="${empty totalRecords ? 0 : totalRecords}" /></span> lớp ôn được tìm thấy
-                    <c:if test="${not empty classFilterParams and hasActiveFilters}">
+                    <c:if test="${hasActiveFilters}">
                         <span class="text-slate-400">· Đã áp dụng bộ lọc</span>
                     </c:if>
                 </div>
@@ -302,67 +331,103 @@
                     </div>
                     
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <p class="text-xs text-slate-500">
-                            <c:choose>
-                                <c:when test="${totalRecords > 0}">
-                                    Hiển thị <strong><c:out value="${startRecord}" /></strong> - <strong><c:out value="${endRecord}" /></strong> trên <strong><c:out value="${totalRecords}" /></strong> lớp
-                                </c:when>
-                                <c:otherwise>
-                                    Không có dữ liệu để hiển thị
-                                </c:otherwise>
-                            </c:choose>
-                        </p>
-                        <nav class="inline-flex items-center rounded-full border border-blue-100 bg-white shadow-sm">
-                            <c:set var="basePath" value="${pageContext.request.contextPath}/lop" />
-                            <c:choose>
-                                <c:when test="${not empty classFilterParams}">
-                                    <c:set var="prevQuery" value="${classFilterParams.buildQueryString(currentPage > 1 ? currentPage - 1 : 1, pageSize)}" />
-                                    <c:set var="nextQuery" value="${classFilterParams.buildQueryString(currentPage < totalPages ? currentPage + 1 : totalPages, pageSize)}" />
-                                </c:when>
-                                <c:otherwise>
-                                    <c:set var="prevQuery" value="page=${currentPage > 1 ? currentPage - 1 : 1}&pageSize=${pageSize}" />
-                                    <c:set var="nextQuery" value="page=${currentPage < totalPages ? currentPage + 1 : totalPages}&pageSize=${pageSize}" />
-                                </c:otherwise>
-                            </c:choose>
-                            <c:set var="prevUrl" value="${basePath}?${prevQuery}" />
-                            <c:set var="nextUrl" value="${basePath}?${nextQuery}" />
-                            
-                            <a href="${prevUrl}"
-                               class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-l-full ${currentPage == 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}">
-                                Trước
-                            </a>
-                            
-                            <c:forEach begin="1" end="${totalPages}" var="page">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                            <p class="text-xs text-slate-500">
                                 <c:choose>
-                                    <c:when test="${page == currentPage}">
+                                    <c:when test="${totalRecords > 0}">
+                                        Hiển thị <strong><c:out value="${startRecord}" /></strong> - <strong><c:out value="${endRecord}" /></strong> trên <strong><c:out value="${totalRecords}" /></strong> lớp
+                                    </c:when>
+                                    <c:otherwise>
+                                        Không có dữ liệu để hiển thị
+                                    </c:otherwise>
+                                </c:choose>
+                            </p>
+                            <!-- Page Size Selector -->
+                            <form method="get" action="${pageContext.request.contextPath}/lop" class="flex items-center gap-2">
+                                <label class="text-xs text-slate-500">Hiển thị:</label>
+                                <select name="pageSize" onchange="this.form.submit()"
+                                        class="rounded-lg border border-blue-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white cursor-pointer">
+                                    <option value="6" ${pageSize == 6 ? 'selected' : ''}>6</option>
+                                    <option value="9" ${pageSize == 9 ? 'selected' : ''}>9</option>
+                                    <option value="12" ${pageSize == 12 ? 'selected' : ''}>12</option>
+                                    <option value="18" ${pageSize == 18 ? 'selected' : ''}>18</option>
+                                </select>
+                                <input type="hidden" name="page" value="1">
+                                <c:if test="${not empty keyword}"><input type="hidden" name="keyword" value="${keyword}"></c:if>
+                                <c:if test="${not empty format}"><input type="hidden" name="format" value="${format}"></c:if>
+                                <c:if test="${not empty pace}"><input type="hidden" name="pace" value="${pace}"></c:if>
+                            </form>
+                        </div>
+                        <nav class="inline-flex items-center rounded-full border border-blue-100 bg-white shadow-sm">
+                            <!-- Previous Button -->
+                            <c:choose>
+                                <c:when test="${currentPage > 1}">
+                                    <c:url var="prevUrl" value="/lop">
+                                        <c:param name="page" value="${currentPage - 1}"/>
+                                        <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                                        <c:if test="${not empty format}"><c:param name="format" value="${format}"/></c:if>
+                                        <c:if test="${not empty pace}"><c:param name="pace" value="${pace}"/></c:if>
+                                        <c:if test="${not empty pageSize}"><c:param name="pageSize" value="${pageSize}"/></c:if>
+                                    </c:url>
+                                    <a href="${pageContext.request.contextPath}${prevUrl}"
+                                       class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-l-full">
+                                        Trước
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="px-3 py-2 text-slate-400 opacity-50 cursor-not-allowed pointer-events-none rounded-l-full">
+                                        Trước
+                                    </span>
+                                </c:otherwise>
+                            </c:choose>
+                            
+                            <!-- Page Numbers -->
+                            <c:forEach begin="1" end="${totalPages}" var="pageNum">
+                                <c:choose>
+                                    <c:when test="${pageNum == currentPage}">
                                         <span class="px-3 py-2 text-white bg-primary rounded-full shadow-soft">
-                                            <c:out value="${page}" />
+                                            <c:out value="${pageNum}" />
                                         </span>
                                     </c:when>
-                                    <c:when test="${totalPages <= 7 || page == 1 || page == totalPages || (page >= currentPage - 2 && page <= currentPage + 2)}">
-                                        <c:choose>
-                                            <c:when test="${not empty classFilterParams}">
-                                                <c:set var="pageQuery" value="${classFilterParams.buildQueryString(page, pageSize)}" />
-                                            </c:when>
-                                            <c:otherwise>
-                                                <c:set var="pageQuery" value="page=${page}&pageSize=${pageSize}" />
-                                            </c:otherwise>
-                                        </c:choose>
-                                        <c:set var="pageUrl" value="${basePath}?${pageQuery}" />
-                                        <a href="${pageUrl}" class="px-3 py-2 text-slate-400 hover:text-primary transition">
-                                            <c:out value="${page}" />
+                                    <c:when test="${totalPages <= 7 || pageNum == 1 || pageNum == totalPages || (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)}">
+                                        <c:url var="pageUrl" value="/lop">
+                                            <c:param name="page" value="${pageNum}"/>
+                                            <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                                            <c:if test="${not empty format}"><c:param name="format" value="${format}"/></c:if>
+                                            <c:if test="${not empty pace}"><c:param name="pace" value="${pace}"/></c:if>
+                                            <c:if test="${not empty pageSize}"><c:param name="pageSize" value="${pageSize}"/></c:if>
+                                        </c:url>
+                                        <a href="${pageContext.request.contextPath}${pageUrl}" class="px-3 py-2 text-slate-400 hover:text-primary transition">
+                                            <c:out value="${pageNum}" />
                                         </a>
                                     </c:when>
-                                    <c:when test="${page == currentPage - 3 || page == currentPage + 3}">
+                                    <c:when test="${pageNum == currentPage - 3 || pageNum == currentPage + 3}">
                                         <span class="px-3 py-2 text-slate-400">...</span>
                                     </c:when>
                                 </c:choose>
                             </c:forEach>
                             
-                            <a href="${nextUrl}"
-                               class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-r-full ${currentPage >= totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}">
-                                Sau
-                            </a>
+                            <!-- Next Button -->
+                            <c:choose>
+                                <c:when test="${currentPage < totalPages}">
+                                    <c:url var="nextUrl" value="/lop">
+                                        <c:param name="page" value="${currentPage + 1}"/>
+                                        <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                                        <c:if test="${not empty format}"><c:param name="format" value="${format}"/></c:if>
+                                        <c:if test="${not empty pace}"><c:param name="pace" value="${pace}"/></c:if>
+                                        <c:if test="${not empty pageSize}"><c:param name="pageSize" value="${pageSize}"/></c:if>
+                                    </c:url>
+                                    <a href="${pageContext.request.contextPath}${nextUrl}"
+                                       class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-r-full">
+                                        Sau
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="px-3 py-2 text-slate-400 opacity-50 cursor-not-allowed pointer-events-none rounded-r-full">
+                                        Sau
+                                    </span>
+                                </c:otherwise>
+                            </c:choose>
                         </nav>
                     </div>
                 </c:if>

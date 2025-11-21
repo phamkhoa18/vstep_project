@@ -3,6 +3,7 @@ package com.vstep.controller.NguoiDung;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,11 @@ public class PublicDispatcherServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // Set encoding
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
+        resp.setContentType("text/html;charset=UTF-8");
+        
         String servletPath = req.getServletPath();
         String pathInfo = req.getPathInfo();
 
@@ -128,21 +134,74 @@ public class PublicDispatcherServlet extends HttpServlet {
             lopOnService = new LopOnServiceImpl();
         }
         com.vstep.service.DangKyLopService dangKyLopService = new com.vstep.serviceImpl.DangKyLopServiceImpl();
-        List<LopOn> allClasses = lopOnService.findAll();
+        
+        List<LopOn> allClasses = new ArrayList<>();
+        try {
+            allClasses = lopOnService.findAll();
+            if (allClasses == null) {
+                allClasses = new ArrayList<>();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            allClasses = new ArrayList<>();
+        }
+        
         // Derive status by dates for all classes
         for (LopOn lop : allClasses) {
-            String status = deriveLopStatus(lop);
-            lop.setTinhTrang(status);
+            try {
+                String status = deriveLopStatus(lop);
+                lop.setTinhTrang(status);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        // Áp dụng filter
-        ClassFilters filters = ClassFilters.fromRequest(req);
-        List<LopOn> filteredClasses = filters.apply(allClasses);
+        // Áp dụng filter - xử lý trực tiếp giống như ca-list
+        String keyword = req.getParameter("keyword");
+        String format = req.getParameter("format");
+        String pace = req.getParameter("pace");
+        
+        List<LopOn> filteredClasses = new ArrayList<>();
+        
+        for (LopOn lop : allClasses) {
+            boolean include = true;
+            
+            // Filter theo keyword
+            if (keyword != null && !keyword.isEmpty()) {
+                String query = keyword.toLowerCase().trim();
+                String tieuDe = lop.getTieuDe() != null ? lop.getTieuDe().toLowerCase() : "";
+                String maLop = lop.getMaLop() != null ? lop.getMaLop().toLowerCase() : "";
+                
+                if (!tieuDe.contains(query) && !maLop.contains(query)) {
+                    include = false;
+                }
+            }
+            
+            // Filter theo format
+            if (include && format != null && !format.isEmpty()) {
+                String hinhThuc = lop.getHinhThuc() != null ? lop.getHinhThuc().trim() : "";
+                if (!hinhThuc.equalsIgnoreCase(format)) {
+                    include = false;
+                }
+            }
+            
+            // Filter theo pace
+            if (include && pace != null && !pace.isEmpty()) {
+                String nhipDo = lop.getNhipDo() != null ? lop.getNhipDo().trim() : "";
+                if (!nhipDo.equalsIgnoreCase(pace)) {
+                    include = false;
+                }
+            }
+            
+            if (include) {
+                filteredClasses.add(lop);
+            }
+        }
 
         // Phân trang
         int pageSize = parsePageSize(req.getParameter("pageSize"));
         int currentPage = parsePageNumber(req.getParameter("page"));
-        int totalRecords = filteredClasses.size();
+        int totalRecords = filteredClasses != null ? filteredClasses.size() : 0;
         int totalPages = totalRecords > 0 ? (int) Math.ceil((double) totalRecords / pageSize) : 1;
         
         // Đảm bảo currentPage hợp lệ
@@ -156,8 +215,16 @@ public class PublicDispatcherServlet extends HttpServlet {
         int startIndex = (currentPage - 1) * pageSize;
         int endIndex = Math.min(startIndex + pageSize, totalRecords);
         List<LopOn> paginatedClasses = new ArrayList<>();
-        if (startIndex < totalRecords) {
-            paginatedClasses = filteredClasses.subList(startIndex, endIndex);
+        if (filteredClasses != null && !filteredClasses.isEmpty() && startIndex >= 0 && startIndex < totalRecords) {
+            try {
+                paginatedClasses = filteredClasses.subList(startIndex, Math.min(endIndex, filteredClasses.size()));
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
+                paginatedClasses = new ArrayList<>();
+            } catch (Exception e) {
+                e.printStackTrace();
+                paginatedClasses = new ArrayList<>();
+            }
         }
 
         req.setAttribute("lopOnList", paginatedClasses);
@@ -165,12 +232,25 @@ public class PublicDispatcherServlet extends HttpServlet {
         // Đếm số người đăng ký hiện tại cho từng lớp trên trang
         java.util.Map<Long, Integer> registeredCounts = new java.util.HashMap<>();
         for (LopOn lop : paginatedClasses) {
-            int count = dangKyLopService.countByLopOnId(lop.getId());
-            registeredCounts.put(lop.getId(), count);
+            try {
+                int count = dangKyLopService.countByLopOnId(lop.getId());
+                registeredCounts.put(lop.getId(), count);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         req.setAttribute("registeredCounts", registeredCounts);
-        req.setAttribute("classFilterParams", filters);
-        req.setAttribute("hasActiveFilters", filters.hasActive());
+        
+        // Set filter params cho JSP
+        req.setAttribute("keyword", keyword);
+        req.setAttribute("format", format);
+        req.setAttribute("pace", pace);
+        
+        // Check if has active filters
+        boolean hasActiveFilters = (keyword != null && !keyword.isEmpty()) ||
+                                   (format != null && !format.isEmpty()) ||
+                                   (pace != null && !pace.isEmpty());
+        req.setAttribute("hasActiveFilters", hasActiveFilters);
 
         // Thông tin phân trang
         req.setAttribute("currentPage", currentPage);
@@ -190,10 +270,10 @@ public class PublicDispatcherServlet extends HttpServlet {
             if ("đang mở".equalsIgnoreCase(status) || "dangmo".equals(normalized)) {
                 dangMoCount++;
             }
-            String format = com.vstep.util.FilterUtils.normalizeForComparison(lop.getHinhThuc());
-            if ("online".equals(format)) {
+            String formatValue = com.vstep.util.FilterUtils.normalizeForComparison(lop.getHinhThuc());
+            if ("online".equals(formatValue)) {
                 onlineCount++;
-            } else if ("offline".equals(format)) {
+            } else if ("offline".equals(formatValue)) {
                 offlineCount++;
             }
         }
@@ -203,8 +283,10 @@ public class PublicDispatcherServlet extends HttpServlet {
         req.setAttribute("offlineCount", offlineCount);
 
         // Options cho filter dropdowns
-        req.setAttribute("formatOptions", extractDistinctOptions(allClasses, LopOn::getHinhThuc));
-        req.setAttribute("paceOptions", extractDistinctOptions(allClasses, LopOn::getNhipDo));
+        Set<String> formatOptions = extractDistinctOptions(allClasses, LopOn::getHinhThuc);
+        Set<String> paceOptions = extractDistinctOptions(allClasses, LopOn::getNhipDo);
+        req.setAttribute("formatOptions", formatOptions != null ? formatOptions : new LinkedHashSet<>());
+        req.setAttribute("paceOptions", paceOptions != null ? paceOptions : new LinkedHashSet<>());
     }
 
     private String deriveLopStatus(LopOn lop) {
@@ -384,6 +466,48 @@ public class PublicDispatcherServlet extends HttpServlet {
             CaThi ct = (CaThi) detail.get("caThi");
             boolean include = true;
             
+            // Loại bỏ ca thi đã đầy
+            boolean isFull = (Boolean) detail.get("isFull");
+            if (isFull) {
+                include = false;
+            }
+            
+            // Loại bỏ ca thi đã hết thời gian (ngày thi + giờ kết thúc đã qua)
+            if (include && ct.getNgayThi() != null && ct.getGioKetThuc() != null) {
+                // Kết hợp ngày thi và giờ kết thúc để tạo thời điểm kết thúc ca thi
+                java.util.Calendar examEndCal = java.util.Calendar.getInstance();
+                examEndCal.setTime(ct.getNgayThi());
+                
+                java.util.Calendar endTimeCal = java.util.Calendar.getInstance();
+                endTimeCal.setTime(ct.getGioKetThuc());
+                
+                examEndCal.set(java.util.Calendar.HOUR_OF_DAY, endTimeCal.get(java.util.Calendar.HOUR_OF_DAY));
+                examEndCal.set(java.util.Calendar.MINUTE, endTimeCal.get(java.util.Calendar.MINUTE));
+                examEndCal.set(java.util.Calendar.SECOND, endTimeCal.get(java.util.Calendar.SECOND));
+                examEndCal.set(java.util.Calendar.MILLISECOND, 0);
+                
+                java.util.Date examEndTime = examEndCal.getTime();
+                
+                // Nếu thời gian kết thúc đã qua, loại bỏ ca thi này
+                if (now.after(examEndTime)) {
+                    include = false;
+                }
+            } else if (include && ct.getNgayThi() != null) {
+                // Nếu chỉ có ngày thi mà không có giờ kết thúc, kiểm tra ngày thi
+                // Nếu ngày thi đã qua (so sánh đến cuối ngày), loại bỏ
+                java.util.Calendar examDateCal = java.util.Calendar.getInstance();
+                examDateCal.setTime(ct.getNgayThi());
+                examDateCal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                examDateCal.set(java.util.Calendar.MINUTE, 59);
+                examDateCal.set(java.util.Calendar.SECOND, 59);
+                examDateCal.set(java.util.Calendar.MILLISECOND, 999);
+                
+                java.util.Date examEndOfDay = examDateCal.getTime();
+                if (now.after(examEndOfDay)) {
+                    include = false;
+                }
+            }
+            
             // Filter theo ngày thi
             if (filterDate != null && !filterDate.isEmpty()) {
                 if (ct.getNgayThi() == null) {
@@ -399,7 +523,6 @@ public class PublicDispatcherServlet extends HttpServlet {
             
             // Filter theo trạng thái
             if (include && filterStatus != null && !filterStatus.isEmpty() && !"all".equals(filterStatus)) {
-                boolean isFull = (Boolean) detail.get("isFull");
                 boolean isAlmostFull = (Boolean) detail.get("isAlmostFull");
                 
                 if ("available".equals(filterStatus) && isFull) {

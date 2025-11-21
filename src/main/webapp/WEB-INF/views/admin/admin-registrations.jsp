@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <fmt:setTimeZone value="Asia/Ho_Chi_Minh" />
 <!DOCTYPE html>
 <html lang="vi">
@@ -23,34 +24,17 @@
                     <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Quản lý đăng ký</h2>
                     <p class="text-sm text-slate-500 mt-1">Theo dõi đăng ký lớp ôn và ca thi, xử lý thanh toán kịp thời.</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <button data-modal-target="bulk-approve-modal"
-                            class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm hover:border-primary/40 hover:bg-primary/5 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Duyệt hàng loạt
-                    </button>
-                    <button data-modal-target="new-registration-modal"
-                            class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path d="M12 6v12"/>
-                            <path d="M6 12h12"/>
-                        </svg>
-                        Tạo đăng ký thủ công
-                    </button>
-                </div>
             </div>
             <div class="flex flex-wrap gap-3 text-xs text-slate-500">
                 <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
-                    1.482 đăng ký trong 30 ngày · cập nhật
+                    <c:out value="${not empty totalRegistrations ? totalRegistrations : 0}" /> đăng ký · cập nhật
                     <fmt:formatDate value="${lastUpdatedAt}" pattern="HH:mm" />
                 </span>
-                <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 border border-blue-100 text-slate-500">
-                    32 đăng ký chờ duyệt · 43 đăng ký đang nợ phí
-                </span>
+                <c:if test="${not empty choDuyetCount && choDuyetCount > 0}">
+                    <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 border border-blue-100 text-slate-500">
+                        <c:out value="${choDuyetCount}" /> đăng ký chờ duyệt
+                    </span>
+                </c:if>
             </div>
         </section>
 
@@ -62,7 +46,7 @@
                         <c:out value="${not empty totalRegistrations ? totalRegistrations : 0}" />
                     </p>
                 </div>
-                <p class="text-xs text-slate-400">Tất cả đăng ký lớp ôn trong hệ thống.</p>
+                <p class="text-xs text-slate-400">Tất cả đăng ký trong hệ thống.</p>
             </div>
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
                 <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Đăng ký chờ duyệt</p>
@@ -105,70 +89,171 @@
                     <p class="text-xs text-slate-500 mt-1">Chọn loại đăng ký, trạng thái và tình trạng thanh toán.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                    <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
-                        Chờ duyệt
-                        <button class="hover:text-primary/70" aria-label="Xoá bộ lọc">×</button>
-                    </span>
-                    <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 border border-blue-100">
-                        Ca thi tháng 11
-                        <button class="hover:text-primary" aria-label="Xoá bộ lọc">×</button>
-                    </span>
-                    <a href="#" class="font-semibold text-primary hover:text-primary/80 transition">Xoá tất cả</a>
+                    <c:choose>
+                        <c:when test="${not empty loaiFilter && loaiFilter != 'all' || not empty trangThaiFilter || not empty searchQuery || not empty fromDate || not empty toDate || (not empty thanhToanFilter && thanhToanFilter != 'all')}">
+                            <c:if test="${not empty loaiFilter && loaiFilter != 'all'}">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
+                                    <span class="font-semibold uppercase tracking-widest text-[11px] text-primary/80">Loại</span>
+                                    <span class="text-slate-600 text-xs"><c:out value="${loaiFilter == 'lop' ? 'Lớp ôn' : 'Ca thi'}" /></span>
+                                    <a href="${pageContext.request.contextPath}/admin/registrations?${fn:replace(fn:replace(pageContext.request.queryString, '&loai='.concat(loaiFilter), ''), 'loai='.concat(loaiFilter).concat('&'), '')}"
+                                       class="hover:text-primary/70 transition"
+                                       aria-label="Xoá bộ lọc loại">×</a>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty trangThaiFilter}">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
+                                    <span class="font-semibold uppercase tracking-widest text-[11px] text-primary/80">Trạng thái</span>
+                                    <span class="text-slate-600 text-xs"><c:out value="${trangThaiFilter}" /></span>
+                                    <a href="${pageContext.request.contextPath}/admin/registrations?${fn:replace(fn:replace(pageContext.request.queryString, '&trangThai='.concat(fn:escapeXml(trangThaiFilter)), ''), 'trangThai='.concat(fn:escapeXml(trangThaiFilter)).concat('&'), '')}"
+                                       class="hover:text-primary/70 transition"
+                                       aria-label="Xoá bộ lọc trạng thái">×</a>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty fromDate || not empty toDate}">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
+                                    <span class="font-semibold uppercase tracking-widest text-[11px] text-primary/80">Ngày</span>
+                                    <span class="text-slate-600 text-xs">
+                                        <c:if test="${not empty fromDate}">
+                                            <c:set var="fromDateParts" value="${fn:split(fromDate, '-')}" />
+                                            <c:out value="${fromDateParts[2]}/${fromDateParts[1]}/${fromDateParts[0]}" />
+                                        </c:if>
+                                        <c:if test="${not empty fromDate && not empty toDate}"> - </c:if>
+                                        <c:if test="${not empty toDate}">
+                                            <c:set var="toDateParts" value="${fn:split(toDate, '-')}" />
+                                            <c:out value="${toDateParts[2]}/${toDateParts[1]}/${toDateParts[0]}" />
+                                        </c:if>
+                                    </span>
+                                    <a href="${pageContext.request.contextPath}/admin/registrations?${fn:replace(fn:replace(fn:replace(pageContext.request.queryString, '&fromDate='.concat(fromDate), ''), 'fromDate='.concat(fromDate).concat('&'), ''), '&toDate='.concat(toDate), '')}"
+                                       class="hover:text-primary/70 transition"
+                                       aria-label="Xoá bộ lọc ngày">×</a>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty thanhToanFilter && thanhToanFilter != 'all'}">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
+                                    <span class="font-semibold uppercase tracking-widest text-[11px] text-primary/80">Thanh toán</span>
+                                    <span class="text-slate-600 text-xs"><c:out value="${thanhToanFilter == 'daThanhToan' ? 'Đã thanh toán' : 'Chờ thanh toán'}" /></span>
+                                    <a href="${pageContext.request.contextPath}/admin/registrations?${fn:replace(fn:replace(pageContext.request.queryString, '&thanhToan='.concat(thanhToanFilter), ''), 'thanhToan='.concat(thanhToanFilter).concat('&'), '')}"
+                                       class="hover:text-primary/70 transition"
+                                       aria-label="Xoá bộ lọc thanh toán">×</a>
+                                </span>
+                            </c:if>
+                            <c:if test="${not empty searchQuery}">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
+                                    <span class="font-semibold uppercase tracking-widest text-[11px] text-primary/80">Tìm kiếm</span>
+                                    <span class="text-slate-600 text-xs"><c:out value="${searchQuery}" /></span>
+                                    <a href="${pageContext.request.contextPath}/admin/registrations?${fn:replace(fn:replace(pageContext.request.queryString, '&search='.concat(fn:escapeXml(searchQuery)), ''), 'search='.concat(fn:escapeXml(searchQuery)).concat('&'), '')}"
+                                       class="hover:text-primary/70 transition"
+                                       aria-label="Xoá bộ lọc tìm kiếm">×</a>
+                                </span>
+                            </c:if>
+                            <a href="${pageContext.request.contextPath}/admin/registrations"
+                               class="font-semibold text-primary hover:text-primary/80 transition">
+                                Xoá tất cả
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-1 text-slate-500">
+                                Chưa áp dụng bộ lọc nào
+                            </span>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
-            <div class="grid gap-4 md:grid-cols-4">
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Loại đăng ký</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Tất cả</option>
-                        <option>Lớp ôn</option>
-                        <option>Ca thi</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Trạng thái</label>
-                    <form method="get" action="${pageContext.request.contextPath}/admin/registrations" class="mt-2">
-                        <select name="trangThai" onchange="this.form.submit()" class="w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                            <option value="">Tất cả</option>
+            
+            <form id="registration-filter-form"
+                  method="get"
+                  action="${pageContext.request.contextPath}/admin/registrations"
+                  class="space-y-5">
+                <input type="hidden" name="page" value="1" />
+                <c:if test="${not empty pageSize}">
+                    <input type="hidden" name="pageSize" value="${pageSize}" />
+                </c:if>
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                    <div>
+                        <label for="filter-loai" class="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                            Loại đăng ký
+                        </label>
+                        <select id="filter-loai" name="loai"
+                                class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <option value="all">Tất cả</option>
+                            <option value="lop" ${loaiFilter == 'lop' ? 'selected' : ''}>Lớp ôn</option>
+                            <option value="thi" ${loaiFilter == 'thi' ? 'selected' : ''}>Ca thi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filter-trangThai" class="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                            Trạng thái
+                        </label>
+                        <select id="filter-trangThai" name="trangThai"
+                                class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <option value="">Tất cả trạng thái</option>
                             <c:forEach var="status" items="${statusOptions}">
-                                <option value="${status}" ${param.trangThai == status ? 'selected' : ''}>
+                                <option value="${status}" ${trangThaiFilter == status ? 'selected' : ''}>
                                     <c:out value="${status}" />
                                 </option>
                             </c:forEach>
                         </select>
-                    </form>
+                    </div>
+                    <div>
+                        <label for="filter-fromDate" class="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                            Từ ngày
+                        </label>
+                        <input id="filter-fromDate"
+                               name="fromDate"
+                               type="date"
+                               value="${fromDate}"
+                               class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                    </div>
+                    <div>
+                        <label for="filter-toDate" class="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                            Đến ngày
+                        </label>
+                        <input id="filter-toDate"
+                               name="toDate"
+                               type="date"
+                               value="${toDate}"
+                               class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                    </div>
+                    <div>
+                        <label for="filter-thanhToan" class="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                            Thanh toán
+                        </label>
+                        <select id="filter-thanhToan" name="thanhToan"
+                                class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <option value="all">Tất cả</option>
+                            <option value="daThanhToan" ${thanhToanFilter == 'daThanhToan' ? 'selected' : ''}>Đã thanh toán</option>
+                            <option value="choThanhToan" ${thanhToanFilter == 'choThanhToan' ? 'selected' : ''}>Chờ thanh toán</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Từ ngày</label>
-                    <input type="date"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Thanh toán</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Tất cả</option>
-                        <option>Đã thanh toán</option>
-                        <option>Chờ thanh toán</option>
-                        <option>Trả góp</option>
-                    </select>
-                </div>
-            </div>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-4 flex items-center text-slate-300 pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <circle cx="11" cy="11" r="7"/>
-                        <path d="M20 20l-3-3"/>
-                    </svg>
-                </div>
-                <form method="get" action="${pageContext.request.contextPath}/admin/registrations" class="relative">
-                    <c:if test="${not empty param.trangThai}">
-                        <input type="hidden" name="trangThai" value="${param.trangThai}">
-                    </c:if>
-                    <input type="search" name="search" value="${param.search}" placeholder="Tìm theo tên học viên, mã đăng ký, email..."
+                
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-4 flex items-center text-slate-300 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="11" cy="11" r="7"/>
+                            <path d="M20 20l-3-3"/>
+                        </svg>
+                    </div>
+                    <input id="filter-search"
+                           name="search"
+                           type="search"
+                           value="${searchQuery}"
+                           placeholder="Tìm theo tên học viên, mã đăng ký, email, SĐT..."
                            class="w-full rounded-full border border-blue-100 bg-white pl-12 pr-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </form>
-            </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <a href="${pageContext.request.contextPath}/admin/registrations"
+                       class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
+                        Đặt lại
+                    </a>
+                    <button type="submit"
+                            class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                        Áp dụng
+                    </button>
+                </div>
+            </form>
         </section>
 
         <section class="rounded-3xl bg-white shadow-soft border border-blue-50 overflow-hidden">
@@ -606,104 +691,115 @@
                     </div>
                 </c:forEach>
             </c:if>
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-t border-blue-50 bg-primary.pale/40 text-xs text-slate-500">
-                <p>
-                    Hiển thị <c:out value="${not empty startRecord ? startRecord : 0}" /> – 
-                    <c:out value="${not empty endRecord ? endRecord : 0}" /> trên 
-                    <c:out value="${not empty totalRecords ? totalRecords : 0}" /> đăng ký
-                </p>
-                <c:if test="${not empty totalPages && totalPages > 1}">
-                    <div class="inline-flex items-center rounded-full border border-blue-100 bg-white shadow-sm">
-                        <c:if test="${currentPage > 1}">
-                            <a href="${pageContext.request.contextPath}/admin/registrations?page=${currentPage - 1}${not empty param.trangThai ? '&trangThai=' : ''}${param.trangThai}${not empty param.search ? '&search=' : ''}${param.search}"
-                               class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-l-full">Trước</a>
-                        </c:if>
-                        <c:forEach var="i" begin="1" end="${totalPages}">
-                            <c:if test="${i == currentPage}">
-                                <span class="px-3 py-2 text-white bg-primary rounded-full shadow-soft"><c:out value="${i}" /></span>
-                            </c:if>
-                            <c:if test="${i != currentPage}">
-                                <a href="${pageContext.request.contextPath}/admin/registrations?page=${i}${not empty param.trangThai ? '&trangThai=' : ''}${param.trangThai}${not empty param.search ? '&search=' : ''}${param.search}"
-                                   class="px-3 py-2 text-slate-400 hover:text-primary transition"><c:out value="${i}" /></a>
-                            </c:if>
-                        </c:forEach>
-                        <c:if test="${currentPage < totalPages}">
-                            <a href="${pageContext.request.contextPath}/admin/registrations?page=${currentPage + 1}${not empty param.trangThai ? '&trangThai=' : ''}${param.trangThai}${not empty param.search ? '&search=' : ''}${param.search}"
-                               class="px-3 py-2 text-slate-400 hover:text-primary transition rounded-r-full">Sau</a>
-                        </c:if>
+            <c:set var="currentPage" value="${empty currentPage ? 1 : currentPage}" />
+            <c:set var="totalPages" value="${empty totalPages ? 1 : totalPages}" />
+            <c:set var="pageSize" value="${empty pageSize ? 10 : pageSize}" />
+            <c:set var="totalRecords" value="${empty totalRecords ? 0 : totalRecords}" />
+            <c:set var="startRecord" value="${empty startRecord ? 0 : startRecord}" />
+            <c:set var="endRecord" value="${empty endRecord ? 0 : endRecord}" />
+            
+            <c:if test="${totalRecords > 0}">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-t border-blue-50 bg-primary.pale/40">
+                    <div class="flex items-center gap-4 text-xs text-slate-600">
+                        <p>
+                            Hiển thị <strong class="text-slate-900"><c:out value="${startRecord}" /></strong> - 
+                            <strong class="text-slate-900"><c:out value="${endRecord}" /></strong> trong tổng số 
+                            <strong class="text-slate-900"><c:out value="${totalRecords}" /></strong> đăng ký.
+                        </p>
+                        <div class="flex items-center gap-2">
+                            <label for="page-size-select" class="text-slate-500">Hiển thị:</label>
+                            <select id="page-size-select" 
+                                    class="rounded-xl border border-blue-100 bg-white px-3 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                <option value="10" <c:if test="${pageSize == 10}">selected</c:if>>10</option>
+                                <option value="20" <c:if test="${pageSize == 20}">selected</c:if>>20</option>
+                                <option value="50" <c:if test="${pageSize == 50}">selected</c:if>>50</option>
+                                <option value="100" <c:if test="${pageSize == 100}">selected</c:if>>100</option>
+                            </select>
+                        </div>
                     </div>
-                </c:if>
-            </div>
+                    
+                    <c:if test="${totalPages > 1}">
+                        <nav class="flex items-center gap-2" aria-label="Phân trang">
+                            <c:set var="basePath" value="${pageContext.request.contextPath}/admin/registrations" />
+                            
+                            <c:url var="prevUrl" value="/admin/registrations">
+                                <c:param name="page" value="${currentPage > 1 ? currentPage - 1 : 1}"/>
+                                <c:if test="${not empty loaiFilter && loaiFilter != 'all'}"><c:param name="loai" value="${loaiFilter}"/></c:if>
+                                <c:if test="${not empty trangThaiFilter}"><c:param name="trangThai" value="${trangThaiFilter}"/></c:if>
+                                <c:if test="${not empty fromDate}"><c:param name="fromDate" value="${fromDate}"/></c:if>
+                                <c:if test="${not empty toDate}"><c:param name="toDate" value="${toDate}"/></c:if>
+                                <c:if test="${not empty thanhToanFilter && thanhToanFilter != 'all'}"><c:param name="thanhToan" value="${thanhToanFilter}"/></c:if>
+                                <c:if test="${not empty searchQuery}"><c:param name="search" value="${searchQuery}"/></c:if>
+                                <c:if test="${not empty pageSize}"><c:param name="pageSize" value="${pageSize}"/></c:if>
+                            </c:url>
+                            
+                            <a href="${prevUrl}"
+                               class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 hover:text-primary transition disabled:opacity-50 disabled:cursor-not-allowed ${currentPage == 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
+                               ${currentPage == 1 ? 'aria-disabled="true" tabindex="-1"' : ''}>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                                Trước
+                            </a>
+                            
+                            <div class="flex items-center gap-1">
+                                <c:forEach begin="1" end="${totalPages}" var="page">
+                                    <c:choose>
+                                        <c:when test="${page == currentPage}">
+                                            <span class="inline-flex items-center justify-center min-w-[2rem] h-8 rounded-xl bg-primary text-white text-xs font-semibold">
+                                                <c:out value="${page}" />
+                                            </span>
+                                        </c:when>
+                                        <c:when test="${totalPages <= 7 || page == 1 || page == totalPages || (page >= currentPage - 2 && page <= currentPage + 2)}">
+                                            <c:url var="pageUrl" value="/admin/registrations">
+                                                <c:param name="page" value="${page}"/>
+                                                <c:if test="${not empty loaiFilter && loaiFilter != 'all'}"><c:param name="loai" value="${loaiFilter}"/></c:if>
+                                                <c:if test="${not empty trangThaiFilter}"><c:param name="trangThai" value="${trangThaiFilter}"/></c:if>
+                                                <c:if test="${not empty fromDate}"><c:param name="fromDate" value="${fromDate}"/></c:if>
+                                                <c:if test="${not empty toDate}"><c:param name="toDate" value="${toDate}"/></c:if>
+                                                <c:if test="${not empty thanhToanFilter && thanhToanFilter != 'all'}"><c:param name="thanhToan" value="${thanhToanFilter}"/></c:if>
+                                                <c:if test="${not empty searchQuery}"><c:param name="search" value="${searchQuery}"/></c:if>
+                                                <c:if test="${not empty pageSize}"><c:param name="pageSize" value="${pageSize}"/></c:if>
+                                            </c:url>
+                                            <a href="${pageUrl}"
+                                               class="inline-flex items-center justify-center min-w-[2rem] h-8 rounded-xl border border-blue-100 bg-white px-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 hover:text-primary transition">
+                                                <c:out value="${page}" />
+                                            </a>
+                                        </c:when>
+                                        <c:when test="${page == currentPage - 3 || page == currentPage + 3}">
+                                            <span class="inline-flex items-center justify-center min-w-[2rem] h-8 text-xs text-slate-400">
+                                                ...
+                                            </span>
+                                        </c:when>
+                                    </c:choose>
+                                </c:forEach>
+                            </div>
+                            
+                            <c:url var="nextUrl" value="/admin/registrations">
+                                <c:param name="page" value="${currentPage < totalPages ? currentPage + 1 : totalPages}"/>
+                                <c:if test="${not empty loaiFilter && loaiFilter != 'all'}"><c:param name="loai" value="${loaiFilter}"/></c:if>
+                                <c:if test="${not empty trangThaiFilter}"><c:param name="trangThai" value="${trangThaiFilter}"/></c:if>
+                                <c:if test="${not empty fromDate}"><c:param name="fromDate" value="${fromDate}"/></c:if>
+                                <c:if test="${not empty toDate}"><c:param name="toDate" value="${toDate}"/></c:if>
+                                <c:if test="${not empty thanhToanFilter && thanhToanFilter != 'all'}"><c:param name="thanhToan" value="${thanhToanFilter}"/></c:if>
+                                <c:if test="${not empty searchQuery}"><c:param name="search" value="${searchQuery}"/></c:if>
+                                <c:if test="${not empty pageSize}"><c:param name="pageSize" value="${pageSize}"/></c:if>
+                            </c:url>
+                            
+                            <a href="${nextUrl}"
+                               class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 hover:text-primary transition disabled:opacity-50 disabled:cursor-not-allowed ${currentPage >= totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
+                               ${currentPage >= totalPages ? 'aria-disabled="true" tabindex="-1"' : ''}>
+                                Sau
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </nav>
+                    </c:if>
+                </div>
+            </c:if>
         </section>
 
-        <section class="grid gap-6 xl:grid-cols-3">
-            <div class="xl:col-span-2 rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-6">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-slate-900">Phễu đăng ký</h3>
-                    <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                        Tải báo cáo
-                    </button>
-                </div>
-                <div class="grid gap-4 md:grid-cols-2">
-                    <article class="rounded-2xl border border-blue-50 bg-primary.pale/40 px-4 py-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between">
-                            <p class="text-sm font-semibold text-slate-800">Lớp ôn</p>
-                            <span class="text-xs font-semibold text-primary">Tỉ lệ chuyển đổi 48%</span>
-                        </div>
-                        <ul class="text-xs text-slate-500 space-y-1">
-                            <li>• Đăng ký: 563</li>
-                            <li>• Đã thanh toán: 454</li>
-                            <li>• Chờ thanh toán: 79</li>
-                            <li>• Đã huỷ: 30</li>
-                        </ul>
-                        <div class="h-2 rounded-full bg-white">
-                            <div class="h-full rounded-full bg-primary" style="width:48%;"></div>
-                        </div>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify_between">
-                            <p class="text-sm font-semibold text-slate-800">Ca thi</p>
-                            <span class="text-xs font-semibold text-primary">Tỉ lệ chuyển đổi 63%</span>
-                        </div>
-                        <ul class="text-xs text-slate-500 space-y-1">
-                            <li>• Đăng ký: 919</li>
-                            <li>• Đã thanh toán: 770</li>
-                            <li>• Chờ thanh toán: 41</li>
-                            <li>• Đã huỷ: 22</li>
-                        </ul>
-                        <div class="h-2 rounded-full bg-primary.pale">
-                            <div class="h-full rounded-full bg-emerald-500" style="width:63%;"></div>
-                        </div>
-                    </article>
-                </div>
-            </div>
-            <div class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-5">
-                <h3 class="text-lg font-semibold text-slate-900">Yêu cầu hỗ trợ nổi bật</h3>
-                <div class="space-y-4 text-sm text-slate-600">
-                    <article class="rounded-2xl border border-blue-50 bg-primary.pale/40 px-4 py-4 shadow-sm space-y-2">
-                        <div class="flex items-center justify-between">
-                            <p class="font-semibold text-slate-800">Hoàn phí do trùng lịch</p>
-                            <span class="text-xs font-semibold text-primary">Hạn 11/11</span>
-                        </div>
-                        <p class="text-xs text-slate-400">Mã: DK-20251107-1889 · Phụ trách: Ngọc Minh</p>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <div class="flex items-center justify-between">
-                            <p class="font-semibold text-slate-800">Chuyển lớp sang NE2</p>
-                            <span class="text-xs font-semibold text-primary">Hạn 12/11</span>
-                        </div>
-                        <p class="text-xs text-slate-400">Mã: DK-20251108-0231 · Phụ trách: Phương Anh</p>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <div class="flex items-center justify-between">
-                            <p class="font-semibold text-slate-800">Cập nhật thông tin thí sinh</p>
-                            <span class="text-xs font-semibold text-primary">Hạn 10/11</span>
-                        </div>
-                        <p class="text-xs text-slate-400">Mã: DK-20251106-1458 · Phụ trách: Minh Hằng</p>
-                    </article>
-                </div>
-            </div>
-        </section>
         </main>
     </div>
 </div>
@@ -757,126 +853,7 @@ Nếu bạn đã thanh toán, vui lòng bỏ qua email này. Cảm ơn bạn!</t
     </div>
 </div>
 
-<!-- Bulk approve modal -->
-<div id="bulk-approve-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/30 backdrop-blur">
-    <div class="max-w-xl w-full mx-4 rounded-3xl bg-white shadow-2xl border border-blue-50 overflow-hidden">
-        <div class="flex items-center justify-between px-6 py-5 border-b border-blue-50 bg-primary.pale/60">
-            <div>
-                <h3 class="text-xl font-semibold text-slate-900">Duyệt đăng ký hàng loạt</h3>
-                <p class="text-xs text-slate-500 mt-1"><span id="bulk-count">Áp dụng cho 0 đăng ký đang chọn.</span></p>
-            </div>
-            <button data-modal-close="bulk-approve-modal"
-                    class="h-10 w-10 rounded-full border border-blue-100 bg-white text-slate-500 hover:text-primary transition">
-                ×
-            </button>
-        </div>
-        <form class="px-6 py-6 space-y-6" method="post" action="${pageContext.request.contextPath}/admin/registrations" id="bulk-approve-form">
-            <input type="hidden" name="action" value="approve-bulk">
-            <div id="bulk-ids-container"></div>
-            <div class="text-sm text-slate-600 space-y-2">
-                <p>• Tự động gửi email xác nhận tới học viên.</p>
-                <p>• Cập nhật trạng thái: <span class="font-semibold text-emerald-500">Đã duyệt</span>.</p>
-                <p>• Ghi chú được lưu trong lịch sử xử lý.</p>
-            </div>
-            <div>
-                <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ghi chú nội bộ</label>
-                <textarea rows="3" placeholder="Nhập ghi chú nếu cần..."
-                          class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30"></textarea>
-            </div>
-            <label class="inline-flex items-center gap-3 text-xs text-slate-500">
-                <input type="checkbox" class="h-4 w-4 rounded border-blue-100 text-primary focus:ring-primary/30">
-                Đồng thời gửi SMS nhắc nhở học viên
-            </label>
-            <div class="flex items-center justify-end gap-3">
-                <button data-modal-close="bulk-approve-modal"
-                        class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
-                    Huỷ
-                </button>
-                <button type="submit"
-                        class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                    Xác nhận duyệt
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
-<!-- Manual registration modal -->
-<div id="new-registration-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/30 backdrop-blur">
-    <div class="max-w-3xl w-full mx-4 rounded-3xl bg-white shadow-2xl border border-blue-50 overflow-hidden">
-        <div class="flex items-center justify-between px-6 py-5 border-b border-blue-50 bg-primary.pale/60">
-            <div>
-                <h3 class="text-xl font-semibold text-slate-900">Tạo đăng ký thủ công</h3>
-                <p class="text-xs text-slate-500 mt-1">Nhập thông tin học viên và lựa chọn khóa học hoặc ca thi.</p>
-            </div>
-            <button data-modal-close="new-registration-modal"
-                    class="h-10 w-10 rounded-full border border-blue-100 bg-white text-slate-500 hover:text-primary transition">
-                ×
-            </button>
-        </div>
-        <form class="px-6 py-6 space-y-6">
-            <div class="grid gap-6 md:grid-cols-2">
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Tên học viên</label>
-                    <input type="text" placeholder="Họ và tên"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Số điện thoại</label>
-                    <input type="tel" placeholder="098x xxx xxx"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Email</label>
-                    <input type="email" placeholder="example@email.com"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Loại đăng ký</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Chọn loại</option>
-                        <option>Lớp ôn</option>
-                        <option>Ca thi</option>
-                    </select>
-                </div>
-            </div>
-            <div class="grid gap-6 md:grid-cols-2">
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Chọn lớp / ca thi</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>NE3 - Giao tiếp nâng cao</option>
-                        <option>CB1 - Nền tảng VSTEP</option>
-                        <option>CA-1254 · 12/11 - 08:00</option>
-                        <option>CA-1261 · 13/11 - 13:30</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Tình trạng thanh toán</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Đã thanh toán</option>
-                        <option>Chờ thanh toán</option>
-                        <option>Trả góp</option>
-                    </select>
-                </div>
-            </div>
-            <div>
-                <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ghi chú</label>
-                <textarea rows="3" placeholder="Nhập ghi chú, ví dụ: chuyển từ lớp CB1 sang NE2..."
-                          class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30"></textarea>
-            </div>
-            <div class="flex items-center justify-end gap-3">
-                <button data-modal-close="new-registration-modal"
-                        class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
-                    Huỷ
-                </button>
-                <button type="submit"
-                        class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                    Lưu đăng ký
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <%@ include file="layout/admin-scripts.jspf" %>
 <script>
@@ -912,6 +889,22 @@ Nếu bạn đã thanh toán, vui lòng bỏ qua email này. Cảm ơn bạn!</t
                             container.appendChild(input);
                         });
                 }
+            });
+        }
+        
+        // Xử lý thay đổi pageSize
+        const pageSizeSelect = document.getElementById('page-size-select');
+        if (pageSizeSelect) {
+            pageSizeSelect.addEventListener('change', function() {
+                const newPageSize = this.value;
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Cập nhật pageSize và reset về trang 1
+                urlParams.set('pageSize', newPageSize);
+                urlParams.set('page', '1');
+                
+                // Chuyển hướng với params mới
+                window.location.search = urlParams.toString();
             });
         }
     })();

@@ -56,7 +56,6 @@ public class AdminDispatcherServlet extends HttpServlet {
         VIEW_MAP.put("/exams/create", "/WEB-INF/views/admin/admin-exams-create.jsp");
         VIEW_MAP.put("/registrations", "/WEB-INF/views/admin/admin-registrations.jsp");
         VIEW_MAP.put("/config", "/WEB-INF/views/admin/admin-config.jsp");
-        VIEW_MAP.put("/statistics", "/WEB-INF/views/admin/admin-statistics.jsp");
     }
 
     @Override
@@ -461,11 +460,29 @@ public class AdminDispatcherServlet extends HttpServlet {
             return dateB.compareTo(dateA); // Mới nhất trước
         });
 
-        // Filter theo trạng thái (nếu có)
+        // Áp dụng tất cả các filter
+        String loaiFilter = req.getParameter("loai"); // "lop", "thi", hoặc empty (tất cả)
         String trangThaiFilter = req.getParameter("trangThai");
-        if (trangThaiFilter != null && !trangThaiFilter.isEmpty()) {
-            List<Map<String, Object>> filtered = new ArrayList<>();
-            for (Map<String, Object> reg : registrationsWithDetails) {
+        String searchQuery = req.getParameter("search");
+        String fromDate = req.getParameter("fromDate");
+        String toDate = req.getParameter("toDate");
+        String thanhToanFilter = req.getParameter("thanhToan"); // "daThanhToan", "choThanhToan", hoặc empty
+        
+        List<Map<String, Object>> filteredList = new ArrayList<>();
+        
+        for (Map<String, Object> reg : registrationsWithDetails) {
+            boolean include = true;
+            
+            // Filter theo loại đăng ký
+            if (include && loaiFilter != null && !loaiFilter.isEmpty() && !"all".equals(loaiFilter)) {
+                String loai = (String) reg.get("loai");
+                if (!loaiFilter.equals(loai)) {
+                    include = false;
+                }
+            }
+            
+            // Filter theo trạng thái
+            if (include && trangThaiFilter != null && !trangThaiFilter.isEmpty()) {
                 String trangThai = null;
                 if ("lop".equals(reg.get("loai"))) {
                     DangKyLop dk = (DangKyLop) reg.get("dangKy");
@@ -474,19 +491,85 @@ public class AdminDispatcherServlet extends HttpServlet {
                     DangKyThi dk = (DangKyThi) reg.get("dangKyThi");
                     trangThai = dk.getTrangThai();
                 }
-                if (trangThaiFilter.equals(trangThai)) {
-                    filtered.add(reg);
+                if (!trangThaiFilter.equals(trangThai)) {
+                    include = false;
                 }
             }
-            registrationsWithDetails = filtered;
-        }
-
-        // Search theo tên, email, mã đăng ký
-        String searchQuery = req.getParameter("search");
-        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            String searchLower = searchQuery.toLowerCase().trim();
-            List<Map<String, Object>> filtered = new ArrayList<>();
-            for (Map<String, Object> reg : registrationsWithDetails) {
+            
+            // Filter theo ngày đăng ký
+            if (include && (fromDate != null && !fromDate.isEmpty() || toDate != null && !toDate.isEmpty())) {
+                java.sql.Timestamp ngayDangKy = null;
+                if ("lop".equals(reg.get("loai"))) {
+                    DangKyLop dk = (DangKyLop) reg.get("dangKy");
+                    ngayDangKy = dk.getNgayDangKy();
+                } else {
+                    DangKyThi dk = (DangKyThi) reg.get("dangKyThi");
+                    ngayDangKy = dk.getNgayDangKy();
+                }
+                
+                if (ngayDangKy != null) {
+                    java.util.Date regDate = new java.util.Date(ngayDangKy.getTime());
+                    java.util.Calendar regCal = java.util.Calendar.getInstance();
+                    regCal.setTime(regDate);
+                    regCal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    regCal.set(java.util.Calendar.MINUTE, 0);
+                    regCal.set(java.util.Calendar.SECOND, 0);
+                    regCal.set(java.util.Calendar.MILLISECOND, 0);
+                    
+                    if (fromDate != null && !fromDate.isEmpty()) {
+                        try {
+                            java.sql.Date from = java.sql.Date.valueOf(fromDate);
+                            if (regCal.getTime().before(from)) {
+                                include = false;
+                            }
+                        } catch (IllegalArgumentException e) {
+                            // Ignore invalid date
+                        }
+                    }
+                    
+                    if (include && toDate != null && !toDate.isEmpty()) {
+                        try {
+                            java.sql.Date to = java.sql.Date.valueOf(toDate);
+                            java.util.Calendar toCal = java.util.Calendar.getInstance();
+                            toCal.setTime(to);
+                            toCal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                            toCal.set(java.util.Calendar.MINUTE, 59);
+                            toCal.set(java.util.Calendar.SECOND, 59);
+                            toCal.set(java.util.Calendar.MILLISECOND, 999);
+                            
+                            if (regCal.getTime().after(toCal.getTime())) {
+                                include = false;
+                            }
+                        } catch (IllegalArgumentException e) {
+                            // Ignore invalid date
+                        }
+                    }
+                } else {
+                    include = false; // Không có ngày đăng ký thì loại bỏ
+                }
+            }
+            
+            // Filter theo thanh toán
+            if (include && thanhToanFilter != null && !thanhToanFilter.isEmpty() && !"all".equals(thanhToanFilter)) {
+                boolean daThanhToan = false;
+                if ("lop".equals(reg.get("loai"))) {
+                    DangKyLop dk = (DangKyLop) reg.get("dangKy");
+                    daThanhToan = dk.getSoTienDaTra() > 0;
+                } else {
+                    DangKyThi dk = (DangKyThi) reg.get("dangKyThi");
+                    daThanhToan = "Đã duyệt".equals(dk.getTrangThai()) || "Đã xác nhận".equals(dk.getTrangThai());
+                }
+                
+                if ("daThanhToan".equals(thanhToanFilter) && !daThanhToan) {
+                    include = false;
+                } else if ("choThanhToan".equals(thanhToanFilter) && daThanhToan) {
+                    include = false;
+                }
+            }
+            
+            // Search theo tên, email, mã đăng ký
+            if (include && searchQuery != null && !searchQuery.trim().isEmpty()) {
+                String searchLower = searchQuery.toLowerCase().trim();
                 NguoiDung user = (NguoiDung) reg.get("nguoiDung");
                 String maXacNhan = null;
                 
@@ -506,17 +589,25 @@ public class AdminDispatcherServlet extends HttpServlet {
                     if (user.getEmail() != null && user.getEmail().toLowerCase().contains(searchLower)) {
                         matches = true;
                     }
+                    if (user.getSoDienThoai() != null && user.getSoDienThoai().contains(searchLower)) {
+                        matches = true;
+                    }
                 }
                 if (maXacNhan != null && maXacNhan.toLowerCase().contains(searchLower)) {
                     matches = true;
                 }
                 
-                if (matches) {
-                    filtered.add(reg);
+                if (!matches) {
+                    include = false;
                 }
             }
-            registrationsWithDetails = filtered;
+            
+            if (include) {
+                filteredList.add(reg);
+            }
         }
+        
+        registrationsWithDetails = filteredList;
 
         // Phân trang
         int pageSize = parsePageSize(req.getParameter("pageSize"));
@@ -606,6 +697,15 @@ public class AdminDispatcherServlet extends HttpServlet {
             }
         }
         req.setAttribute("statusOptions", statusOptions);
+        
+        // Filter params để hiển thị lại trong form
+        req.setAttribute("loaiFilter", loaiFilter != null ? loaiFilter : "all");
+        req.setAttribute("trangThaiFilter", trangThaiFilter);
+        req.setAttribute("searchQuery", searchQuery);
+        req.setAttribute("fromDate", fromDate);
+        req.setAttribute("toDate", toDate);
+        req.setAttribute("thanhToanFilter", thanhToanFilter != null ? thanhToanFilter : "all");
+        
         // Mốc cập nhật hiển thị trên trang
         req.setAttribute("lastUpdatedAt", new java.util.Date());
         } catch (Exception e) {
@@ -646,6 +746,7 @@ public class AdminDispatcherServlet extends HttpServlet {
         List<Map<String, Object>> examsWithDetails = new ArrayList<>();
         int totalRegistrations = 0;
         long totalRevenue = 0;
+        java.util.Date now = new java.util.Date();
         
         for (CaThi caThi : allExams) {
             Map<String, Object> detail = new HashMap<>();
@@ -661,14 +762,182 @@ public class AdminDispatcherServlet extends HttpServlet {
                 totalRevenue += dk.getSoTienPhaiTra();
             }
             
+            // Xác định trạng thái ca thi
+            boolean isFull = count >= caThi.getSucChua();
+            boolean isAlmostFull = count > 0 && count >= caThi.getSucChua() * 0.8 && !isFull;
+            boolean isPast = false;
+            
+            if (caThi.getNgayThi() != null && caThi.getGioKetThuc() != null) {
+                java.util.Calendar examEndCal = java.util.Calendar.getInstance();
+                examEndCal.setTime(caThi.getNgayThi());
+                
+                java.util.Calendar endTimeCal = java.util.Calendar.getInstance();
+                endTimeCal.setTime(caThi.getGioKetThuc());
+                
+                examEndCal.set(java.util.Calendar.HOUR_OF_DAY, endTimeCal.get(java.util.Calendar.HOUR_OF_DAY));
+                examEndCal.set(java.util.Calendar.MINUTE, endTimeCal.get(java.util.Calendar.MINUTE));
+                examEndCal.set(java.util.Calendar.SECOND, endTimeCal.get(java.util.Calendar.SECOND));
+                examEndCal.set(java.util.Calendar.MILLISECOND, 0);
+                
+                isPast = now.after(examEndCal.getTime());
+            } else if (caThi.getNgayThi() != null) {
+                java.util.Calendar examDateCal = java.util.Calendar.getInstance();
+                examDateCal.setTime(caThi.getNgayThi());
+                examDateCal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                examDateCal.set(java.util.Calendar.MINUTE, 59);
+                examDateCal.set(java.util.Calendar.SECOND, 59);
+                examDateCal.set(java.util.Calendar.MILLISECOND, 999);
+                
+                isPast = now.after(examDateCal.getTime());
+            }
+            
+            String status = isPast ? "Hoàn thành" : (isFull ? "Đã đầy" : (isAlmostFull ? "Gần đầy" : "Đang mở"));
+            detail.put("trangThai", status);
+            detail.put("isFull", isFull);
+            detail.put("isPast", isPast);
+            
             examsWithDetails.add(detail);
         }
+        
+        // Sắp xếp: mới nhất lên đầu (theo ngày thi, nếu cùng ngày thì theo ngày tạo)
+        examsWithDetails.sort((a, b) -> {
+            CaThi ca1 = (CaThi) a.get("caThi");
+            CaThi ca2 = (CaThi) b.get("caThi");
+            
+            if (ca1.getNgayThi() != null && ca2.getNgayThi() != null) {
+                int dateCompare = ca2.getNgayThi().compareTo(ca1.getNgayThi()); // DESC - mới nhất trước
+                if (dateCompare != 0) {
+                    return dateCompare;
+                }
+            } else if (ca1.getNgayThi() != null) {
+                return -1;
+            } else if (ca2.getNgayThi() != null) {
+                return 1;
+            }
+            
+            if (ca1.getNgayTao() != null && ca2.getNgayTao() != null) {
+                return ca2.getNgayTao().compareTo(ca1.getNgayTao()); // DESC
+            } else if (ca1.getNgayTao() != null) {
+                return -1;
+            } else if (ca2.getNgayTao() != null) {
+                return 1;
+            }
+            
+            return 0;
+        });
+        
+        // Áp dụng filter
+        String filterDate = req.getParameter("filterDate");
+        String filterLocation = req.getParameter("filterLocation");
+        String filterStatus = req.getParameter("filterStatus");
+        String searchQuery = req.getParameter("search");
+        
+        List<Map<String, Object>> filteredList = new ArrayList<>();
+        
+        for (Map<String, Object> detail : examsWithDetails) {
+            CaThi ct = (CaThi) detail.get("caThi");
+            boolean include = true;
+            
+            // Filter theo ngày thi
+            if (filterDate != null && !filterDate.isEmpty()) {
+                if (ct.getNgayThi() == null) {
+                    include = false;
+                } else {
+                    java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                    String examDateStr = df.format(ct.getNgayThi());
+                    if (!examDateStr.equals(filterDate)) {
+                        include = false;
+                    }
+                }
+            }
+            
+            // Filter theo địa điểm
+            if (include && filterLocation != null && !filterLocation.isEmpty()) {
+                String diaDiem = ct.getDiaDiem() != null ? ct.getDiaDiem().toLowerCase() : "";
+                if (!diaDiem.contains(filterLocation.toLowerCase())) {
+                    include = false;
+                }
+            }
+            
+            // Filter theo trạng thái
+            if (include && filterStatus != null && !filterStatus.isEmpty() && !"all".equals(filterStatus)) {
+                String status = (String) detail.get("trangThai");
+                if (!filterStatus.equalsIgnoreCase(status)) {
+                    include = false;
+                }
+            }
+            
+            // Search query
+            if (include && searchQuery != null && !searchQuery.isEmpty()) {
+                String query = searchQuery.toLowerCase();
+                String maCaThi = ct.getMaCaThi() != null ? ct.getMaCaThi().toLowerCase() : "";
+                String diaDiem = ct.getDiaDiem() != null ? ct.getDiaDiem().toLowerCase() : "";
+                
+                if (!maCaThi.contains(query) && !diaDiem.contains(query)) {
+                    include = false;
+                }
+            }
+            
+            if (include) {
+                filteredList.add(detail);
+            }
+        }
+        
+        // Phân trang
+        int pageSize = parsePageSize(req.getParameter("pageSize"));
+        int currentPage = parsePageNumber(req.getParameter("page"));
+        int totalRecords = filteredList.size();
+        int totalPages = totalRecords > 0 ? (int) Math.ceil((double) totalRecords / pageSize) : 1;
+        
+        if (currentPage < 1) {
+            currentPage = 1;
+        } else if (currentPage > totalPages && totalPages > 0) {
+            currentPage = totalPages;
+        }
+        
+        int startIndex = (currentPage - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, totalRecords);
+        List<Map<String, Object>> paginatedList = new ArrayList<>();
+        if (startIndex < totalRecords) {
+            paginatedList = filteredList.subList(startIndex, endIndex);
+        }
+        
+        // Extract địa điểm duy nhất cho filter dropdown
+        Set<String> locationOptions = new LinkedHashSet<>();
+        for (CaThi ct : allExams) {
+            if (ct.getDiaDiem() != null && !ct.getDiaDiem().trim().isEmpty()) {
+                locationOptions.add(ct.getDiaDiem().trim());
+            }
+        }
+        
+        // Extract trạng thái duy nhất cho filter dropdown
+        Set<String> statusOptions = new LinkedHashSet<>();
+        statusOptions.add("Đang mở");
+        statusOptions.add("Gần đầy");
+        statusOptions.add("Đã đầy");
+        statusOptions.add("Hoàn thành");
 
-        req.setAttribute("examsWithDetails", examsWithDetails);
+        req.setAttribute("examsWithDetails", paginatedList);
         req.setAttribute("totalExams", allExams.size());
         req.setAttribute("totalRegistrations", totalRegistrations);
         req.setAttribute("totalRevenue", totalRevenue);
         req.setAttribute("lastUpdatedAt", new java.util.Date());
+        
+        // Filter params
+        req.setAttribute("filterDate", filterDate);
+        req.setAttribute("filterLocation", filterLocation);
+        req.setAttribute("filterStatus", filterStatus != null ? filterStatus : "all");
+        req.setAttribute("searchQuery", searchQuery);
+        req.setAttribute("locationOptions", locationOptions);
+        req.setAttribute("statusOptions", statusOptions);
+        
+        // Pagination info
+        req.setAttribute("currentPage", currentPage);
+        req.setAttribute("totalPages", totalPages);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalRecords", totalRecords);
+        req.setAttribute("startRecord", totalRecords > 0 ? startIndex + 1 : 0);
+        req.setAttribute("endRecord", Math.min(endIndex, totalRecords));
     }
 
     private String deriveLopStatus(LopOn lop) {
@@ -808,3 +1077,4 @@ public class AdminDispatcherServlet extends HttpServlet {
         return sb.toString();
     }
 }
+

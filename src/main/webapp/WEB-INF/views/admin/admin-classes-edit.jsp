@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chỉnh sửa lớp ôn | VSTEP Admin</title>
     <%@ include file="layout/admin-theme.jspf" %>
-    <script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -187,7 +187,7 @@
                         </div>
 
                         <div>
-                            <label for="edit-deadline" class="text-xs font-semibold uppercase text-slate-500">Hạn đăng ký</label>
+                            <label for="edit-deadline" class="text-xs font-semibold uppercase text-slate-500">Ngày kết thúc</label>
                             <div class="mt-2 input-wrapper">
                                 <input id="edit-deadline" name="ngayKetThuc" type="text"
                                        value="${ngayKetThucIso}"
@@ -262,16 +262,6 @@
                                    value="${lopOn.thoiGianHoc}"
                                    placeholder="Ví dụ: Thứ 3 & Thứ 5 · 18:00 - 20:00"
                                    class="mt-2 sh-input">
-                        </div>
-
-                        <div>
-                            <label for="edit-status" class="text-xs font-semibold uppercase text-slate-500">Tình trạng</label>
-                            <select id="edit-status" name="tinhTrang" required class="mt-2 sh-input sh-select pr-10">
-                                <option value="">Chọn tình trạng</option>
-                                <option value="Đang mở" ${fn:contains(tinhTrangLower, 'đang') or fn:contains(tinhTrangLower, 'dang') ? "selected" : ""}>Đang mở</option>
-                                <option value="Sắp mở" ${fn:contains(tinhTrangLower, 'sắp') or fn:contains(tinhTrangLower, 'sap') ? "selected" : ""}>Sắp mở</option>
-                                <option value="Đã kết thúc" ${fn:contains(tinhTrangLower, 'kết thúc') or fn:contains(tinhTrangLower, 'ket thuc') ? "selected" : ""}>Đã kết thúc</option>
-                            </select>
                         </div>
                     </div>
 
@@ -422,7 +412,21 @@
             CKEDITOR.replace('edit-content-editor', {
                 height: 360,
                 filebrowserUploadUrl: '${pageContext.request.contextPath}/admin/upload-ckeditor',
-                filebrowserUploadMethod: 'form'
+                filebrowserUploadMethod: 'form',
+                filebrowserImageUploadUrl: '${pageContext.request.contextPath}/admin/upload-ckeditor',
+                // Đảm bảo toolbar có nút upload image
+                toolbar: [
+                    { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] },
+                    { name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt'] },
+                    { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
+                    { name: 'insert', items: ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe'] },
+                    '/',
+                    { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] },
+                    { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl'] },
+                    { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
+                    { name: 'colors', items: ['TextColor', 'BGColor'] },
+                    { name: 'tools', items: ['Maximize', 'ShowBlocks', 'Source'] }
+                ]
             });
         }
 

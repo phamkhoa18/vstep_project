@@ -293,7 +293,7 @@
                         </div>
 
                         <div>
-                            <label for="create-deadline" class="text-xs font-semibold uppercase text-slate-500">Hạn đăng ký</label>
+                            <label for="create-deadline" class="text-xs font-semibold uppercase text-slate-500">Ngày kết thúc</label>
                             <div class="mt-2 input-wrapper">
                                 <input id="create-deadline" name="ngayKetThuc" type="text"
                                        placeholder="dd/mm/yyyy"
@@ -676,7 +676,21 @@
             CKEDITOR.replace('create-content-editor', {
                 height: 360,
                 filebrowserUploadUrl: '${pageContext.request.contextPath}/admin/upload-ckeditor',
-                filebrowserUploadMethod: 'form'
+                filebrowserUploadMethod: 'form',
+                filebrowserImageUploadUrl: '${pageContext.request.contextPath}/admin/upload-ckeditor',
+                // Đảm bảo toolbar có nút upload image
+                toolbar: [
+                    { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'] },
+                    { name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt'] },
+                    { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
+                    { name: 'insert', items: ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe'] },
+                    '/',
+                    { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'] },
+                    { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl'] },
+                    { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
+                    { name: 'colors', items: ['TextColor', 'BGColor'] },
+                    { name: 'tools', items: ['Maximize', 'ShowBlocks', 'Source'] }
+                ]
             });
         }
 

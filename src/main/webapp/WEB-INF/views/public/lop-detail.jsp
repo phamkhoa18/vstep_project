@@ -289,10 +289,6 @@
                                     <span class="font-semibold text-slate-800"><c:out value="${lop.nhipDo}" /></span>
                                 </div>
                             </c:if>
-                            <div class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 border border-blue-100">
-                                <span class="text-xs text-slate-500 uppercase tracking-widest">Ưu đãi</span>
-                                <span class="font-semibold text-primary">Giảm 10% cho học viên cũ</span>
-                            </div>
                         </div>
                         <a href="${pageContext.request.contextPath}/lop"
                            class="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition">

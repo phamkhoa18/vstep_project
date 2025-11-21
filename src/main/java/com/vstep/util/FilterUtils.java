@@ -20,26 +20,40 @@ public class FilterUtils {
      * Normalize string để so sánh (bỏ dấu, lowercase, remove spaces)
      */
     public static String normalizeForComparison(String value) {
-        if (value == null) {
+        if (value == null || value.isBlank()) {
             return "";
         }
-        String normalized = java.text.Normalizer.normalize(value.trim(), java.text.Normalizer.Form.NFD)
-                .replaceAll("\\p{M}+", "")
-                .toLowerCase();
-        return normalized.replaceAll("[\\s_\\-]+", "");
+        try {
+            String trimmed = value.trim();
+            if (trimmed.isEmpty()) {
+                return "";
+            }
+            String normalized = java.text.Normalizer.normalize(trimmed, java.text.Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}+", "")
+                    .toLowerCase();
+            return normalized.replaceAll("[\\s_\\-]+", "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     /**
      * Normalize string để search (bỏ dấu, lowercase, giữ spaces)
      */
     public static String normalizeForSearch(String value) {
-        if (value == null) {
+        if (value == null || value.isBlank()) {
             return "";
         }
-        String normalized = java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
-                .replaceAll("\\p{M}+", "")
-                .toLowerCase();
-        return normalized.replaceAll("\\s+", " ").trim();
+        try {
+            String normalized = java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}+", "")
+                    .toLowerCase();
+            return normalized.replaceAll("\\s+", " ").trim();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     /**

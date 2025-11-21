@@ -441,220 +441,103 @@
                     </tbody>
                     </table>
                 </div>
-            </div>
-            <c:set var="currentPage" value="${empty currentPage ? 1 : currentPage}" />
-            <c:set var="totalPages" value="${empty totalPages ? 1 : totalPages}" />
-            <c:set var="pageSize" value="${empty pageSize ? 5 : pageSize}" />
-            <c:set var="totalRecords" value="${empty totalRecords ? 0 : totalRecords}" />
-            <c:set var="startRecord" value="${empty startRecord ? 0 : startRecord}" />
-            <c:set var="endRecord" value="${empty endRecord ? 0 : endRecord}" />
-            
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-t border-blue-50 bg-primary.pale/40">
-                <div class="flex items-center gap-4 text-xs text-slate-600">
-                    <p>
-                        <c:choose>
-                            <c:when test="${totalRecords > 0}">
-                                Hiển thị <strong class="text-slate-900"><c:out value="${startRecord}" /></strong> - 
-                                <strong class="text-slate-900"><c:out value="${endRecord}" /></strong> trong tổng số 
-                                <strong class="text-slate-900"><c:out value="${totalRecords}" /></strong> lớp ôn.
-                            </c:when>
-                            <c:otherwise>
-                                Không có dữ liệu để hiển thị.
-                            </c:otherwise>
-                        </c:choose>
-                    </p>
+
+                <c:set var="currentPage" value="${empty currentPage ? 1 : currentPage}" />
+                <c:set var="totalPages" value="${empty totalPages ? 1 : totalPages}" />
+                <c:set var="pageSize" value="${empty pageSize ? 5 : pageSize}" />
+                <c:set var="totalRecords" value="${empty totalRecords ? 0 : totalRecords}" />
+                <c:set var="startRecord" value="${empty startRecord ? 0 : startRecord}" />
+                <c:set var="endRecord" value="${empty endRecord ? 0 : endRecord}" />
+                
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 pb-8 border-t border-blue-50 bg-primary.pale/40">
+                    <div class="flex items-center gap-4 text-xs text-slate-600">
+                        <p>
+                            <c:choose>
+                                <c:when test="${totalRecords > 0}">
+                                    Hiển thị <strong class="text-slate-900"><c:out value="${startRecord}" /></strong> - 
+                                    <strong class="text-slate-900"><c:out value="${endRecord}" /></strong> trong tổng số 
+                                    <strong class="text-slate-900"><c:out value="${totalRecords}" /></strong> lớp ôn.
+                                </c:when>
+                                <c:otherwise>
+                                    Không có dữ liệu để hiển thị.
+                                </c:otherwise>
+                            </c:choose>
+                        </p>
+                        <c:if test="${totalRecords > 0}">
+                            <div class="flex items-center gap-2">
+                                <label for="page-size-select" class="text-slate-500">Hiển thị:</label>
+                                <select id="page-size-select" 
+                                        class="rounded-xl border border-blue-100 bg-white px-3 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                    <option value="5" <c:if test="${pageSize == 5}">selected</c:if>>5</option>
+                                    <option value="10" <c:if test="${pageSize == 10}">selected</c:if>>10</option>
+                                    <option value="20" <c:if test="${pageSize == 20}">selected</c:if>>20</option>
+                                    <option value="50" <c:if test="${pageSize == 50}">selected</c:if>>50</option>
+                                </select>
+                            </div>
+                        </c:if>
+                    </div>
+                    
                     <c:if test="${totalRecords > 0}">
-                        <div class="flex items-center gap-2">
-                            <label for="page-size-select" class="text-slate-500">Hiển thị:</label>
-                            <select id="page-size-select" 
-                                    class="rounded-xl border border-blue-100 bg-white px-3 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                                <option value="5" <c:if test="${pageSize == 5}">selected</c:if>>5</option>
-                                <option value="10" <c:if test="${pageSize == 10}">selected</c:if>>10</option>
-                                <option value="20" <c:if test="${pageSize == 20}">selected</c:if>>20</option>
-                                <option value="50" <c:if test="${pageSize == 50}">selected</c:if>>50</option>
-                            </select>
-                        </div>
+                        <nav class="flex items-center gap-2" aria-label="Phân trang">
+                            <c:set var="basePath" value="${pageContext.request.contextPath}/admin/classes" />
+                            <c:set var="queryString" value="${classFilterParams.buildQueryString(currentPage > 1 ? currentPage - 1 : 1, pageSize)}" />
+                            <c:set var="prevUrl" value="${basePath}?${queryString}" />
+                            
+                            <a href="${prevUrl}"
+                               class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 hover:text-primary transition disabled:opacity-50 disabled:cursor-not-allowed ${currentPage == 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
+                               ${currentPage == 1 ? 'aria-disabled="true" tabindex="-1"' : ''}>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                                Trước
+                            </a>
+                            
+                            <div class="flex items-center gap-1">
+                                <c:forEach begin="1" end="${totalPages}" var="page">
+                                    <c:choose>
+                                        <c:when test="${page == currentPage}">
+                                            <span class="inline-flex items-center justify-center min-w-[2rem] h-8 rounded-xl bg-primary text-white text-xs font-semibold">
+                                                <c:out value="${page}" />
+                                            </span>
+                                        </c:when>
+                                        <c:when test="${totalPages <= 7 || page == 1 || page == totalPages || (page >= currentPage - 2 && page <= currentPage + 2)}">
+                                            <c:set var="pageQuery" value="${classFilterParams.buildQueryString(page, pageSize)}" />
+                                            <c:set var="pageUrl" value="${basePath}?${pageQuery}" />
+                                            <a href="${pageUrl}"
+                                               class="inline-flex items-center justify-center min-w-[2rem] h-8 rounded-xl border border-blue-100 bg-white px-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 hover:text-primary transition">
+                                                <c:out value="${page}" />
+                                            </a>
+                                        </c:when>
+                                        <c:when test="${page == currentPage - 3 || page == currentPage + 3}">
+                                            <span class="inline-flex items-center justify-center min-w-[2rem] h-8 text-xs text-slate-400">
+                                                ...
+                                            </span>
+                                        </c:when>
+                                    </c:choose>
+                                </c:forEach>
+                            </div>
+                            
+                            <c:set var="nextQuery" value="${classFilterParams.buildQueryString(currentPage < totalPages ? currentPage + 1 : totalPages, pageSize)}" />
+                            <c:set var="nextUrl" value="${basePath}?${nextQuery}" />
+                            
+                            <a href="${nextUrl}"
+                               class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 hover:text-primary transition disabled:opacity-50 disabled:cursor-not-allowed ${currentPage >= totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
+                               ${currentPage >= totalPages ? 'aria-disabled="true" tabindex="-1"' : ''}>
+                                Sau
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </nav>
                     </c:if>
                 </div>
-                
-                <c:if test="${totalRecords > 0}">
-                    <nav class="flex items-center gap-2" aria-label="Phân trang">
-                        <c:set var="basePath" value="${pageContext.request.contextPath}/admin/classes" />
-                        <c:set var="queryString" value="${classFilterParams.buildQueryString(currentPage > 1 ? currentPage - 1 : 1, pageSize)}" />
-                        <c:set var="prevUrl" value="${basePath}?${queryString}" />
-                        
-                        <a href="${prevUrl}"
-                           class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 hover:text-primary transition disabled:opacity-50 disabled:cursor-not-allowed ${currentPage == 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
-                           ${currentPage == 1 ? 'aria-disabled="true" tabindex="-1"' : ''}>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                            Trước
-                        </a>
-                        
-                        <div class="flex items-center gap-1">
-                            <c:forEach begin="1" end="${totalPages}" var="page">
-                                <c:choose>
-                                    <c:when test="${page == currentPage}">
-                                        <span class="inline-flex items-center justify-center min-w-[2rem] h-8 rounded-xl bg-primary text-white text-xs font-semibold">
-                                            <c:out value="${page}" />
-                                        </span>
-                                    </c:when>
-                                    <c:when test="${totalPages <= 7 || page == 1 || page == totalPages || (page >= currentPage - 2 && page <= currentPage + 2)}">
-                                        <c:set var="pageQuery" value="${classFilterParams.buildQueryString(page, pageSize)}" />
-                                        <c:set var="pageUrl" value="${basePath}?${pageQuery}" />
-                                        <a href="${pageUrl}"
-                                           class="inline-flex items-center justify-center min-w-[2rem] h-8 rounded-xl border border-blue-100 bg-white px-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 hover:text-primary transition">
-                                            <c:out value="${page}" />
-                                        </a>
-                                    </c:when>
-                                    <c:when test="${page == currentPage - 3 || page == currentPage + 3}">
-                                        <span class="inline-flex items-center justify-center min-w-[2rem] h-8 text-xs text-slate-400">
-                                            ...
-                                        </span>
-                                    </c:when>
-                                </c:choose>
-                            </c:forEach>
-                        </div>
-                        
-                        <c:set var="nextQuery" value="${classFilterParams.buildQueryString(currentPage < totalPages ? currentPage + 1 : totalPages, pageSize)}" />
-                        <c:set var="nextUrl" value="${basePath}?${nextQuery}" />
-                        
-                        <a href="${nextUrl}"
-                           class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 hover:text-primary transition disabled:opacity-50 disabled:cursor-not-allowed ${currentPage >= totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
-                           ${currentPage >= totalPages ? 'aria-disabled="true" tabindex="-1"' : ''}>
-                            Sau
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </a>
-                    </nav>
-                </c:if>
             </div>
         </section>
 
-        <section class="grid gap-6 xl:grid-cols-3">
-            <div class="xl:col-span-2 rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-6">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-slate-900">Tiến trình đào tạo nổi bật</h3>
-                    <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                        Xuất báo cáo
-                    </button>
-                </div>
-                <div class="grid gap-4 md:grid-cols-2">
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">NE3 · Tuần 5</span>
-                            <span class="text-xs font-semibold text-emerald-500">Tiến độ 45%</span>
-                        </div>
-                        <h4 class="text-sm font-semibold text-slate-900">Chủ đề: Kỹ năng nghe nâng cao</h4>
-                        <ul class="text-xs text-slate-500 space-y-1">
-                            <li>• Đã hoàn thành 2/3 bài nghe</li>
-                            <li>• Bổ sung tài liệu luyện phản xạ</li>
-                            <li>• 4 học viên cần hỗ trợ thêm</li>
-                        </ul>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">CB1 · Tuần 7</span>
-                            <span class="text-xs font-semibold text-emerald-500">Tiến độ 72%</span>
-                        </div>
-                        <h4 class="text-sm font-semibold text-slate-900">Chủ đề: Từ vựng chủ đạo</h4>
-                        <ul class="text-xs text-slate-500 space-y-1">
-                            <li>• Hoàn thành 5/6 bài tập mới</li>
-                            <li>• 12 học viên đã đăng ký ca thi</li>
-                            <li>• Đề xuất kiểm tra giữa khóa</li>
-                        </ul>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">CT2 · Tuần 2</span>
-                            <span class="text-xs font-semibold text-orange-500">Tiến độ 20%</span>
-                        </div>
-                        <h4 class="text-sm font-semibold text-slate-900">Chủ đề: Luyện nghe chuyên sâu</h4>
-                        <ul class="text-xs text-slate-500 space-y-1">
-                            <li>• Tỉ lệ chuyên cần 98%</li>
-                            <li>• Thi thử trung bình 6.5</li>
-                            <li>• Cần bổ sung 5 bộ đề mẫu</li>
-                        </ul>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">ONL1 · Tuần 4</span>
-                            <span class="text-xs font-semibold text-emerald-500">Tiến độ 60%</span>
-                        </div>
-                        <h4 class="text-sm font-semibold text-slate-900">Chủ đề: Luyện nói online</h4>
-                        <ul class="text-xs text-slate-500 space-y-1">
-                            <li>• 3 buổi qua Zoom</li>
-                            <li>• 94% học viên hoàn thành bài tập</li>
-                            <li>• Feedback tích cực từ học viên</li>
-                        </ul>
-                    </article>
-                </div>
-            </div>
-
-            <div class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-5">
-                <h3 class="text-lg font-semibold text-slate-900">Công việc ưu tiên trong tuần</h3>
-                <div class="space-y-4 text-sm text-slate-600">
-                    <div class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <p class="font-semibold text-slate-800">Xem xét mở thêm lớp cơ bản</p>
-                        <p class="text-xs text-slate-400">Danh sách chờ 20 học viên · đề xuất lịch tối thứ 2-4-6.</p>
-                    </div>
-                    <div class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <p class="font-semibold text-slate-800">Cập nhật tài liệu NE3</p>
-                        <p class="text-xs text-slate-400">Bổ sung bài nghe theo khung đề 2025 trước 12/11.</p>
-                    </div>
-                    <div class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                        <p class="font-semibold text-slate-800">Đào tạo giảng viên dự phòng</p>
-                        <p class="text-xs text-slate-400">Chuẩn bị cho lớp cấp tốc tháng 12 · 2 giảng viên mới.</p>
-                    </div>
-                </div>
-                <button class="w-full inline-flex items-center justify-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5 transition">
-                    Xem thêm 6 công việc
-                </button>
-            </div>
-        </section>
         </main>
     </div>
 </div>
 
-<!-- Import modal -->
-<div id="class-import-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/30 backdrop-blur">
-    <div class="max-w-xl w-full mx-4 rounded-3xl bg-white shadow-2xl border border-blue-50 overflow-hidden">
-        <div class="flex items-center justify-between px-6 py-5 border-b border-blue-50 bg-primary.pale/60">
-            <div>
-                <h3 class="text-xl font-semibold text-slate-900">Nhập danh sách lớp</h3>
-                <p class="text-xs text-slate-500 mt-1">Tải lên file Excel theo đúng định dạng của hệ thống.</p>
-            </div>
-            <button data-modal-close="class-import-modal"
-                    class="h-10 w-10 rounded-full border border-blue-100 bg-white text-slate-500 hover:text-primary transition">
-                ×
-            </button>
-        </div>
-        <div class="px-6 py-6 space-y-6">
-            <div class="rounded-2xl border-2 border-dashed border-blue-100 bg-primary.pale/40 px-6 py-10 text-center">
-                <p class="text-sm font-semibold text-slate-800">Kéo & thả file vào đây</p>
-                <p class="text-xs text-slate-500 mt-2">Hỗ trợ .xlsx, .csv · dung lượng tối đa 10MB</p>
-                <button class="mt-4 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-5 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                    Chọn file từ máy
-                </button>
-            </div>
-            <div class="flex items-start gap-3 text-xs text-slate-500">
-                <span class="mt-0.5 inline-block h-2 w-2 rounded-full bg-primary"></span>
-                Bạn có thể tải <a href="#" class="text-primary font-semibold hover:text-primary/80">mẫu template chuẩn</a> để đảm bảo dữ liệu hợp lệ.
-            </div>
-            <div class="flex items-center justify-end gap-3">
-                <button data-modal-close="class-import-modal"
-                        class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
-                    Huỷ
-                </button>
-                <button class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                    Nhập dữ liệu
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
