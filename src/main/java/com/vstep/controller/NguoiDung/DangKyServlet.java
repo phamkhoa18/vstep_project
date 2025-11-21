@@ -34,7 +34,7 @@ public class DangKyServlet extends HttpServlet {
         String soDienThoai = request.getParameter("phone");
         String matKhau = request.getParameter("password");
         String confirmMatKhau = request.getParameter("confirmPassword");
-        String vaiTro = "user"; // Mặc định là user, không phải admin
+        String vaiTro = "hoc_vien"; // Mặc định là hoc_vien
 
         // Kiểm tra mật khẩu xác nhận
         if (!matKhau.equals(confirmMatKhau)) {

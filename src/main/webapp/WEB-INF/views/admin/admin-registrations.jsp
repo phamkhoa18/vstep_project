@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setTimeZone value="Asia/Ho_Chi_Minh" />
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -44,7 +45,8 @@
             </div>
             <div class="flex flex-wrap gap-3 text-xs text-slate-500">
                 <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
-                    1.482 đăng ký trong 30 ngày · cập nhật 15:10
+                    1.482 đăng ký trong 30 ngày · cập nhật
+                    <fmt:formatDate value="${lastUpdatedAt}" pattern="HH:mm" />
                 </span>
                 <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 border border-blue-100 text-slate-500">
                     32 đăng ký chờ duyệt · 43 đăng ký đang nợ phí
@@ -174,6 +176,9 @@
                 <table class="min-w-full divide-y divide-blue-50 text-sm text-slate-600">
                     <thead class="bg-primary.pale/60 text-xs uppercase text-slate-500 tracking-widest">
                     <tr>
+                        <th class="px-6 py-4">
+                            <input type="checkbox" id="select-all" class="h-4 w-4 rounded border-blue-200 text-primary focus:ring-primary/30">
+                        </th>
                         <th class="px-6 py-4 text-left font-semibold">Học viên</th>
                         <th class="px-6 py-4 text-left font-semibold">Loại đăng ký</th>
                         <th class="px-6 py-4 text-left font-semibold">Đối tượng</th>
@@ -187,16 +192,29 @@
                     <c:choose>
                         <c:when test="${not empty registrations}">
                             <c:forEach var="reg" items="${registrations}">
-                                <c:set var="dk" value="${reg.dangKy}" />
+                                <c:set var="loai" value="${reg.loai}" />
                                 <c:set var="user" value="${reg.nguoiDung}" />
-                                <c:set var="lop" value="${reg.lopOn}" />
+                                <c:choose>
+                                    <c:when test="${loai == 'lop'}">
+                                        <c:set var="dk" value="${reg.dangKy}" />
+                                        <c:set var="lop" value="${reg.lopOn}" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="dkThi" value="${reg.dangKyThi}" />
+                                        <c:set var="caThi" value="${reg.caThi}" />
+                                    </c:otherwise>
+                                </c:choose>
                                 <tr>
+                                    <td class="px-6 py-5">
+                                        <input type="checkbox" class="row-check h-4 w-4 rounded border-blue-200 text-primary focus:ring-primary/30" 
+                                               value="${loai == 'lop' ? dk.id : dkThi.id}">
+                                    </td>
                                     <td class="px-6 py-5">
                                         <p class="font-semibold text-slate-900">
                                             <c:out value="${not empty user ? user.hoTen : 'N/A'}" />
                                         </p>
                                         <p class="text-xs text-slate-400 mt-1">
-                                            Mã ĐK: <c:out value="${not empty dk.maXacNhan ? dk.maXacNhan : 'N/A'}" />
+                                            Mã ĐK: <c:out value="${loai == 'lop' ? (not empty dk.maXacNhan ? dk.maXacNhan : 'N/A') : (not empty dkThi.maXacNhan ? dkThi.maXacNhan : 'N/A')}" />
                                         </p>
                                         <c:if test="${not empty user}">
                                             <p class="text-xs text-slate-400">
@@ -205,82 +223,191 @@
                                         </c:if>
                                     </td>
                                     <td class="px-6 py-5">
-                                        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
-                                            Lớp ôn
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-5">
-                                        <c:if test="${not empty lop}">
-                                            <p class="font-semibold text-slate-800">
-                                                <c:out value="${lop.maLop}" /> · <c:out value="${lop.tieuDe}" />
-                                            </p>
-                                            <p class="text-xs text-slate-400">
-                                                <c:if test="${not empty lop.ngayKhaiGiang}">
-                                                    <fmt:formatDate value="${lop.ngayKhaiGiang}" pattern="dd/MM/yyyy" />
-                                                </c:if>
-                                                · <c:out value="${lop.hinhThuc}" />
-                                            </p>
-                                        </c:if>
-                                    </td>
-                                    <td class="px-6 py-5">
                                         <c:choose>
-                                            <c:when test="${dk.soTienDaTra > 0}">
-                                                <p class="font-semibold text-emerald-500">Đã thanh toán</p>
-                                                <p class="text-xs text-slate-400">
-                                                    <fmt:formatNumber value="${dk.soTienDaTra}" type="number" groupingUsed="true" />đ
-                                                    <c:if test="${not empty lop && lop.hocPhi > dk.soTienDaTra}">
-                                                        / <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
-                                                    </c:if>
-                                                </p>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <p class="font-semibold text-orange-500">Chờ thanh toán</p>
-                                                <c:if test="${not empty lop}">
-                                                    <p class="text-xs text-slate-400">
-                                                        Học phí: <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
-                                                    </p>
-                                                </c:if>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td class="px-6 py-5">
-                                        <c:if test="${not empty dk.ngayDangKy}">
-                                            <p class="font-semibold text-slate-800">
-                                                <fmt:formatDate value="${dk.ngayDangKy}" pattern="dd/MM/yyyy" />
-                                            </p>
-                                            <p class="text-xs text-slate-400">
-                                                <fmt:formatDate value="${dk.ngayDangKy}" pattern="HH:mm" />
-                                            </p>
-                                        </c:if>
-                                    </td>
-                                    <td class="px-6 py-5">
-                                        <c:choose>
-                                            <c:when test="${dk.trangThai == 'Chờ xác nhận'}">
-                                                <span class="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-500">
-                                                    <c:out value="${dk.trangThai}" />
-                                                </span>
-                                            </c:when>
-                                            <c:when test="${dk.trangThai == 'Đã xác nhận' || dk.trangThai == 'Đã duyệt'}">
+                                            <c:when test="${loai == 'lop'}">
                                                 <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
-                                                    <c:out value="${dk.trangThai}" />
+                                                    Lớp ôn
                                                 </span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-primary">
-                                                    <c:out value="${dk.trangThai}" />
+                                                    Ca thi
+                                                </span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <c:choose>
+                                            <c:when test="${loai == 'lop' && not empty lop}">
+                                                <p class="font-semibold text-slate-800">
+                                                    <c:out value="${lop.maLop}" /> · <c:out value="${lop.tieuDe}" />
+                                                </p>
+                                                <p class="text-xs text-slate-400">
+                                                    <c:if test="${not empty lop.ngayKhaiGiang}">
+                                                        <fmt:formatDate value="${lop.ngayKhaiGiang}" pattern="dd/MM/yyyy" />
+                                                    </c:if>
+                                                    · <c:out value="${lop.hinhThuc}" />
+                                                </p>
+                                            </c:when>
+                                            <c:when test="${loai == 'thi' && not empty caThi}">
+                                                <p class="font-semibold text-slate-800">
+                                                    Ca thi #<c:out value="${caThi.id}" />
+                                                </p>
+                                                <p class="text-xs text-slate-400">
+                                                    <c:if test="${not empty caThi.ngayThi}">
+                                                        <fmt:formatDate value="${caThi.ngayThi}" pattern="dd/MM/yyyy" />
+                                                    </c:if>
+                                                    <c:if test="${not empty caThi.gioBatDau}">
+                                                        · <fmt:formatDate value="${caThi.gioBatDau}" pattern="HH:mm" />
+                                                    </c:if>
+                                                    <c:if test="${not empty caThi.diaDiem}">
+                                                        · <c:out value="${caThi.diaDiem}" />
+                                                    </c:if>
+                                                </p>
+                                            </c:when>
+                                        </c:choose>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <c:choose>
+                                            <c:when test="${loai == 'lop'}">
+                                                <c:choose>
+                                                    <c:when test="${dk.soTienDaTra > 0}">
+                                                        <p class="font-semibold text-emerald-500">Đã thanh toán</p>
+                                                        <p class="text-xs text-slate-400">
+                                                            <fmt:formatNumber value="${dk.soTienDaTra}" type="number" groupingUsed="true" />đ
+                                                            <c:if test="${not empty lop}">
+                                                                <c:set var="mucGiamValue" value="${not empty dk.mucGiam ? dk.mucGiam : 0}" />
+                                                                <c:set var="soTienPhaiTra" value="${lop.hocPhi - mucGiamValue}" />
+                                                                <c:if test="${lop.hocPhi > soTienPhaiTra}">
+                                                                    / <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
+                                                                    <c:if test="${mucGiamValue > 0}">
+                                                                        <span class="text-emerald-600">(Giảm <fmt:formatNumber value="${mucGiamValue}" type="number" groupingUsed="true" />đ)</span>
+                                                                    </c:if>
+                                                                </c:if>
+                                                            </c:if>
+                                                        </p>
+                                                        <c:if test="${not empty dk.maCodeGiamGia}">
+                                                            <p class="text-xs text-blue-600">Mã code: <c:out value="${dk.maCodeGiamGia}" /></p>
+                                                        </c:if>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <p class="font-semibold text-orange-500">Chờ thanh toán</p>
+                                                        <c:if test="${not empty lop}">
+                                                            <c:set var="mucGiamValue" value="${not empty dk.mucGiam ? dk.mucGiam : 0}" />
+                                                            <c:set var="soTienPhaiTra" value="${lop.hocPhi - mucGiamValue}" />
+                                                            <p class="text-xs text-slate-400">
+                                                                Học phí: <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
+                                                                <c:if test="${mucGiamValue > 0}">
+                                                                    <br>Giảm: -<fmt:formatNumber value="${mucGiamValue}" type="number" groupingUsed="true" />đ
+                                                                    <br>Phải trả: <fmt:formatNumber value="${soTienPhaiTra}" type="number" groupingUsed="true" />đ
+                                                                </c:if>
+                                                            </p>
+                                                            <c:if test="${not empty dk.maCodeGiamGia}">
+                                                                <p class="text-xs text-blue-600">Mã code: <c:out value="${dk.maCodeGiamGia}" /></p>
+                                                            </c:if>
+                                                        </c:if>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <c:choose>
+                                                    <c:when test="${dkThi.trangThai == 'Đã duyệt' || dkThi.trangThai == 'Đã xác nhận'}">
+                                                        <p class="font-semibold text-emerald-500">Đã thanh toán</p>
+                                                        <p class="text-xs text-slate-400">
+                                                            <fmt:formatNumber value="${dkThi.soTienPhaiTra}" type="number" groupingUsed="true" />đ
+                                                            <c:if test="${not empty caThi && caThi.giaGoc > dkThi.soTienPhaiTra}">
+                                                                <c:set var="mucGiamThiValue" value="${not empty dkThi.mucGiam ? dkThi.mucGiam : 0}" />
+                                                                <c:if test="${mucGiamThiValue > 0}">
+                                                                    <span class="text-emerald-600">(Giảm <fmt:formatNumber value="${mucGiamThiValue}" type="number" groupingUsed="true" />đ)</span>
+                                                                </c:if>
+                                                            </c:if>
+                                                        </p>
+                                                        <c:if test="${not empty dkThi.maCodeGiamGia}">
+                                                            <p class="text-xs text-blue-600">Mã code: <c:out value="${dkThi.maCodeGiamGia}" /></p>
+                                                        </c:if>
+                                                        <c:if test="${dkThi.daTungThi}">
+                                                            <p class="text-xs text-slate-400">Đã từng thi</p>
+                                                        </c:if>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <p class="font-semibold text-orange-500">Chờ thanh toán</p>
+                                                        <c:if test="${not empty caThi}">
+                                                            <c:set var="mucGiamThiValue" value="${not empty dkThi.mucGiam ? dkThi.mucGiam : 0}" />
+                                                            <p class="text-xs text-slate-400">
+                                                                Giá gốc: <fmt:formatNumber value="${caThi.giaGoc}" type="number" groupingUsed="true" />đ
+                                                                <c:if test="${mucGiamThiValue > 0}">
+                                                                    <br>Giảm: -<fmt:formatNumber value="${mucGiamThiValue}" type="number" groupingUsed="true" />đ
+                                                                    <br>Phải trả: <fmt:formatNumber value="${dkThi.soTienPhaiTra}" type="number" groupingUsed="true" />đ
+                                                                </c:if>
+                                                            </p>
+                                                            <c:if test="${not empty dkThi.maCodeGiamGia}">
+                                                                <p class="text-xs text-blue-600">Mã code: <c:out value="${dkThi.maCodeGiamGia}" /></p>
+                                                            </c:if>
+                                                            <c:if test="${dkThi.daTungThi}">
+                                                                <p class="text-xs text-slate-400">Đã từng thi</p>
+                                                            </c:if>
+                                                        </c:if>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <c:choose>
+                                            <c:when test="${loai == 'lop' && not empty dk.ngayDangKy}">
+                                                <p class="font-semibold text-slate-800">
+                                                    <fmt:formatDate value="${dk.ngayDangKy}" pattern="dd/MM/yyyy" />
+                                                </p>
+                                                <p class="text-xs text-slate-400">
+                                                    <fmt:formatDate value="${dk.ngayDangKy}" pattern="HH:mm" />
+                                                </p>
+                                            </c:when>
+                                            <c:when test="${loai == 'thi' && not empty dkThi.ngayDangKy}">
+                                                <p class="font-semibold text-slate-800">
+                                                    <fmt:formatDate value="${dkThi.ngayDangKy}" pattern="dd/MM/yyyy" />
+                                                </p>
+                                                <p class="text-xs text-slate-400">
+                                                    <fmt:formatDate value="${dkThi.ngayDangKy}" pattern="HH:mm" />
+                                                </p>
+                                            </c:when>
+                                        </c:choose>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <c:set var="trangThai" value="${loai == 'lop' ? dk.trangThai : dkThi.trangThai}" />
+                                        <c:choose>
+                                            <c:when test="${trangThai == 'Chờ xác nhận'}">
+                                                <span class="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-500">
+                                                    <c:out value="${trangThai}" />
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${trangThai == 'Đã xác nhận' || trangThai == 'Đã duyệt'}">
+                                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
+                                                    <c:out value="${trangThai}" />
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-primary">
+                                                    <c:out value="${trangThai}" />
                                                 </span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
                                     <td class="px-6 py-5 text-right space-x-2">
-                                        <button data-modal-target="detail-modal-${dk.id}"
+                                        <button data-modal-target="detail-modal-${loai == 'lop' ? dk.id : dkThi.id}"
+                                                type="button"
                                                 class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
                                             Chi tiết
                                         </button>
-                                        <c:if test="${dk.trangThai == 'Chờ xác nhận'}">
-                                            <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                                                Duyệt
-                                            </button>
+                                        <c:set var="trangThai" value="${loai == 'lop' ? dk.trangThai : dkThi.trangThai}" />
+                                        <c:if test="${trangThai == 'Chờ xác nhận'}">
+                                            <form method="post" action="${pageContext.request.contextPath}/admin/registrations" style="display:inline">
+                                                <input type="hidden" name="action" value="approve">
+                                                <input type="hidden" name="id" value="${loai == 'lop' ? dk.id : dkThi.id}">
+                                                <input type="hidden" name="loai" value="${loai}">
+                                                <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
+                                                    Duyệt
+                                                </button>
+                                            </form>
                                         </c:if>
                                     </td>
                                 </tr>
@@ -297,6 +424,188 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Render detail modals after the table to avoid nesting issues -->
+            <c:if test="${not empty registrations}">
+                <c:forEach var="reg" items="${registrations}">
+                    <c:set var="loai" value="${reg.loai}" />
+                    <c:choose>
+                        <c:when test="${loai == 'lop'}">
+                            <c:set var="dk" value="${reg.dangKy}" />
+                            <c:set var="lop" value="${reg.lopOn}" />
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="dkThi" value="${reg.dangKyThi}" />
+                            <c:set var="caThi" value="${reg.caThi}" />
+                        </c:otherwise>
+                    </c:choose>
+                    <c:set var="user" value="${reg.nguoiDung}" />
+                    <c:set var="modalId" value="${loai == 'lop' ? dk.id : dkThi.id}" />
+                    <div id="detail-modal-${modalId}" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/30 backdrop-blur">
+                        <div class="max-w-3xl w-full mx-4 rounded-3xl bg-white shadow-2xl border border-blue-50 overflow-hidden">
+                            <div class="flex items-center justify-between px-6 py-5 border-b border-blue-50 bg-primary.pale/60">
+                                <div>
+                                    <h3 class="text-xl font-semibold text-slate-900">Chi tiết đăng ký</h3>
+                                    <p class="text-xs text-slate-500 mt-1">Thông tin học viên và đăng ký.</p>
+                                </div>
+                                <button data-modal-close="detail-modal-${modalId}"
+                                        class="h-10 w-10 rounded-full border border-blue-100 bg-white text-slate-500 hover:text-primary transition">
+                                    ×
+                                </button>
+                            </div>
+                            <div class="px-6 py-6 space-y-6">
+                                <div class="grid gap-6 md:grid-cols-2">
+                                    <div>
+                                        <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Học viên</p>
+                                        <p class="mt-2 text-sm font-semibold text-slate-900">
+                                            <c:out value="${not empty user ? user.hoTen : 'N/A'}" />
+                                        </p>
+                                        <p class="text-xs text-slate-400">
+                                            SĐT: <c:out value="${not empty user ? user.soDienThoai : 'N/A'}" /> ·
+                                            Email: <c:out value="${not empty user ? user.email : 'N/A'}" />
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Mã đăng ký</p>
+                                        <p class="mt-2 text-sm font-semibold text-slate-900">
+                                            <c:out value="${loai == 'lop' ? (not empty dk.maXacNhan ? dk.maXacNhan : 'N/A') : (not empty dkThi.maXacNhan ? dkThi.maXacNhan : 'N/A')}" />
+                                        </p>
+                                        <p class="text-xs text-slate-400">
+                                            <c:choose>
+                                                <c:when test="${loai == 'lop' && not empty dk.ngayDangKy}">
+                                                    Tạo lúc <fmt:formatDate value="${dk.ngayDangKy}" pattern="dd/MM/yyyy · HH:mm" />
+                                                </c:when>
+                                                <c:when test="${loai == 'thi' && not empty dkThi.ngayDangKy}">
+                                                    Tạo lúc <fmt:formatDate value="${dkThi.ngayDangKy}" pattern="dd/MM/yyyy · HH:mm" />
+                                                </c:when>
+                                            </c:choose>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="rounded-2xl border border-blue-50 bg-primary.pale/40 px-4 py-4">
+                                    <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Đối tượng</p>
+                                    <c:choose>
+                                        <c:when test="${loai == 'lop' && not empty lop}">
+                                            <p class="mt-2 text-sm font-semibold text-slate-900">
+                                                <c:out value="${lop.maLop}" /> · <c:out value="${lop.tieuDe}" />
+                                            </p>
+                                            <p class="text-xs text-slate-500 mt-1">
+                                                <c:if test="${not empty lop.ngayKhaiGiang}">
+                                                    <fmt:formatDate value="${lop.ngayKhaiGiang}" pattern="dd/MM/yyyy" />
+                                                </c:if>
+                                                · <c:out value="${lop.hinhThuc}" />
+                                                <c:if test="${not empty lop.thoiGianHoc}">
+                                                    · <c:out value="${lop.thoiGianHoc}" />
+                                                </c:if>
+                                            </p>
+                                        </c:when>
+                                        <c:when test="${loai == 'thi' && not empty caThi}">
+                                            <p class="mt-2 text-sm font-semibold text-slate-900">
+                                                Ca thi #<c:out value="${caThi.id}" />
+                                                <c:if test="${not empty caThi.maCaThi}">
+                                                    · <c:out value="${caThi.maCaThi}" />
+                                                </c:if>
+                                            </p>
+                                            <p class="text-xs text-slate-500 mt-1">
+                                                <c:if test="${not empty caThi.ngayThi}">
+                                                    <fmt:formatDate value="${caThi.ngayThi}" pattern="dd/MM/yyyy" />
+                                                </c:if>
+                                                <c:if test="${not empty caThi.gioBatDau}">
+                                                    · <fmt:formatDate value="${caThi.gioBatDau}" pattern="HH:mm" />
+                                                </c:if>
+                                                <c:if test="${not empty caThi.diaDiem}">
+                                                    · <c:out value="${caThi.diaDiem}" />
+                                                </c:if>
+                                            </p>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <p class="mt-2 text-sm text-slate-500">Không có thông tin.</p>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <div class="grid gap-6 md:grid-cols-2">
+                                    <div class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm">
+                                        <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Thanh toán</p>
+                                        <c:choose>
+                                            <c:when test="${loai == 'lop'}">
+                                                <c:choose>
+                                                    <c:when test="${dk.soTienDaTra > 0}">
+                                                        <p class="mt-2 text-sm font-semibold text-emerald-500">Đã thanh toán</p>
+                                                        <p class="text-xs text-slate-400 mt-1">
+                                                            <fmt:formatNumber value="${dk.soTienDaTra}" type="number" groupingUsed="true" />đ
+                                                            <c:if test="${not empty lop && lop.hocPhi > dk.soTienDaTra}">
+                                                                / <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
+                                                            </c:if>
+                                                        </p>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <p class="mt-2 text-sm font-semibold text-orange-500">Chờ thanh toán</p>
+                                                        <c:if test="${not empty lop}">
+                                                            <p class="text-xs text-slate-400 mt-1">
+                                                                Học phí: <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ
+                                                            </p>
+                                                        </c:if>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <c:choose>
+                                                    <c:when test="${dkThi.trangThai == 'Đã duyệt' || dkThi.trangThai == 'Đã xác nhận'}">
+                                                        <p class="mt-2 text-sm font-semibold text-emerald-500">Đã thanh toán</p>
+                                                        <p class="text-xs text-slate-400 mt-1">
+                                                            <fmt:formatNumber value="${dkThi.soTienPhaiTra}" type="number" groupingUsed="true" />đ
+                                                        </p>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <p class="mt-2 text-sm font-semibold text-orange-500">Chờ thanh toán</p>
+                                                        <c:if test="${not empty caThi}">
+                                                            <p class="text-xs text-slate-400 mt-1">
+                                                                Giá gốc: <fmt:formatNumber value="${caThi.giaGoc}" type="number" groupingUsed="true" />đ
+                                                                <br>Phải trả: <fmt:formatNumber value="${dkThi.soTienPhaiTra}" type="number" groupingUsed="true" />đ
+                                                            </p>
+                                                        </c:if>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <div class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm">
+                                        <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Trạng thái</p>
+                                        <c:set var="trangThaiModal" value="${loai == 'lop' ? dk.trangThai : dkThi.trangThai}" />
+                                        <p class="mt-2 text-sm font-semibold
+                                            ${trangThaiModal == 'Đã duyệt' ? 'text-emerald-500' : (trangThaiModal == 'Chờ xác nhận' ? 'text-orange-500' : 'text-primary')}">
+                                            <c:out value="${trangThaiModal}" />
+                                        </p>
+                                        <c:if test="${trangThaiModal == 'Chờ xác nhận'}">
+                                            <form method="post" action="${pageContext.request.contextPath}/admin/registrations" class="mt-3">
+                                                <input type="hidden" name="action" value="approve">
+                                                <input type="hidden" name="id" value="${modalId}">
+                                                <input type="hidden" name="loai" value="${loai}">
+                                                <button type="submit"
+                                                        class="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                                                    Duyệt đăng ký
+                                                </button>
+                                            </form>
+                                        </c:if>
+                                    </div>
+                                </div>
+                                <c:if test="${loai == 'lop' && not empty dk.ghiChu}">
+                                    <div class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
+                                        <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Ghi chú</p>
+                                        <p class="text-sm text-slate-700"><c:out value="${dk.ghiChu}" /></p>
+                                    </div>
+                                </c:if>
+                                <div class="flex items-center justify-end gap-3">
+                                    <button data-modal-close="detail-modal-${modalId}"
+                                            class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
+                                        Đóng
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </c:forEach>
+            </c:if>
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-t border-blue-50 bg-primary.pale/40 text-xs text-slate-500">
                 <p>
                     Hiển thị <c:out value="${not empty startRecord ? startRecord : 0}" /> – 
@@ -399,69 +708,7 @@
     </div>
 </div>
 
-<!-- Detail modal -->
-<div id="detail-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/30 backdrop-blur">
-    <div class="max-w-3xl w-full mx-4 rounded-3xl bg-white shadow-2xl border border-blue-50 overflow-hidden">
-        <div class="flex items-center justify-between px-6 py-5 border-b border-blue-50 bg-primary.pale/60">
-            <div>
-                <h3 class="text-xl font-semibold text-slate-900">Chi tiết đăng ký</h3>
-                <p class="text-xs text-slate-500 mt-1">Thông tin học viên và lịch sử xử lý.</p>
-            </div>
-            <button data-modal-close="detail-modal"
-                    class="h-10 w-10 rounded-full border border-blue-100 bg-white text-slate-500 hover:text-primary transition">
-                ×
-            </button>
-        </div>
-        <div class="px-6 py-6 space-y-6">
-            <div class="grid gap-6 md:grid-cols-2">
-                <div>
-                    <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Học viên</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-900">Trần Gia Khang</p>
-                    <p class="text-xs text-slate-400">SĐT: 0902 345 678 · Email: khang.tg@example.com</p>
-                </div>
-                <div>
-                    <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Mã đăng ký</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-900">DK-20251109-1023</p>
-                    <p class="text-xs text-slate-400">Tạo lúc 09/11/2025 · 13:24</p>
-                </div>
-            </div>
-            <div class="rounded-2xl border border-blue-50 bg-primary.pale/40 px-4 py-4">
-                <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Đăng ký</p>
-                <p class="mt-2 text-sm font-semibold text-slate-900">Ca thi CA-1254 · 12/11 - 08:00</p>
-                <p class="text-xs text-slate-500 mt-1">Phòng A203 · Thi giấy · Giám sát: Phạm Khánh</p>
-            </div>
-            <div class="grid gap-6 md:grid-cols-2">
-                <div class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm">
-                    <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Thanh toán</p>
-                    <p class="mt-2 text-sm font-semibold text-emerald-500">Đã thanh toán · 1.800.000đ</p>
-                    <p class="text-xs text-slate-400 mt-1">Chuyển khoản ngân hàng · 09/11/2025</p>
-                </div>
-                <div class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm">
-                    <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Trạng thái</p>
-                    <p class="mt-2 text-sm font-semibold text-emerald-500">Đã duyệt</p>
-                    <p class="text-xs text-slate-400 mt-1">Người duyệt: Nguyễn Thị Ánh · 09/11/2025 14:02</p>
-                </div>
-            </div>
-            <div class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-3">
-                <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Lịch sử xử lý</p>
-                <div class="text-xs text-slate-500 space-y-2">
-                    <p>• 09/11 · 13:24 - Học viên hoàn tất đăng ký trực tuyến.</p>
-                    <p>• 09/11 · 13:28 - Hệ thống xác nhận thanh toán.</p>
-                    <p>• 09/11 · 14:02 - Quản trị viên duyệt đăng ký.</p>
-                </div>
-            </div>
-            <div class="flex items-center justify-end gap-3">
-                <button data-modal-close="detail-modal"
-                        class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
-                    Đóng
-                </button>
-                <button class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                    In xác nhận
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Detail modal template removed; using per-row modals -->
 
 <!-- Reminder modal -->
 <div id="reminder-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/30 backdrop-blur">
@@ -516,14 +763,16 @@ Nếu bạn đã thanh toán, vui lòng bỏ qua email này. Cảm ơn bạn!</t
         <div class="flex items-center justify-between px-6 py-5 border-b border-blue-50 bg-primary.pale/60">
             <div>
                 <h3 class="text-xl font-semibold text-slate-900">Duyệt đăng ký hàng loạt</h3>
-                <p class="text-xs text-slate-500 mt-1">Áp dụng cho 18 đăng ký đang chọn.</p>
+                <p class="text-xs text-slate-500 mt-1"><span id="bulk-count">Áp dụng cho 0 đăng ký đang chọn.</span></p>
             </div>
             <button data-modal-close="bulk-approve-modal"
                     class="h-10 w-10 rounded-full border border-blue-100 bg-white text-slate-500 hover:text-primary transition">
                 ×
             </button>
         </div>
-        <form class="px-6 py-6 space-y-6">
+        <form class="px-6 py-6 space-y-6" method="post" action="${pageContext.request.contextPath}/admin/registrations" id="bulk-approve-form">
+            <input type="hidden" name="action" value="approve-bulk">
+            <div id="bulk-ids-container"></div>
             <div class="text-sm text-slate-600 space-y-2">
                 <p>• Tự động gửi email xác nhận tới học viên.</p>
                 <p>• Cập nhật trạng thái: <span class="font-semibold text-emerald-500">Đã duyệt</span>.</p>
@@ -630,6 +879,43 @@ Nếu bạn đã thanh toán, vui lòng bỏ qua email này. Cảm ơn bạn!</t
 </div>
 
 <%@ include file="layout/admin-scripts.jspf" %>
+<script>
+    (function() {
+        const selectAll = document.getElementById('select-all');
+        const rowChecks = document.querySelectorAll('.row-check');
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                rowChecks.forEach(cb => cb.checked = selectAll.checked);
+                updateBulkCount();
+            });
+        }
+        rowChecks.forEach(cb => cb.addEventListener('change', updateBulkCount));
+        function updateBulkCount() {
+            const count = Array.from(rowChecks).filter(cb => cb.checked).length;
+            const label = document.getElementById('bulk-count');
+            if (label) label.textContent = 'Áp dụng cho ' + count + ' đăng ký đang chọn.';
+        }
+        // Hook open modal to fill hidden inputs
+        const bulkBtn = document.querySelector('[data-modal-target="bulk-approve-modal"]');
+        if (bulkBtn) {
+            bulkBtn.addEventListener('click', function() {
+                const container = document.getElementById('bulk-ids-container');
+                if (container) {
+                    container.innerHTML = '';
+                    Array.from(document.querySelectorAll('.row-check'))
+                        .filter(cb => cb.checked)
+                        .forEach(cb => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'ids';
+                            input.value = cb.value;
+                            container.appendChild(input);
+                        });
+                }
+            });
+        }
+    })();
+</script>
 </body>
 </html>
 

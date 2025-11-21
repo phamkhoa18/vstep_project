@@ -102,18 +102,37 @@
                             </div>
                         </c:if>
                         <div class="flex items-center justify-between">
-                            <span>Sĩ số tối đa</span>
-                            <span class="font-semibold text-slate-800"><c:out value="${lop.siSoToiDa}" /> học viên</span>
+                            <span>Sĩ số</span>
+                            <span class="font-semibold text-slate-800">
+                                <c:out value="${empty soLuongDangKy ? 0 : soLuongDangKy}" /> / <c:out value="${lop.siSoToiDa}" /> học viên
+                            </span>
                         </div>
+                        <c:if test="${not empty soLuongDangKy and soLuongDangKy < lop.siSoToiDa}">
+                            <div class="flex items-center justify-between">
+                                <span>Còn chỗ</span>
+                                <span class="font-semibold text-emerald-600">
+                                    <c:out value="${lop.siSoToiDa - soLuongDangKy}" /> chỗ trống
+                                </span>
+                            </div>
+                        </c:if>
                         <div class="flex items-center justify-between">
                             <span>Hỗ trợ</span>
                             <span class="font-semibold text-slate-800">Tư vấn 24/7</span>
                         </div>
                     </div>
-                    <a href="${pageContext.request.contextPath}/dang-ky-lop?lopId=${lop.id}"
-                       class="mt-5 block text-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                        Đăng ký ngay
-                    </a>
+                    <c:choose>
+                        <c:when test="${daDuCho}">
+                            <span class="mt-5 block text-center rounded-full border border-rose-100 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-500 cursor-not-allowed">
+                                Đã đủ chỗ
+                            </span>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/dang-ky-lop?lopId=${lop.id}"
+                               class="mt-5 block text-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                                Đăng ký ngay
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
                     <p class="mt-3 text-[11px] text-center text-slate-400">
                         Giữ chỗ trong 24h. Học viên thi lại được giảm thêm 10% tự động.
                     </p>
@@ -245,9 +264,25 @@
                                 </div>
                             </c:if>
                             <div class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 border border-blue-100">
-                                <span class="text-xs text-slate-500 uppercase tracking-widest">Sĩ số tối đa</span>
-                                <span class="font-semibold text-slate-800"><c:out value="${lop.siSoToiDa}" /> học viên</span>
+                                <span class="text-xs text-slate-500 uppercase tracking-widest">Sĩ số</span>
+                                <span class="font-semibold text-slate-800">
+                                    <c:out value="${empty soLuongDangKy ? 0 : soLuongDangKy}" /> / <c:out value="${lop.siSoToiDa}" /> học viên
+                                </span>
                             </div>
+                            <c:if test="${not empty soLuongDangKy and soLuongDangKy < lop.siSoToiDa}">
+                                <div class="flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-3 border border-emerald-100">
+                                    <span class="text-xs text-slate-500 uppercase tracking-widest">Còn chỗ</span>
+                                    <span class="font-semibold text-emerald-600">
+                                        <c:out value="${lop.siSoToiDa - soLuongDangKy}" /> chỗ
+                                    </span>
+                                </div>
+                            </c:if>
+                            <c:if test="${daDuCho}">
+                                <div class="flex items-center justify-between rounded-2xl bg-rose-50 px-4 py-3 border border-rose-100">
+                                    <span class="text-xs text-slate-500 uppercase tracking-widest">Trạng thái</span>
+                                    <span class="font-semibold text-rose-600">Đã đủ chỗ</span>
+                                </div>
+                            </c:if>
                             <c:if test="${not empty lop.nhipDo}">
                                 <div class="flex items-center justify-between rounded-2xl bg-white px-4 py-3 border border-blue-100">
                                     <span class="text-xs text-slate-500 uppercase tracking-widest">Nhịp độ</span>

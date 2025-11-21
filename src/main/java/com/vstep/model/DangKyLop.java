@@ -9,8 +9,10 @@ public class DangKyLop {
     private Timestamp ngayDangKy;
     private String ghiChu;
     private long soTienDaTra;
+    private long mucGiam; // Tổng mức giảm giá (từ mã code hoặc chính sách)
     private String trangThai;
     private String maXacNhan;
+    private String maCodeGiamGia; // Mã code giảm giá đã sử dụng
 
     // Getters & Setters
     public long getId() { return id; }
@@ -31,9 +33,15 @@ public class DangKyLop {
     public long getSoTienDaTra() { return soTienDaTra; }
     public void setSoTienDaTra(long soTienDaTra) { this.soTienDaTra = soTienDaTra; }
 
+    public long getMucGiam() { return mucGiam; }
+    public void setMucGiam(long mucGiam) { this.mucGiam = mucGiam; }
+
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 
     public String getMaXacNhan() { return maXacNhan; }
     public void setMaXacNhan(String maXacNhan) { this.maXacNhan = maXacNhan; }
+
+    public String getMaCodeGiamGia() { return maCodeGiamGia; }
+    public void setMaCodeGiamGia(String maCodeGiamGia) { this.maCodeGiamGia = maCodeGiamGia; }
 }

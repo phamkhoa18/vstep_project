@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -147,16 +148,73 @@ public class LopOnRepositoryImpl implements LopOnRepository {
 
     @Override
     public boolean deleteById(int id) {
-        String sql = "DELETE FROM lop_on WHERE id = ?";
+        // Sử dụng transaction để đảm bảo atomicity
+        Connection connection = null;
+        try {
+            connection = DataSourceUtil.getConnection();
+            connection.setAutoCommit(false); // Bắt đầu transaction
 
-        try (Connection connection = DataSourceUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+            // Bước 1: Xóa tất cả đăng ký lớp liên quan
+            String deleteRegistrationsSql = "DELETE FROM dang_ky_lop WHERE lop_on_id = ?";
+            try (PreparedStatement deleteRegistrationsStmt = connection.prepareStatement(deleteRegistrationsSql)) {
+                deleteRegistrationsStmt.setInt(1, id);
+                int deletedCount = deleteRegistrationsStmt.executeUpdate();
+                LOGGER.log(Level.INFO, "Đã xóa {0} đăng ký lớp liên quan đến lớp id={1}", 
+                          new Object[]{deletedCount, id});
+            }
 
-            statement.setInt(1, id);
-            return statement.executeUpdate() > 0;
+            // Bước 2: Xóa lớp ôn
+            String deleteLopOnSql = "DELETE FROM lop_on WHERE id = ?";
+            try (PreparedStatement deleteLopOnStmt = connection.prepareStatement(deleteLopOnSql)) {
+                deleteLopOnStmt.setInt(1, id);
+                int rowsAffected = deleteLopOnStmt.executeUpdate();
+                
+                if (rowsAffected == 0) {
+                    connection.rollback();
+                    LOGGER.log(Level.WARNING, "Không tìm thấy lớp ôn id={0} để xóa", id);
+                    return false;
+                }
+                
+                // Commit transaction nếu tất cả đều thành công
+                connection.commit();
+                LOGGER.log(Level.INFO, "Đã xóa lớp ôn id={0} và tất cả đăng ký liên quan", id);
+                return true;
+            }
         } catch (SQLException e) {
+            // Rollback transaction nếu có lỗi
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                    LOGGER.log(Level.SEVERE, "Đã rollback transaction khi xóa lớp ôn id=" + id, e);
+                } catch (SQLException rollbackEx) {
+                    LOGGER.log(Level.SEVERE, "Lỗi khi rollback transaction", rollbackEx);
+                }
+            }
+            
+            // Kiểm tra xem có phải foreign key constraint violation không
+            String sqlState = e.getSQLState();
+            int errorCode = e.getErrorCode();
+            // MySQL error code 1451 = Cannot delete or update a parent row: a foreign key constraint fails
+            if (sqlState != null && (sqlState.equals("23000") || errorCode == 1451)) {
+                LOGGER.log(Level.SEVERE, "Không thể xoá lớp ôn có id=" + id + " - Foreign key constraint violation", e);
+                // Tạo SQLIntegrityConstraintViolationException mới
+                SQLIntegrityConstraintViolationException fkEx = new SQLIntegrityConstraintViolationException(
+                    e.getMessage(), e.getSQLState(), errorCode);
+                fkEx.setStackTrace(e.getStackTrace());
+                throw new RuntimeException(fkEx);
+            }
             LOGGER.log(Level.SEVERE, "Không thể xoá lớp ôn có id=" + id, e);
-            return false;
+            throw new RuntimeException(e);
+        } finally {
+            // Đảm bảo connection được đóng
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true); // Reset auto-commit
+                    connection.close();
+                } catch (SQLException e) {
+                    LOGGER.log(Level.WARNING, "Lỗi khi đóng connection", e);
+                }
+            }
         }
     }
 

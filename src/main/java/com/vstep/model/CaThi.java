@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 
 public class CaThi {
     private long id;
+    private String maCaThi;
     private Date ngayThi;
     private Time gioBatDau;
     private Time gioKetThuc;
@@ -17,6 +18,9 @@ public class CaThi {
     // Getters & Setters
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }
+
+    public String getMaCaThi() { return maCaThi; }
+    public void setMaCaThi(String maCaThi) { this.maCaThi = maCaThi; }
 
     public Date getNgayThi() { return ngayThi; }
     public void setNgayThi(Date ngayThi) { this.ngayThi = ngayThi; }

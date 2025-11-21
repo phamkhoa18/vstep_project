@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -17,218 +20,363 @@
         <section class="space-y-4">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Cấu hình ưu đãi thi lại</h2>
-                    <p class="text-sm text-slate-500 mt-1">Thiết lập mức giảm giá theo số lần thi và thời gian quay lại.</p>
+                    <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Cấu hình giảm giá</h2>
+                    <p class="text-sm text-slate-500 mt-1">Thiết lập mức giảm giá cho thí sinh thi lại và quản lý mã code giảm giá.</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <button data-modal-target="history-modal"
-                            class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm hover:border-primary/40 hover:bg-primary/5 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path d="M3 12a9 9 0 1 1 9 9"/>
-                            <path d="M9 12h6"/>
-                            <path d="M12 9v6"/>
-                        </svg>
-                        Lịch sử cấu hình
-                    </button>
-                    <button data-modal-target="publish-modal"
-                            class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path d="M5 12h14"/>
-                            <path d="M12 5l7 7-7 7"/>
-                        </svg>
-                        Áp dụng cấu hình
-                    </button>
-                </div>
-            </div>
-            <div class="flex flex-wrap gap-3 text-xs text-slate-500">
-                <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
-                    Phiên bản hiện tại v2.1.0 · cập nhật 09/11/2025 · 10:15
-                </span>
-                <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 border border-blue-100 text-slate-500">
-                    Ngân sách ưu đãi còn 42 triệu (68% hạn mức)
-                </span>
             </div>
         </section>
 
         <section class="grid gap-6 xl:grid-cols-3">
             <div class="xl:col-span-2 space-y-6">
-                <form class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-6">
+                <!-- Cấu hình giảm giá cho ca thi -->
+                <form method="post" action="${pageContext.request.contextPath}/admin/config" class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-6">
+                    <input type="hidden" name="action" value="update-config-ca-thi">
                     <div>
-                        <h3 class="text-lg font-semibold text-slate-900">Thiết lập mức giảm</h3>
-                        <p class="text-xs text-slate-500 mt-1">Đặt ưu đãi theo mốc thời gian và số lần thi lại.</p>
+                        <h3 class="text-lg font-semibold text-slate-900">Cấu hình giảm giá ca thi</h3>
+                        <p class="text-xs text-slate-500 mt-1">Thiết lập mức giảm giá cho thí sinh thi lại ca thi.</p>
                     </div>
                     <div class="grid gap-6 md:grid-cols-2">
-                        <div class="rounded-2xl border border-blue-50 bg-primary.pale/40 px-4 py-5 space-y-4 shadow-sm">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-800">Thi lại lần đầu</p>
-                                <span class="text-xs font-semibold text-primary">Trong 30 ngày</span>
+                        <div>
+                            <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                                Mức giảm giá thi lại (VND)
+                            </label>
+                            <div class="relative mt-2">
+                                <input type="text" name="mucGiamThiLai" 
+                                       value="<fmt:formatNumber value="${not empty configCaThi ? configCaThi.mucGiamThiLai : 500000}" type="number" groupingUsed="true" />"
+                                       inputmode="numeric"
+                                       placeholder="500000"
+                                       required
+                                       class="w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 text-right pr-14 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                <span class="absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-slate-500 select-none">VND</span>
                             </div>
-                            <div class="flex items-center gap-3">
-                                <input type="range" min="0" max="50" value="30" class="w-full accent-primary">
-                                <div class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
-                                    <input type="number" min="0" max="50" value="30"
-                                           class="w-12 border-none text-right focus:outline-none">%
-                                </div>
-                            </div>
-                            <p class="text-xs text-slate-500">Áp dụng trên lệ phí thi gốc · thêm voucher học liệu 200.000đ.</p>
                         </div>
-                        <div class="rounded-2xl border border-blue-50 bg-white px-4 py-5 space-y-4 shadow-sm">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-800">Thi lại lần thứ hai</p>
-                                <span class="text-xs font-semibold text-primary">Trong 60 ngày</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <input type="range" min="0" max="40" value="20" class="w-full accent-primary">
-                                <div class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
-                                    <input type="number" min="0" max="40" value="20"
-                                           class="w-12 border-none text-right focus:outline-none">%
-                                </div>
-                            </div>
-                            <p class="text-xs text-slate-500">Khuyến khích quay lại sớm · tặng gói hỗ trợ luyện đề.</p>
-                        </div>
-                        <div class="rounded-2xl border border-blue-50 bg-white px-4 py-5 space-y-4 shadow-sm">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-800">Từ lần thứ ba</p>
-                                <span class="text-xs font-semibold text-primary">Sau 60 ngày</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <input type="range" min="0" max="30" value="10" class="w-full accent-primary">
-                                <div class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
-                                    <input type="number" min="0" max="30" value="10"
-                                           class="w-12 border-none text-right focus:outline-none">%
-                                </div>
-                            </div>
-                            <p class="text-xs text-slate-500">Khuyến nghị kèm gói học lại 1:1 với giảng viên.</p>
-                        </div>
-                        <div class="rounded-2xl border border-blue-50 bg-white px-4 py-5 space-y-4 shadow-sm">
-                            <div class="flex items-center justify_between">
-                                <p class="text-sm font-semibold text-slate-800">Ưu đãi học viên thân thiết</p>
-                                <span class="text-xs font-semibold text-primary">Điểm tích lũy ≥ 500</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <input type="range" min="0" max="20" value="5" class="w-full accent-primary">
-                                <div class="inline-flex items-center gap-1 rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
-                                    <input type="number" min="0" max="20" value="5"
-                                           class="w-12 border-none text-right focus:outline-none">%
-                                </div>
-                            </div>
-                            <p class="text-xs text-slate-500">Cộng dồn tối đa 5% với các ưu đãi khác.</p>
+                        <div>
+                            <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Trạng thái</label>
+                            <select name="trangThai" class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                <option value="active" ${not empty configCaThi && configCaThi.trangThai == 'active' ? 'selected' : ''}>Kích hoạt</option>
+                                <option value="inactive" ${not empty configCaThi && configCaThi.trangThai == 'inactive' ? 'selected' : ''}>Tạm dừng</option>
+                            </select>
                         </div>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ghi chú nội bộ</label>
-                        <textarea rows="3" placeholder="Ghi chú dành cho bộ phận tư vấn khi áp dụng ưu đãi..."
-                                  class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30"></textarea>
+                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Mô tả</label>
+                        <textarea name="moTa" rows="3" placeholder="Mô tả về chính sách giảm giá..."
+                                  class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">${not empty configCaThi ? configCaThi.moTa : ''}</textarea>
                     </div>
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <label class="inline-flex items-center gap-3 text-xs text-slate-500">
-                            <input type="checkbox" class="h-4 w-4 rounded border-blue-100 text-primary focus:ring-primary/30">
-                            Tự động gửi thông báo cập nhật tới bộ phận tư vấn
-                        </label>
-                        <div class="flex items-center gap-3">
-                            <button type="reset"
-                                    class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
-                                Khôi phục mặc định
-                            </button>
-                            <button type="submit"
-                                    class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                                Lưu nháp
-                            </button>
-                        </div>
+                    <div class="flex items-center justify-end">
+                        <button type="submit"
+                                class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                            Lưu cấu hình ca thi
+                        </button>
                     </div>
                 </form>
 
-                <div class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-6">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-slate-900">Điều kiện áp dụng</h3>
-                        <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                            + Thêm điều kiện
+                <!-- Cấu hình giảm giá cho lớp ôn -->
+                <form method="post" action="${pageContext.request.contextPath}/admin/config" class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-6">
+                    <input type="hidden" name="action" value="update-config-lop-on">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900">Cấu hình giảm giá lớp ôn</h3>
+                        <p class="text-xs text-slate-500 mt-1">Thiết lập mức giảm giá cho học viên đăng ký lại lớp ôn.</p>
+                    </div>
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <div>
+                            <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                                Mức giảm giá (VND)
+                            </label>
+                            <div class="relative mt-2">
+                                <input type="text" name="mucGiamThiLai" 
+                                       value="<fmt:formatNumber value="${not empty configLopOn ? configLopOn.mucGiamThiLai : 0}" type="number" groupingUsed="true" />"
+                                       inputmode="numeric"
+                                       placeholder="0"
+                                       required
+                                       class="w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 text-right pr-14 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                <span class="absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-slate-500 select-none">VND</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Trạng thái</label>
+                            <select name="trangThai" class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                <option value="active" ${not empty configLopOn && configLopOn.trangThai == 'active' ? 'selected' : ''}>Kích hoạt</option>
+                                <option value="inactive" ${not empty configLopOn && configLopOn.trangThai == 'inactive' ? 'selected' : ''}>Tạm dừng</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Mô tả</label>
+                        <textarea name="moTa" rows="3" placeholder="Mô tả về chính sách giảm giá..."
+                                  class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">${not empty configLopOn ? configLopOn.moTa : ''}</textarea>
+                    </div>
+                    <div class="flex items-center justify-end">
+                        <button type="submit"
+                                class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                            Lưu cấu hình lớp ôn
                         </button>
                     </div>
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <article class="rounded-2xl border border-blue-50 bg-primary.pale/40 px-4 py-4 shadow-sm space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-800">Điều kiện 01</p>
-                                <span class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">Bắt buộc</span>
-                            </div>
-                            <p class="text-xs text-slate-500">Áp dụng cho học viên thi lại cùng kỹ năng trong vòng 30 ngày kể từ ngày xuất kết quả.</p>
-                        </article>
-                        <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-800">Điều kiện 02</p>
-                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-500">Tùy chọn</span>
-                            </div>
-                            <p class="text-xs text-slate-500">Học viên cam kết hoàn thành tối thiểu 6 buổi ôn trước kỳ thi lại.</p>
-                        </article>
-                        <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-800">Điều kiện 03</p>
-                                <span class="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-500">Kiểm soát</span>
-                            </div>
-                            <p class="text-xs text-slate-500">Không áp dụng đồng thời với ưu đãi đối tác hoặc mã giảm giá Corporate.</p>
-                        </article>
-                        <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-800">Điều kiện 04</p>
-                                <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-primary">Khuyến nghị</span>
-                            </div>
-                            <p class="text-xs text-slate-500">Khuyến khích đăng ký gói ôn luyện kèm để duy trì ưu đãi ở mức cao nhất.</p>
-                        </article>
+                </form>
+
+                <!-- Quản lý mã code giảm giá -->
+                <div class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-900">Quản lý mã code giảm giá</h3>
+                            <p class="text-xs text-slate-500 mt-1">Tạo và quản lý các mã code giảm giá cho lớp ôn và ca thi.</p>
+                        </div>
+                        <button data-modal-target="create-code-modal"
+                                class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path d="M12 6v12"/>
+                                <path d="M6 12h12"/>
+                            </svg>
+                            Tạo mã code
+                        </button>
+                    </div>
+                    <div class="overflow-hidden rounded-2xl border border-blue-50">
+                        <table class="min-w-full divide-y divide-blue-50 text-sm text-slate-600">
+                            <thead class="bg-primary.pale/60 text-xs uppercase text-slate-500 tracking-widest">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold">Mã code</th>
+                                <th class="px-4 py-3 text-left font-semibold">Loại</th>
+                                <th class="px-4 py-3 text-left font-semibold">Giá trị</th>
+                                <th class="px-4 py-3 text-left font-semibold">Số lượng</th>
+                                <th class="px-4 py-3 text-left font-semibold">Trạng thái</th>
+                                <th class="px-4 py-3 text-right font-semibold">Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-blue-50 bg-white">
+                            <c:choose>
+                                <c:when test="${not empty allMaGiamGia}">
+                                    <c:forEach var="ma" items="${allMaGiamGia}">
+                                        <tr>
+                                            <td class="px-4 py-3">
+                                                <p class="font-semibold text-slate-900"><c:out value="${ma.maCode}" /></p>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold 
+                                                    ${ma.loai == 'ca_thi' ? 'bg-blue-100 text-primary' : 
+                                                      ma.loai == 'lop_on' ? 'bg-emerald-100 text-emerald-600' : 
+                                                      'bg-slate-100 text-slate-600'}">
+                                                    <c:choose>
+                                                        <c:when test="${ma.loai == 'ca_thi'}">Ca thi</c:when>
+                                                        <c:when test="${ma.loai == 'lop_on'}">Lớp ôn</c:when>
+                                                        <c:otherwise>Tất cả</c:otherwise>
+                                                    </c:choose>
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <c:choose>
+                                                    <c:when test="${ma.loaiGiam == 'fixed'}">
+                                                        <fmt:formatNumber value="${ma.giaTriGiam}" type="number" groupingUsed="true" />đ
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        ${ma.giaTriGiam}%
+                                                        <c:if test="${not empty ma.giaTriToiDa}">
+                                                            (tối đa <fmt:formatNumber value="${ma.giaTriToiDa}" type="number" groupingUsed="true" />đ)
+                                                        </c:if>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <c:out value="${ma.soLuongDaSuDung}" />
+                                                <c:if test="${not empty ma.soLuongToiDa}">
+                                                    / <c:out value="${ma.soLuongToiDa}" />
+                                                </c:if>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold 
+                                                    ${ma.trangThai == 'active' ? 'bg-emerald-100 text-emerald-600' : 
+                                                      ma.trangThai == 'expired' ? 'bg-red-100 text-red-600' : 
+                                                      'bg-slate-100 text-slate-600'}">
+                                                    <c:choose>
+                                                        <c:when test="${ma.trangThai == 'active'}">Kích hoạt</c:when>
+                                                        <c:when test="${ma.trangThai == 'expired'}">Hết hạn</c:when>
+                                                        <c:otherwise>Tạm dừng</c:otherwise>
+                                                    </c:choose>
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3 text-right space-x-2">
+                                                <button data-modal-target="edit-code-modal-${ma.id}"
+                                                        class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
+                                                    Sửa
+                                                </button>
+                                                <form method="post" action="${pageContext.request.contextPath}/admin/config" style="display:inline" class="js-delete-code-form" data-code="${fn:escapeXml(ma.maCode)}">
+                                                    <input type="hidden" name="action" value="delete-ma-giam-gia">
+                                                    <input type="hidden" name="id" value="${ma.id}">
+                                                    <button type="submit" 
+                                                            class="inline-flex items-center gap-2 rounded-full border border-red-100 bg-red-50 px-4 py-2 text-xs font-semibold text-red-500 hover:bg-red-100 transition">
+                                                        Xóa
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                                            <p class="text-sm">Chưa có mã code nào. Nhấn "Tạo mã code" để thêm.</p>
+                                        </td>
+                                    </tr>
+                                </c:otherwise>
+                            </c:choose>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
             <aside class="space-y-6">
                 <div class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-4">
-                    <h3 class="text-lg font-semibold text-slate-900">Thông báo xem trước</h3>
-                    <div class="rounded-2xl border border-blue-50 bg-primary.pale/40 px-4 py-4 text-sm text-slate-600 space-y-3">
-                        <p class="font-semibold text-slate-800">Ưu đãi thi lại trong 30 ngày</p>
-                        <p>Hoàn lại kỳ thi VSTEP với mức ưu đãi <span class="font-semibold text-primary">30%</span> khi đăng ký thi lại trong vòng 30 ngày kể từ ngày nhận kết quả.</p>
-                        <p>Học viên hoàn thành tối thiểu 6 buổi ôn sẽ được tặng voucher học liệu trị giá 200.000đ.</p>
-                        <p class="text-xs text-slate-400">Áp dụng từ 10/11/2025 đến 10/01/2026.</p>
+                    <h3 class="text-lg font-semibold text-slate-900">Thông tin cấu hình</h3>
+                    <div class="space-y-3 text-xs text-slate-600">
+                        <div class="rounded-2xl border border-blue-50 bg-primary.pale/40 px-4 py-3">
+                            <p class="font-semibold text-slate-800 mb-1">Ca thi</p>
+                            <p>Giảm giá thi lại: <span class="font-semibold text-primary">
+                                <fmt:formatNumber value="${not empty configCaThi ? configCaThi.mucGiamThiLai : 500000}" type="number" groupingUsed="true" />đ
+                            </span></p>
+                            <p class="text-slate-500 mt-1">${not empty configCaThi && not empty configCaThi.moTa ? configCaThi.moTa : 'Chưa có mô tả'}</p>
+                        </div>
+                        <div class="rounded-2xl border border-blue-50 bg-white px-4 py-3">
+                            <p class="font-semibold text-slate-800 mb-1">Lớp ôn</p>
+                            <p>Giảm giá: <span class="font-semibold text-primary">
+                                <fmt:formatNumber value="${not empty configLopOn ? configLopOn.mucGiamThiLai : 0}" type="number" groupingUsed="true" />đ
+                            </span></p>
+                            <p class="text-slate-500 mt-1">${not empty configLopOn && not empty configLopOn.moTa ? configLopOn.moTa : 'Chưa có mô tả'}</p>
+                        </div>
                     </div>
-                    <button class="w-full inline-flex items-center justify-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5 transition">
-                        Gửi email kiểm tra
-                    </button>
                 </div>
 
                 <div class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-4">
-                    <h3 class="text-lg font-semibold text-slate-900">Ảnh hưởng doanh thu</h3>
-                    <div class="h-40 rounded-2xl border border-dashed border-blue-100 bg-primary.pale/40 flex items-center justify-center text-sm text-slate-400">
-                        Biểu đồ dự báo doanh thu sẽ hiển thị tại đây.
+                    <h3 class="text-lg font-semibold text-slate-900">Thống kê mã code</h3>
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <div class="flex items-center justify-between rounded-2xl bg-primary.pale/40 px-4 py-3">
+                            <span>Tổng mã code</span>
+                            <span class="font-semibold text-slate-900"><c:out value="${not empty allMaGiamGia ? allMaGiamGia.size() : 0}" /></span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-2xl border border-blue-50 bg-white px-4 py-3">
+                            <span>Đang kích hoạt</span>
+                            <span class="font-semibold text-emerald-600">
+                                <c:set var="activeCount" value="0" />
+                                <c:forEach var="ma" items="${allMaGiamGia}">
+                                    <c:if test="${ma.trangThai == 'active'}">
+                                        <c:set var="activeCount" value="${activeCount + 1}" />
+                                    </c:if>
+                                </c:forEach>
+                                <c:out value="${activeCount}" />
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-2xl border border-blue-50 bg-white px-4 py-3">
+                            <span>Đã sử dụng</span>
+                            <span class="font-semibold text-slate-900">
+                                <c:set var="totalUsed" value="0" />
+                                <c:forEach var="ma" items="${allMaGiamGia}">
+                                    <c:set var="totalUsed" value="${totalUsed + ma.soLuongDaSuDung}" />
+                                </c:forEach>
+                                <c:out value="${totalUsed}" />
+                            </span>
+                        </div>
                     </div>
-                    <ul class="text-xs text-slate-500 space-y-2">
-                        <li>• Dự kiến tăng 18% tỷ lệ quay lại thi trong 60 ngày.</li>
-                        <li>• Ngân sách ưu đãi còn đủ cho 120 lượt thi lại.</li>
-                        <li>• Đề xuất giảm giá lớp ôn đi kèm còn 15%.</li>
-                    </ul>
-                </div>
-
-                <div class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-4">
-                    <h3 class="text-lg font-semibold text-slate-900">Nhật ký thay đổi</h3>
-                    <div class="space-y-3 text-xs text-slate-500">
-                        <div>
-                            <p class="text-sm font-semibold text-slate-800">09/11/2025 · 10:15</p>
-                            <p>Nguyễn Thị Ánh chỉnh mức giảm lần đầu lên 30%.</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-slate-800">05/11/2025 · 14:28</p>
-                            <p>Trần Minh Tâm thêm điều kiện hoàn thành 6 buổi ôn.</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-slate-800">28/10/2025 · 09:02</p>
-                            <p>Hệ thống gia hạn áp dụng đến 10/01/2026.</p>
-                        </div>
-                    </div>
-                    <button class="w-full inline-flex items-center justify-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5 transition">
-                        Xem toàn bộ
-                    </button>
                 </div>
             </aside>
         </section>
         </main>
+    </div>
+</div>
+
+<!-- Create/Edit Code Modal -->
+<div id="create-code-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/30 backdrop-blur">
+    <div class="max-w-3xl w-full mx-4 rounded-3xl bg-white shadow-2xl border border-blue-50 overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-blue-50 bg-primary.pale/60">
+            <div>
+                <h3 class="text-xl font-semibold text-slate-900">Tạo mã code giảm giá</h3>
+                <p class="text-xs text-slate-500 mt-1">Tạo mã code mới để áp dụng giảm giá cho lớp ôn hoặc ca thi.</p>
+            </div>
+            <button data-modal-close="create-code-modal"
+                    class="h-10 w-10 rounded-full border border-blue-100 bg-white text-slate-500 hover:text-primary transition">
+                ×
+            </button>
+        </div>
+        <form method="post" action="${pageContext.request.contextPath}/admin/config" class="px-6 py-6 space-y-6">
+            <input type="hidden" name="action" value="create-ma-giam-gia">
+            <div class="grid gap-6 md:grid-cols-2">
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Mã code *</label>
+                    <input type="text" name="maCode" required placeholder="Ví dụ: VSTEP2025"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 uppercase focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Loại *</label>
+                    <select name="loai" required
+                            class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <option value="all">Tất cả</option>
+                        <option value="ca_thi">Ca thi</option>
+                        <option value="lop_on">Lớp ôn</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Loại giảm giá *</label>
+                    <select name="loaiGiam" required id="loaiGiam-select"
+                            class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <option value="fixed">Số tiền cố định</option>
+                        <option value="percent">Phần trăm</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Giá trị giảm *</label>
+                    <div class="relative mt-2">
+                        <input type="text" name="giaTriGiam" required inputmode="numeric" placeholder="500000 hoặc 10"
+                               class="w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 text-right pr-14 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <span id="gia-tri-unit" class="absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-slate-500 select-none">VND</span>
+                    </div>
+                </div>
+                <div id="gia-tri-toi-da-row" style="display: none;">
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Giá trị tối đa (VND)</label>
+                    <div class="relative mt-2">
+                        <input type="text" name="giaTriToiDa" inputmode="numeric" placeholder="1000000"
+                               class="w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 text-right pr-14 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <span class="absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-slate-500 select-none">VND</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Số lượng tối đa</label>
+                    <input type="number" name="soLuongToiDa" min="1" placeholder="Không giới hạn"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ngày bắt đầu</label>
+                    <input type="date" name="ngayBatDau"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ngày kết thúc</label>
+                    <input type="date" name="ngayKetThuc"
+                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Trạng thái</label>
+                    <select name="trangThai"
+                            class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <option value="active" selected>Kích hoạt</option>
+                        <option value="inactive">Tạm dừng</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Mô tả</label>
+                <textarea name="moTa" rows="3" placeholder="Mô tả về mã code giảm giá..."
+                          class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30"></textarea>
+            </div>
+            <div class="flex items-center justify-end gap-3">
+                <button data-modal-close="create-code-modal" type="button"
+                        class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
+                    Huỷ
+                </button>
+                <button type="submit"
+                        class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
+                    Tạo mã code
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -330,6 +478,195 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Kiểm tra SweetAlert2 đã được load
+        if (typeof Swal === 'undefined') {
+            console.error('SweetAlert2 chưa được load!');
+        }
+
+        // Format giá trị giảm giá
+        const formatCurrency = (value) => {
+            if (!value) return '';
+            const digits = value.replace(/\D/g, '');
+            return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        };
+
+        // Format input giá trị giảm
+        const giaTriGiamInputs = document.querySelectorAll('input[name="giaTriGiam"]');
+        giaTriGiamInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                const cursorPos = input.selectionStart;
+                const raw = input.value.replace(/\D/g, '');
+                input.value = formatCurrency(raw);
+                input.setSelectionRange(cursorPos, cursorPos);
+            });
+        });
+
+        // Format input giá trị tối đa
+        const giaTriToiDaInputs = document.querySelectorAll('input[name="giaTriToiDa"]');
+        giaTriToiDaInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                const cursorPos = input.selectionStart;
+                const raw = input.value.replace(/\D/g, '');
+                input.value = formatCurrency(raw);
+                input.setSelectionRange(cursorPos, cursorPos);
+            });
+        });
+
+        // Format input mức giảm thi lại
+        const mucGiamInputs = document.querySelectorAll('input[name="mucGiamThiLai"]');
+        mucGiamInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                const cursorPos = input.selectionStart;
+                const raw = input.value.replace(/\D/g, '');
+                input.value = formatCurrency(raw);
+                input.setSelectionRange(cursorPos, cursorPos);
+            });
+        });
+
+        // Xử lý thay đổi loại giảm giá
+        const loaiGiamSelect = document.getElementById('loaiGiam-select');
+        const giaTriToiDaRow = document.getElementById('gia-tri-toi-da-row');
+        const giaTriUnit = document.getElementById('gia-tri-unit');
+        
+        if (loaiGiamSelect && giaTriToiDaRow && giaTriUnit) {
+            loaiGiamSelect.addEventListener('change', () => {
+                if (loaiGiamSelect.value === 'percent') {
+                    giaTriToiDaRow.style.display = 'block';
+                    giaTriUnit.textContent = '%';
+                } else {
+                    giaTriToiDaRow.style.display = 'none';
+                    giaTriUnit.textContent = 'VND';
+                }
+            });
+        }
+
+        // Xử lý xác nhận xóa mã code - PHẢI ĐẶT TRƯỚC event listener chung
+        const deleteCodeForms = document.querySelectorAll('.js-delete-code-form');
+        if (deleteCodeForms.length > 0 && typeof Swal === 'undefined') {
+            console.error('SweetAlert2 chưa được load! Không thể hiển thị xác nhận xóa.');
+        }
+        deleteCodeForms.forEach(form => {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                if (typeof Swal === 'undefined') {
+                    // Fallback về confirm nếu SweetAlert2 chưa load
+                    if (!confirm('Bạn có chắc muốn xóa mã code này?')) {
+                        return;
+                    }
+                    form.submit();
+                    return;
+                }
+                
+                const codeName = form.dataset.code || 'mã code này';
+
+                Swal.fire({
+                    title: 'Bạn chắc chắn?',
+                    html: `<p class="text-sm text-slate-500">Bạn sắp xoá mã code <span class="font-semibold text-slate-700">"${codeName}"</span> khỏi hệ thống.</p>
+                           <p class="text-xs text-slate-400 mt-2">Thao tác này không thể hoàn tác.</p>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    focusCancel: true,
+                    confirmButtonText: 'Xoá mã code',
+                    cancelButtonText: 'Huỷ',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-rose-100',
+                        confirmButton: 'swal2-confirm-btn',
+                        cancelButton: 'swal2-cancel-btn'
+                    },
+                    buttonsStyling: false,
+                    didOpen: () => {
+                        const confirmBtn = Swal.getConfirmButton();
+                        const cancelBtn = Swal.getCancelButton();
+                        if (confirmBtn) {
+                            confirmBtn.className = 'rounded-full bg-rose-500 text-white px-5 py-2 text-sm font-semibold hover:bg-rose-600 transition';
+                        }
+                        if (cancelBtn) {
+                            cancelBtn.className = 'rounded-full border border-slate-200 bg-white text-slate-600 px-5 py-2 text-sm font-semibold hover:text-primary transition';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Tạo form mới để submit, tránh conflict
+                        const formData = new FormData(form);
+                        const action = form.getAttribute('action');
+                        const method = form.getAttribute('method') || 'post';
+                        
+                        const hiddenForm = document.createElement('form');
+                        hiddenForm.method = method;
+                        hiddenForm.action = action;
+                        hiddenForm.style.display = 'none';
+                        
+                        formData.forEach((value, key) => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = value;
+                            hiddenForm.appendChild(input);
+                        });
+                        
+                        document.body.appendChild(hiddenForm);
+                        hiddenForm.submit();
+                    }
+                });
+            }, { capture: true });
+        });
+
+        // Submit form - chuyển giá trị về số (loại trừ delete forms)
+        const forms = document.querySelectorAll('form:not(.js-delete-code-form)');
+        forms.forEach(form => {
+            form.addEventListener('submit', () => {
+                // Chuyển giá trị có dấu chấm về số
+                const giaTriGiam = form.querySelector('input[name="giaTriGiam"]');
+                if (giaTriGiam) {
+                    const raw = giaTriGiam.value.replace(/\D/g, '');
+                    giaTriGiam.value = raw;
+                }
+                
+                const giaTriToiDa = form.querySelector('input[name="giaTriToiDa"]');
+                if (giaTriToiDa && giaTriToiDa.value) {
+                    const raw = giaTriToiDa.value.replace(/\D/g, '');
+                    giaTriToiDa.value = raw;
+                }
+                
+                const mucGiamThiLai = form.querySelector('input[name="mucGiamThiLai"]');
+                if (mucGiamThiLai) {
+                    const raw = mucGiamThiLai.value.replace(/\D/g, '');
+                    mucGiamThiLai.value = raw;
+                }
+            });
+        });
+
+        // Xử lý flash messages
+        <c:if test="${not empty configFlashMessage}">
+            const flashType = '<c:out value="${configFlashType}" default="info" />';
+            const flashMessage = '<c:out value="${configFlashMessage}" />';
+            const icon = flashType === 'success' ? 'success' : flashType === 'error' ? 'error' : 'info';
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: icon,
+                    title: flashType === 'success' ? 'Thành công!' : flashType === 'error' ? 'Lỗi!' : 'Thông báo',
+                    text: flashMessage,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'rounded-2xl shadow-lg'
+                    }
+                });
+            } else {
+                console.warn('SweetAlert2 chưa được load, không thể hiển thị flash message');
+            }
+        </c:if>
+    });
+</script>
 
 <%@ include file="layout/admin-scripts.jspf" %>
 </body>

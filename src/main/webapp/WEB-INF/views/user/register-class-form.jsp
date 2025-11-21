@@ -106,12 +106,47 @@
                                           placeholder="Ví dụ: Tôi muốn học buổi tối, hoặc có yêu cầu đặc biệt..."
                                           class="w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"></textarea>
                             </div>
+
+                            <div>
+                                <label for="maCode" class="block text-sm font-semibold text-slate-700 mb-2">
+                                    Mã code giảm giá (nếu có)
+                                </label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="maCode" name="maCode" 
+                                           placeholder="Nhập mã code"
+                                           class="flex-1 rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 uppercase focus:outline-none focus:ring-2 focus:ring-primary/30">
+                                    <button type="button" id="apply-code-btn"
+                                            class="rounded-full border border-blue-100 bg-white px-5 py-3 text-sm font-semibold text-primary hover:bg-primary/5 transition">
+                                        Áp dụng
+                                    </button>
+                                </div>
+                                <p id="code-message" class="text-xs mt-2"></p>
+                            </div>
                         </div>
 
                         <div class="rounded-2xl border border-blue-100 bg-primary.pale/60 px-5 py-4 text-sm text-slate-600 space-y-2">
                             <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Thông tin lớp</p>
                             <div class="space-y-1">
-                                <p><span class="font-semibold">Học phí:</span> <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold">Học phí:</span>
+                                    <span id="hoc-phi-display"><fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />đ</span>
+                                </div>
+                                <c:if test="${not empty mucGiamDuKien and mucGiamDuKien > 0}">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-emerald-600">Giảm giá (đã từng đăng ký):</span>
+                                        <span class="text-emerald-600 font-semibold">-<fmt:formatNumber value="${mucGiamDuKien}" type="number" groupingUsed="true" />đ</span>
+                                    </div>
+                                </c:if>
+                                <div class="flex items-center justify-between" id="code-discount-row" style="display: none;">
+                                    <span class="text-blue-600">Giảm giá (mã code):</span>
+                                    <span class="text-blue-600 font-semibold" id="code-discount-display">-0đ</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t border-blue-200">
+                                    <span class="font-semibold">Tổng cộng:</span>
+                                    <span class="font-bold text-primary text-lg" id="tong-cong-display">
+                                        <fmt:formatNumber value="${not empty soTienPhaiTraDuKien ? soTienPhaiTraDuKien : lop.hocPhi}" type="number" groupingUsed="true" />đ
+                                    </span>
+                                </div>
                                 <p><span class="font-semibold">Hình thức:</span> <c:out value="${lop.hinhThuc}" /></p>
                                 <p><span class="font-semibold">Nhịp độ:</span> <c:out value="${lop.nhipDo}" /></p>
                                 <c:if test="${not empty lop.ngayKhaiGiang}">
@@ -198,6 +233,75 @@
         </c:if>
     </section>
 </main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const maCodeInput = document.getElementById('maCode');
+        const applyCodeBtn = document.getElementById('apply-code-btn');
+        const codeMessage = document.getElementById('code-message');
+        const codeDiscountRow = document.getElementById('code-discount-row');
+        const tongCongDisplay = document.getElementById('tong-cong-display');
+        
+        if (applyCodeBtn && maCodeInput) {
+            const hocPhi = ${lop.hocPhi};
+            const configDiscount = ${not empty mucGiamDuKien ? mucGiamDuKien : 0};
+            let codeDiscount = 0;
+            let currentCode = null;
+            
+            function updateTotal() {
+                // Tính tổng: học phí - giảm giá config - giảm giá mã code
+                let total = hocPhi - configDiscount - codeDiscount;
+                total = Math.max(0, total);
+                
+                if (codeDiscount > 0) {
+                    codeDiscountRow.style.display = 'flex';
+                    document.getElementById('code-discount-display').textContent = 
+                        '-' + new Intl.NumberFormat('vi-VN').format(codeDiscount) + 'đ';
+                } else {
+                    codeDiscountRow.style.display = 'none';
+                }
+                
+                tongCongDisplay.textContent = new Intl.NumberFormat('vi-VN').format(total) + 'đ';
+            }
+            
+            // Khởi tạo tổng cộng với giảm giá từ config
+            updateTotal();
+            
+            applyCodeBtn.addEventListener('click', () => {
+                const maCode = maCodeInput.value.trim().toUpperCase();
+                if (!maCode) {
+                    codeMessage.textContent = 'Vui lòng nhập mã code';
+                    codeMessage.className = 'text-xs mt-2 text-red-600';
+                    return;
+                }
+                
+                // Validate mã code qua API (tính trên giá sau khi đã trừ giảm giá config)
+                const giaSauConfig = Math.max(0, hocPhi - configDiscount);
+                fetch('${pageContext.request.contextPath}/api/validate-code?code=' + encodeURIComponent(maCode) + '&loai=lop_on&giaGoc=' + giaSauConfig)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.valid) {
+                            codeDiscount = data.discount || 0;
+                            currentCode = maCode;
+                            codeMessage.textContent = data.message || 'Mã code hợp lệ';
+                            codeMessage.className = 'text-xs mt-2 text-emerald-600';
+                            updateTotal();
+                        } else {
+                            codeDiscount = 0;
+                            currentCode = null;
+                            codeMessage.textContent = data.message || 'Mã code không hợp lệ';
+                            codeMessage.className = 'text-xs mt-2 text-red-600';
+                            updateTotal();
+                        }
+                    })
+                    .catch(() => {
+                        codeMessage.textContent = 'Có lỗi xảy ra khi kiểm tra mã code';
+                        codeMessage.className = 'text-xs mt-2 text-red-600';
+                    });
+            });
+        }
+    });
+</script>
 
 <%@ include file="../layout/public-footer.jspf" %>
 </body>

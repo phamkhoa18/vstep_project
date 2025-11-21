@@ -23,8 +23,8 @@ public class DangKyLopRepositoryImpl implements DangKyLopRepository {
     public boolean create(DangKyLop dangKyLop) {
         String sql = """
                 INSERT INTO dang_ky_lop 
-                    (nguoi_dung_id, lop_on_id, ngay_dang_ky, ghi_chu, so_tien_da_tra, trang_thai, ma_xac_nhan)
-                VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?)
+                    (nguoi_dung_id, lop_on_id, ngay_dang_ky, ghi_chu, so_tien_da_tra, muc_giam, trang_thai, ma_xac_nhan, ma_code_giam_gia)
+                VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection connection = DataSourceUtil.getConnection();
@@ -34,14 +34,16 @@ public class DangKyLopRepositoryImpl implements DangKyLopRepository {
             statement.setLong(2, dangKyLop.getLopOnId());
             statement.setString(3, dangKyLop.getGhiChu());
             statement.setLong(4, dangKyLop.getSoTienDaTra());
-            statement.setString(5, dangKyLop.getTrangThai() != null ? dangKyLop.getTrangThai() : "Chờ xác nhận");
+            statement.setLong(5, dangKyLop.getMucGiam());
+            statement.setString(6, dangKyLop.getTrangThai() != null ? dangKyLop.getTrangThai() : "Chờ xác nhận");
             
             // Tạo mã xác nhận nếu chưa có
             String maXacNhan = dangKyLop.getMaXacNhan();
             if (maXacNhan == null || maXacNhan.isEmpty()) {
                 maXacNhan = "DK" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             }
-            statement.setString(6, maXacNhan);
+            statement.setString(7, maXacNhan);
+            statement.setString(8, dangKyLop.getMaCodeGiamGia());
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows > 0) {
@@ -192,7 +194,13 @@ public class DangKyLopRepositoryImpl implements DangKyLopRepository {
 
     @Override
     public int countByLopOnId(long lopOnId) {
-        String sql = "SELECT COUNT(*) FROM dang_ky_lop WHERE lop_on_id = ? AND trang_thai IN ('Đã xác nhận', 'Chờ xác nhận', 'Đang học')";
+        // CHỈ đếm những đăng ký ĐÃ THANH TOÁN (trạng thái "Đã duyệt" hoặc đã có số tiền đã trả > 0)
+        // Không đếm những đăng ký "Chờ xác nhận" vì chưa thanh toán, slot vẫn còn
+        String sql = """
+                SELECT COUNT(*) FROM dang_ky_lop 
+                WHERE lop_on_id = ? 
+                AND (trang_thai = 'Đã duyệt' OR so_tien_da_tra > 0)
+                """;
 
         try (Connection connection = DataSourceUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -208,16 +216,64 @@ public class DangKyLopRepositoryImpl implements DangKyLopRepository {
         return 0;
     }
 
+    @Override
+    public boolean deleteByLopOnId(long lopOnId) {
+        String sql = "DELETE FROM dang_ky_lop WHERE lop_on_id = ?";
+
+        try (Connection connection = DataSourceUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, lopOnId);
+            int rowsAffected = statement.executeUpdate();
+            LOGGER.log(Level.INFO, "Đã xóa {0} đăng ký lớp liên quan đến lớp id={1}", 
+                       new Object[]{rowsAffected, lopOnId});
+            return true; // Trả về true ngay cả khi không có đăng ký nào (rowsAffected = 0)
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Không thể xoá đăng ký lớp có lop_on_id=" + lopOnId, e);
+            return false;
+        }
+    }
+
     private DangKyLop mapResultSet(ResultSet rs) throws SQLException {
         DangKyLop dangKyLop = new DangKyLop();
         dangKyLop.setId(rs.getLong("id"));
         dangKyLop.setNguoiDungId(rs.getLong("nguoi_dung_id"));
         dangKyLop.setLopOnId(rs.getLong("lop_on_id"));
+        // Connection string đã được set timezone Asia/Ho_Chi_Minh, nên đọc timestamp trực tiếp
         dangKyLop.setNgayDangKy(rs.getTimestamp("ngay_dang_ky"));
         dangKyLop.setGhiChu(rs.getString("ghi_chu"));
         dangKyLop.setSoTienDaTra(rs.getLong("so_tien_da_tra"));
+        
+        // Xử lý muc_giam an toàn (có thể không tồn tại trong đăng ký cũ)
+        java.sql.ResultSetMetaData metaData = rs.getMetaData();
+        boolean hasMucGiam = false;
+        boolean hasMaCodeGiamGia = false;
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+            String columnName = metaData.getColumnName(i);
+            if ("muc_giam".equalsIgnoreCase(columnName)) {
+                hasMucGiam = true;
+            }
+            if ("ma_code_giam_gia".equalsIgnoreCase(columnName)) {
+                hasMaCodeGiamGia = true;
+            }
+        }
+        
+        if (hasMucGiam) {
+            long mucGiam = rs.getLong("muc_giam");
+            dangKyLop.setMucGiam(rs.wasNull() ? 0 : mucGiam);
+        } else {
+            dangKyLop.setMucGiam(0);
+        }
+        
         dangKyLop.setTrangThai(rs.getString("trang_thai"));
         dangKyLop.setMaXacNhan(rs.getString("ma_xac_nhan"));
+        
+        if (hasMaCodeGiamGia) {
+            dangKyLop.setMaCodeGiamGia(rs.getString("ma_code_giam_gia"));
+        } else {
+            dangKyLop.setMaCodeGiamGia(null);
+        }
+        
         return dangKyLop;
     }
 }

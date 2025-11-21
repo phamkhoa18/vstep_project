@@ -250,7 +250,7 @@
 
                         <div>
                             <label for="edit-capacity" class="text-xs font-semibold uppercase text-slate-500">Sĩ số tối đa</label>
-                            <input id="edit-capacity" name="siSoToiDa" type="number" min="5" step="1"
+                            <input id="edit-capacity" name="siSoToiDa" type="number" min="1" step="1"
                                    value="${lopOn.siSoToiDa}"
                                    placeholder="Ví dụ: 36"
                                    class="mt-2 sh-input">

@@ -12,6 +12,7 @@ public class DangKyThi {
     private String trangThai;
     private Timestamp ngayDangKy;
     private String maXacNhan;
+    private String maCodeGiamGia; // Mã code giảm giá đã sử dụng
 
     // Getters & Setters
     public long getId() { return id; }
@@ -40,4 +41,7 @@ public class DangKyThi {
 
     public String getMaXacNhan() { return maXacNhan; }
     public void setMaXacNhan(String maXacNhan) { this.maXacNhan = maXacNhan; }
+
+    public String getMaCodeGiamGia() { return maCodeGiamGia; }
+    public void setMaCodeGiamGia(String maCodeGiamGia) { this.maCodeGiamGia = maCodeGiamGia; }
 }

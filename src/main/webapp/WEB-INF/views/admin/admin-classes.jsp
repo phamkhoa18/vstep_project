@@ -16,7 +16,7 @@
 <div class="admin-layout">
     <%@ include file="layout/admin-sidebar.jspf" %>
     <div class="admin-main-wrapper">
-        <main class="space-y-10 pb-16">
+        <main class="space-y-10">
         <c:set var="classCountVal" value="${empty classCount ? 0 : classCount}" />
         <c:set var="avgCapacityVal" value="${empty averageCapacity ? 0 : averageCapacity}" />
         <c:set var="dangMoCountVal" value="${empty dangMoCount ? 0 : dangMoCount}" />
@@ -51,16 +51,6 @@
                     </a>
                 </div>
             </div>
-            <c:if test="${not empty classFlashMessage}">
-                <c:set var="flashType" value="${empty classFlashType ? 'info' : classFlashType}" />
-                <c:set var="flashClasses"
-                       value="${flashType eq 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
-                               flashType eq 'error' ? 'bg-rose-50 border-rose-200 text-rose-600' :
-                               'bg-blue-50 border-blue-200 text-blue-600'}" />
-                <div class="rounded-2xl border px-4 py-3 text-sm font-medium ${flashClasses}">
-                    ${classFlashMessage}
-                </div>
-            </c:if>
         </section>
 
         <section class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -262,19 +252,52 @@
         </section>
 
         <section class="rounded-3xl bg-white shadow-soft border border-blue-50 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-blue-50 text-sm text-slate-600">
-                    <thead class="bg-primary.pale/60 text-[12px] uppercase text-slate-500">
+            <style>
+                /* Custom scrollbar cho table */
+                .table-scroll-wrapper::-webkit-scrollbar {
+                    height: 10px;
+                    width: 10px;
+                }
+                .table-scroll-wrapper::-webkit-scrollbar-track {
+                    background: #f1f5f9;
+                    border-radius: 8px;
+                    margin: 4px;
+                }
+                .table-scroll-wrapper::-webkit-scrollbar-thumb {
+                    background: #93c5fd;
+                    border-radius: 8px;
+                    border: 2px solid #f1f5f9;
+                }
+                .table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+                    background: #60a5fa;
+                }
+                /* Firefox scrollbar */
+                .table-scroll-wrapper {
+                    scrollbar-width: thin;
+                    scrollbar-color: #93c5fd #f1f5f9;
+                }
+                /* Sticky header shadow */
+                .table-sticky-header {
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                }
+                /* Sticky column shadow */
+                .table-sticky-column {
+                    box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+                }
+            </style>
+            <div class="table-scroll-wrapper overflow-x-auto">
+                <table class="min-w-full divide-y divide-blue-50 text-sm text-slate-600" style="min-width: 1200px;">
+                    <thead class="bg-primary.pale/60 text-[12px] uppercase text-slate-500 sticky top-0 z-10 table-sticky-header">
                     <tr>
-                        <th class="px-4 py-4 text-left font-semibold text-[12px]">Lớp / Mô tả</th>
-                        <th class="px-4 py-4 text-left font-semibold text-[12px]">Hình thức</th>
-                        <th class="px-4 py-4 text-left font-semibold text-[12px]">Nhịp độ</th>
-                        <th class="px-4 py-4 text-left font-semibold text-[12px]">Thời gian</th>
-                        <th class="px-4 py-4 text-left font-semibold text-[12px]">Số buổi</th>
-                        <th class="px-4 py-4 text-left font-semibold text-[12px]">Sĩ số tối đa</th>
-                        <th class="px-4 py-4 text-left font-semibold text-[12px]">Học phí</th>
-                        <th class="px-4 py-4 text-right font-semibold text-[12px]">Tình trạng</th>
-                        <th class="px-4 py-4 text-right font-semibold text-[12px]">Thao tác</th>
+                        <th class="px-4 py-4 text-left font-semibold text-[12px] whitespace-nowrap bg-primary.pale/60">Lớp / Mô tả</th>
+                        <th class="px-4 py-4 text-left font-semibold text-[12px] whitespace-nowrap bg-primary.pale/60">Hình thức</th>
+                        <th class="px-4 py-4 text-left font-semibold text-[12px] whitespace-nowrap bg-primary.pale/60">Nhịp độ</th>
+                        <th class="px-4 py-4 text-left font-semibold text-[12px] whitespace-nowrap bg-primary.pale/60">Thời gian</th>
+                        <th class="px-4 py-4 text-left font-semibold text-[12px] whitespace-nowrap bg-primary.pale/60">Số buổi</th>
+                        <th class="px-4 py-4 text-left font-semibold text-[12px] whitespace-nowrap bg-primary.pale/60">Sĩ số tối đa</th>
+                        <th class="px-4 py-4 text-left font-semibold text-[12px] whitespace-nowrap bg-primary.pale/60">Học phí</th>
+                        <th class="px-4 py-4 text-right font-semibold text-[12px] whitespace-nowrap bg-primary.pale/60">Tình trạng</th>
+                        <th class="px-4 py-4 text-right font-semibold text-[12px] whitespace-nowrap bg-primary.pale/60 sticky right-0 z-20 table-sticky-column">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-blue-50 bg-white">
@@ -295,18 +318,18 @@
                         <c:set var="statusLower" value="${fn:toLowerCase(statusText)}" />
                         <c:set var="statusBadgeClass" value="bg-slate-100 text-slate-600" />
                         <c:choose>
-                            <c:when test="${fn:contains(statusLower, 'đang') or fn:contains(statusLower, 'dang')}">
+                            <c:when test="${statusLower eq 'đang mở' or statusLower eq 'dang mo' or statusLower eq 'dang mở' or statusLower eq 'dangmo'}">
                                 <c:set var="statusBadgeClass" value="bg-emerald-100 text-emerald-600" />
                             </c:when>
-                            <c:when test="${fn:contains(statusLower, 'sắp') or fn:contains(statusLower, 'sap')}">
+                            <c:when test="${statusLower eq 'chuẩn bị' or statusLower eq 'chuan bi' or statusLower eq 'chuanbi' or statusLower eq 'sapmo'}">
                                 <c:set var="statusBadgeClass" value="bg-orange-100 text-orange-500" />
                             </c:when>
-                            <c:when test="${fn:contains(statusLower, 'kết') or fn:contains(statusLower, 'ket')}">
+                            <c:when test="${statusLower eq 'kết thúc' or statusLower eq 'ket thuc' or statusLower eq 'ketthuc' or statusLower eq 'da ket thuc'}">
                                 <c:set var="statusBadgeClass" value="bg-slate-200 text-slate-600" />
                             </c:when>
                         </c:choose>
-                        <tr>
-                            <td class="px-4 py-4">
+                        <tr class="hover:bg-blue-50/50 transition-colors">
+                            <td class="px-4 py-4 whitespace-nowrap">
                                 <p class="font-semibold text-slate-900">
                                     <c:out value="${lop.tieuDe}" />
                                 </p>
@@ -314,7 +337,7 @@
                                     <p>Mã lớp: <c:out value="${lop.maLop}" /></p>
                                 </div>
                             </td>
-                            <td class="px-4 py-4">
+                            <td class="px-4 py-4 whitespace-nowrap">
                                 <c:set var="formatLower" value="${fn:toLowerCase(empty lop.hinhThuc ? '' : lop.hinhThuc)}" />
                                 <c:set var="formatLabel" value="${formatLower eq 'offline' ? 'Offline' :
                                                                formatLower eq 'online' ? 'Online' :
@@ -327,7 +350,7 @@
                                     <c:out value="${formatLabel}" />
                                 </span>
                             </td>
-                            <td class="px-4 py-4">
+                            <td class="px-4 py-4 whitespace-nowrap">
                                 <c:set var="paceLower" value="${fn:toLowerCase(empty lop.nhipDo ? '' : lop.nhipDo)}" />
                                 <c:set var="paceLabel" value="${paceLower eq 'cấp tốc' or paceLower eq 'cap toc' ? 'Cấp tốc' :
                                                                paceLower eq 'thường' or paceLower eq 'thuong' ? 'Thường' :
@@ -345,7 +368,7 @@
                                     </span>
                                 </div>
                             </td>
-                            <td class="px-4 py-4">
+                            <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="space-y-1 text-sm">
                                     <p class="font-semibold text-slate-800">
                                         Bắt đầu: <c:out value="${empty ngayKhaiGiangDisplay ? '—' : ngayKhaiGiangDisplay}" />
@@ -360,29 +383,42 @@
                                     </c:if>
                                 </div>
                             </td>
-                            <td class="px-4 py-4">
+                            <td class="px-4 py-4 whitespace-nowrap">
                                 <p class="font-semibold text-slate-800">
                                     <c:out value="${lop.soBuoi}" /> buổi
                                 </p>
                             </td>
-                            <td class="px-4 py-4">
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <c:set var="currentRegistered" value="${registeredCounts[lop.id]}" />
                                 <p class="font-semibold text-slate-800">
-                                    <c:out value="${lop.siSoToiDa}" /> học viên
+                                    <c:out value="${empty currentRegistered ? 0 : currentRegistered}" /> / <c:out value="${lop.siSoToiDa}" /> học viên
                                 </p>
+                                <c:if test="${not empty currentRegistered && currentRegistered >= lop.siSoToiDa}">
+                                    <p class="text-xs text-rose-500 mt-1">Đã đủ chỗ</p>
+                                </c:if>
                             </td>
-                            <td class="px-4 py-4">
+                            <td class="px-4 py-4 whitespace-nowrap">
                                 <p class="font-semibold text-slate-800">
                                     <fmt:formatNumber value="${lop.hocPhi}" type="number" groupingUsed="true" />
                                     <span class="text-xs text-slate-500 ml-1">VND</span>
                                 </p>
                             </td>
-                            <td class="px-6 py-5 text-right">
+                            <td class="px-6 py-5 text-right whitespace-nowrap">
                                 <span class="inline-flex items-center justify-end gap-2 rounded-full px-2 py-1 text-[12px] font-semibold ${statusBadgeClass}">
                                     <c:out value="${statusText}" />
                                 </span>
                             </td>
-                            <td class="px-6 py-5 text-right space-x-2">
-                                <a href="${pageContext.request.contextPath}/admin/classes/edit?id=${lop.id}"
+                            <td class="px-6 py-5 text-right space-x-2 whitespace-nowrap sticky right-0 bg-white z-10 table-sticky-column">
+                                <a href="${pageContext.request.contextPath}/admin/export-class-students?lopId=${lop.id}"
+                                        class="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-600 hover:bg-emerald-100 transition"
+                                        title="Xuất danh sách học viên ra Excel">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                                        <path d="M12 3v12m0 0l-5-5m5 5l5-5M3 21h18"/>
+                                    </svg>
+                                    Excel
+                                </a>
+                                <div class="flex items-center gap-2 mt-4">
+                                    <a href="${pageContext.request.contextPath}/admin/classes/edit?id=${lop.id}"
                                         class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
                                     Sửa
                                 </a>
@@ -398,11 +434,13 @@
                                         Xoá
                                     </button>
                                 </form>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>
                     </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
             <c:set var="currentPage" value="${empty currentPage ? 1 : currentPage}" />
             <c:set var="totalPages" value="${empty totalPages ? 1 : totalPages}" />
@@ -622,13 +660,28 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const deleteForms = document.querySelectorAll('.js-delete-class-form');
-        if (!deleteForms.length || typeof Swal === 'undefined') {
+        if (!deleteForms.length) {
+            return;
+        }
+
+        if (typeof Swal === 'undefined') {
+            console.error('SweetAlert2 chưa được load!');
+            // Fallback về confirm
+            deleteForms.forEach(form => {
+                form.addEventListener('submit', (event) => {
+                    const className = form.dataset.classTitle || 'lớp này';
+                    if (!confirm(`Bạn có chắc muốn xóa "${className}"?`)) {
+                        event.preventDefault();
+                    }
+                });
+            });
             return;
         }
 
         deleteForms.forEach(form => {
             form.addEventListener('submit', (event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 const className = form.dataset.classTitle || 'lớp này';
 
                 Swal.fire({
@@ -658,10 +711,29 @@
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        form.submit();
+                        // Tạo form mới để submit, tránh conflict
+                        const formData = new FormData(form);
+                        const action = form.getAttribute('action');
+                        const method = form.getAttribute('method') || 'post';
+                        
+                        const hiddenForm = document.createElement('form');
+                        hiddenForm.method = method;
+                        hiddenForm.action = action;
+                        hiddenForm.style.display = 'none';
+                        
+                        formData.forEach((value, key) => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = value;
+                            hiddenForm.appendChild(input);
+                        });
+                        
+                        document.body.appendChild(hiddenForm);
+                        hiddenForm.submit();
                     }
                 });
-            }, { passive: false });
+            }, { passive: false, capture: true });
         });
 
         // Xử lý thay đổi pageSize
@@ -679,6 +751,27 @@
                 window.location.search = urlParams.toString();
             });
         }
+
+        // Xử lý flash messages
+        <c:if test="${not empty classFlashMessage}">
+            const flashType = '${classFlashType}';
+            const flashMessage = '${classFlashMessage}';
+            const icon = flashType === 'success' ? 'success' : flashType === 'error' ? 'error' : 'info';
+            
+            Swal.fire({
+                icon: icon,
+                title: flashType === 'success' ? 'Thành công!' : flashType === 'error' ? 'Lỗi!' : 'Thông báo',
+                text: flashMessage,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded-2xl shadow-lg'
+                }
+            });
+        </c:if>
     });
 </script>
 

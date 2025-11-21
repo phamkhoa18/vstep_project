@@ -84,9 +84,28 @@ public class DangKyLopServlet extends HttpServlet {
                 return;
             }
 
+            // Tính toán giảm giá để hiển thị trên form
+            com.vstep.service.ConfigGiamGiaService configGiamGiaService = new com.vstep.serviceImpl.ConfigGiamGiaServiceImpl();
+            com.vstep.model.ConfigGiamGia configLopOn = configGiamGiaService.getConfigByLoai("lop_on");
+            long mucGiamDuKien = 0;
+            long soTienPhaiTraDuKien = lop.getHocPhi();
+            
+            // Kiểm tra xem user đã từng đăng ký lớp trước đó chưa
+            List<com.vstep.model.DangKyLop> previousRegistrations = dangKyLopService.findByNguoiDungId(user.getId());
+            boolean daTungDangKyLop = previousRegistrations != null && !previousRegistrations.isEmpty();
+            
+            // Áp dụng giảm giá từ config nếu được kích hoạt và user đã từng đăng ký
+            if (configLopOn != null && "active".equals(configLopOn.getTrangThai()) && configLopOn.getMucGiamThiLai() > 0 && daTungDangKyLop) {
+                mucGiamDuKien = configLopOn.getMucGiamThiLai();
+                soTienPhaiTraDuKien = Math.max(0, lop.getHocPhi() - mucGiamDuKien);
+            }
+            
             req.setAttribute("lop", lop);
             req.setAttribute("user", user); // Set user để form có thể hiển thị thông tin
             req.setAttribute("soLuongDangKy", soLuongDangKy); // Để hiển thị số lượng đã đăng ký
+            req.setAttribute("mucGiamDuKien", mucGiamDuKien); // Mức giảm giá dự kiến
+            req.setAttribute("soTienPhaiTraDuKien", soTienPhaiTraDuKien); // Số tiền phải trả dự kiến
+            req.setAttribute("daTungDangKyLop", daTungDangKyLop); // Đã từng đăng ký lớp
             req.getRequestDispatcher("/WEB-INF/views/user/register-class-form.jsp").forward(req, resp);
 
         } catch (NumberFormatException e) {
@@ -223,13 +242,55 @@ public class DangKyLopServlet extends HttpServlet {
                 }
             }
 
+            // Lấy cấu hình giảm giá từ service
+            com.vstep.service.ConfigGiamGiaService configGiamGiaService = new com.vstep.serviceImpl.ConfigGiamGiaServiceImpl();
+            com.vstep.model.ConfigGiamGia configLopOn = configGiamGiaService.getConfigByLoai("lop_on");
+            
+            // Tính toán giá và giảm giá
+            long soTienPhaiTra = lop.getHocPhi();
+            long mucGiam = 0;
+            
+            // Áp dụng giảm giá từ config nếu được kích hoạt
+            if (configLopOn != null && "active".equals(configLopOn.getTrangThai()) && configLopOn.getMucGiamThiLai() > 0) {
+                // Kiểm tra xem user đã từng đăng ký lớp trước đó chưa
+                List<com.vstep.model.DangKyLop> previousRegistrations = dangKyLopService.findByNguoiDungId(user.getId());
+                boolean daTungDangKyLop = previousRegistrations != null && !previousRegistrations.isEmpty();
+                
+                if (daTungDangKyLop) {
+                    mucGiam = configLopOn.getMucGiamThiLai();
+                    soTienPhaiTra = Math.max(0, lop.getHocPhi() - mucGiam);
+                }
+            }
+            
+            // Áp dụng mã code giảm giá nếu có (sau khi đã áp dụng giảm giá từ config)
+            String maCode = req.getParameter("maCode");
+            if (maCode != null && !maCode.trim().isEmpty()) {
+                com.vstep.service.MaGiamGiaService maGiamGiaService = new com.vstep.serviceImpl.MaGiamGiaServiceImpl();
+                long discountFromCode = maGiamGiaService.calculateDiscount(maCode, "lop_on", soTienPhaiTra);
+                if (discountFromCode > 0) {
+                    mucGiam += discountFromCode;
+                    soTienPhaiTra = Math.max(0, soTienPhaiTra - discountFromCode);
+                    
+                    // Tăng số lượng đã sử dụng của mã code
+                    com.vstep.model.MaGiamGia ma = maGiamGiaService.findByMaCode(maCode.trim().toUpperCase());
+                    if (ma != null) {
+                        ma.setSoLuongDaSuDung(ma.getSoLuongDaSuDung() + 1);
+                        maGiamGiaService.update(ma);
+                    }
+                }
+            }
+
             // Tạo đăng ký mới
             DangKyLop dangKyLop = new DangKyLop();
             dangKyLop.setNguoiDungId(user.getId());
             dangKyLop.setLopOnId(lopId);
             dangKyLop.setGhiChu(ghiChu != null && !ghiChu.trim().isEmpty() ? ghiChu.trim() : null);
             dangKyLop.setSoTienDaTra(0); // Chưa thanh toán
+            dangKyLop.setMucGiam(mucGiam); // Lưu mức giảm giá
             dangKyLop.setTrangThai("Chờ xác nhận");
+            if (maCode != null && !maCode.trim().isEmpty()) {
+                dangKyLop.setMaCodeGiamGia(maCode.trim().toUpperCase());
+            }
 
             boolean success = dangKyLopService.create(dangKyLop);
             
@@ -237,8 +298,11 @@ public class DangKyLopServlet extends HttpServlet {
                 // Gửi email thông báo cho admin (chạy bất đồng bộ để không làm chậm response)
                 sendRegistrationNotificationToAdmins(user, lop, dangKyLop);
                 
-                // Redirect đến trang thành công hoặc trang lớp đã đăng ký
-                resp.sendRedirect(req.getContextPath() + "/lop-da-dang-ky?success=registered&lopId=" + lopId);
+                // Gửi email xác nhận đăng ký với PDF hóa đơn cho học viên
+                sendRegistrationConfirmationWithInvoice(user, lop, dangKyLop, soTienPhaiTra, mucGiam, maCode);
+                
+                // Sau khi đăng ký thành công -> chuyển đến trang thanh toán QR (sống 5 phút)
+                resp.sendRedirect(req.getContextPath() + "/payment/start?dkId=" + dangKyLop.getId());
             } else {
                 req.setAttribute("errorMessage", "Có lỗi xảy ra khi đăng ký. Vui lòng thử lại.");
                 req.setAttribute("lop", lop);
@@ -304,6 +368,56 @@ public class DangKyLopServlet extends HttpServlet {
                     .log(java.util.logging.Level.WARNING, "Lỗi khi gửi email thông báo cho admin", e);
             }
         });
+    }
+    
+    /**
+     * Gửi email xác nhận đăng ký với PDF hóa đơn cho học viên
+     */
+    private void sendRegistrationConfirmationWithInvoice(NguoiDung student, LopOn lop, 
+                                                         DangKyLop registration, 
+                                                         long amountToPay, long discount, String discountCode) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                java.text.SimpleDateFormat regDateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+                String startDateStr = lop.getNgayKhaiGiang() != null ? dateFormat.format(lop.getNgayKhaiGiang()) : "";
+                String endDateStr = lop.getNgayKetThuc() != null ? dateFormat.format(lop.getNgayKetThuc()) : "";
+                String registrationDateStr = registration.getNgayDangKy() != null 
+                    ? regDateFormat.format(registration.getNgayDangKy()) 
+                    : "N/A";
+                
+                // Tạo nội dung email đơn giản
+                String htmlBody = "<html><body>" +
+                    "<h2>Xác nhận đăng ký lớp thành công</h2>" +
+                    "<p>Xin chào <strong>" + escapeHtml(student.getHoTen()) + "</strong>,</p>" +
+                    "<p>Đăng ký lớp của bạn đã được tiếp nhận. Vui lòng xem hóa đơn đính kèm.</p>" +
+                    "<p>Mã đăng ký: <strong>" + escapeHtml(registration.getMaXacNhan() != null ? registration.getMaXacNhan() : "N/A") + "</strong></p>" +
+                    "<p>Vui lòng thanh toán để hoàn tất đăng ký.</p>" +
+                    "</body></html>";
+                
+                String subject = "[VSTEP] Xác nhận đăng ký lớp - " + (lop.getMaLop() != null ? lop.getMaLop() : "");
+                
+                // Gửi email xác nhận đăng ký (chưa có hóa đơn, sẽ tạo khi thanh toán thành công)
+                com.vstep.util.EmailService.sendEmail(
+                    student.getEmail(),
+                    subject,
+                    htmlBody,
+                    true
+                );
+            } catch (Exception e) {
+                java.util.logging.Logger.getLogger(DangKyLopServlet.class.getName())
+                    .log(java.util.logging.Level.WARNING, "Lỗi khi gửi email xác nhận đăng ký với PDF", e);
+            }
+        });
+    }
+    
+    private String escapeHtml(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&#39;");
     }
 }
 

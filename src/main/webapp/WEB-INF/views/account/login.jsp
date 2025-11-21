@@ -8,27 +8,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); }
     </style>
 </head>
 <body class="bg-gradient-to-b from-gray-50 to-white flex items-center justify-center min-h-screen">
-
-<!-- Toast Messages -->
-<div x-data="{ show: true }" x-show="show" x-init="setTimeout(()=>show=false, 3000)"
-     class="fixed top-5 right-5 px-6 py-3 rounded-lg shadow-lg transition-all"
-     style="display:none;"
-     :class="{
-         'bg-green-500 text-white': '${param.success}' === 'register',
-         'bg-red-500 text-white': '${param.error}' === 'invalid' || '${param.error}' === 'server'
-     }">
-    <span>
-        ${param.success == 'register' ? 'Đăng ký thành công! Vui lòng đăng nhập.' : ''}
-        ${param.error == 'invalid' ? 'Email hoặc mật khẩu không đúng!' : ''}
-        ${param.error == 'server' ? 'Có lỗi xảy ra! Vui lòng thử lại.' : ''}
-    </span>
-</div>
 
 <div class="w-full max-w-md p-8 glass rounded-3xl shadow-xl">
     <h2 class="text-3xl font-bold text-blue-700 text-center mb-6">Đăng nhập VSTEP</h2>
@@ -55,6 +41,40 @@
         <a href="register" class="text-blue-700 font-medium hover:underline">Đăng ký ngay</a>
     </p>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        let message = '', type = '';
+
+        if(params.get('success') === 'register') {
+            message = 'Đăng ký thành công! Vui lòng đăng nhập.';
+            type = 'success';
+        } else if(params.get('error')) {
+            type = 'error';
+            switch(params.get('error')) {
+                case 'invalid': message = 'Email hoặc mật khẩu không đúng!'; break;
+                case 'server': message = 'Có lỗi xảy ra! Vui lòng thử lại.'; break;
+            }
+        }
+
+        if(message) {
+            Swal.fire({
+                icon: type,
+                title: type === 'success' ? 'Thành công!' : 'Lỗi!',
+                text: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded-2xl shadow-lg'
+                }
+            });
+        }
+    });
+</script>
 
 </body>
 </html>

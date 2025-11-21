@@ -77,7 +77,7 @@
                             <div>
                                 <div class="flex items-center justify-between">
                                     <label for="password" class="text-sm font-semibold text-slate-700">Mật khẩu</label>
-                                    <a href="#" class="text-xs font-semibold text-primary hover:text-primary/80 transition">Quên mật khẩu?</a>
+                                    <a href="<%= request.getContextPath() %>/quen-mat-khau" class="text-xs font-semibold text-primary hover:text-primary/80 transition">Quên mật khẩu?</a>
                                 </div>
                                 <div class="mt-2 relative">
                                     <input id="password" name="password" type="password" required
@@ -132,6 +132,8 @@
                                         } else {
                                             successMsg = "Đăng ký thành công! Vui lòng đăng nhập.";
                                         }
+                                    } else if ("reset_password".equals(successParam)) {
+                                        successMsg = "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập với mật khẩu mới.";
                                     }
                                 }
                             %>

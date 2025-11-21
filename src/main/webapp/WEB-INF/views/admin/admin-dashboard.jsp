@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setTimeZone value="Asia/Ho_Chi_Minh" />
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -6,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tổng quan hệ thống | VSTEP Admin</title>
     <%@ include file="layout/admin-theme.jspf" %>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
 </head>
 <body data-page="dashboard" class="admin-shell">
 <%@ include file="layout/admin-header.jspf" %>
@@ -13,349 +17,377 @@
 <div class="admin-layout">
     <%@ include file="layout/admin-sidebar.jspf" %>
     <div class="admin-main-wrapper">
-        <main class="space-y-10 pb-16">
+        <main class="space-y-8 pb-16">
+            <!-- Header Section -->
             <section class="space-y-4">
-                <div class="flex flex-col gap-3">
-                    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
-                        <div>
-                            <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Tổng quan hệ thống</h2>
-                            <p class="text-sm text-slate-500">Theo dõi tức thời hoạt động lớp ôn, ca thi và doanh thu.</p>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:border-primary/40 hover:bg-primary/5 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                    <path d="M12 5v14"/>
-                                    <path d="M5 12h14"/>
-                                </svg>
-                                Tạo báo cáo nhanh
-                            </button>
-                            <div class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-sm text-slate-600">
-                                <span class="text-xs uppercase tracking-widest text-primary/70 font-semibold">Khoảng thời gian</span>
-                                <span class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                                10/10/2025
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-300" fill="none"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                    <path d="M19 9l-7 7-7-7"/>
-                                </svg>
-                                09/11/2025
-                            </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-3 text-xs text-slate-500">
-                    <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
-                        <span class="h-2 w-2 rounded-full bg-primary"></span> Cập nhật lúc 14:32 · 09/11/2025
-                    </span>
-                        <span class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 border border-blue-100 text-slate-500">
-                        <span class="h-2 w-2 rounded-full bg-emerald-400"></span> Hệ thống ổn định
-                    </span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-4">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Học viên đang theo học</p>
-                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary.pale text-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path d="M4 7h16"/>
-                            <path d="M4 12h16"/>
-                            <path d="M4 17h16"/>
-                        </svg>
-                    </span>
-                    </div>
-                    <div class="flex items-end gap-3">
-                        <p class="text-3xl font-semibold text-slate-900">425</p>
-                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path d="M5 12l5 5L20 7"/>
-                        </svg>
-                        +12.4%
-                    </span>
-                    </div>
-                    <p class="text-xs text-slate-500">Tăng 47 học viên so với cùng kỳ tuần trước.</p>
-                </div>
-
-                <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-4">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Doanh thu tháng này</p>
-                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100 text-yellow-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path d="M12 3v18"/>
-                            <path d="M17 8.5C17 6 15.21 4 12.5 4H10a2 2 0 0 0-2 2"/>
-                            <path d="M7 15.5C7 18 8.79 20 11.5 20H14a2 2 0 0 0 2-2"/>
-                        </svg>
-                    </span>
-                    </div>
-                    <div class="flex items-end gap-3">
-                        <p class="text-3xl font-semibold text-slate-900">312 triệu</p>
-                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-600">
-                    +18.1%
-                </span>
-                    </div>
-                    <p class="text-xs text-slate-500">Đã bao gồm giảm giá thi lại & ưu đãi học viên thân thiết.</p>
-                </div>
-
-                <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-4">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Ca thi sắp diễn ra</p>
-                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path d="M6 2v4"/>
-                            <path d="M18 2v4"/>
-                            <path d="M3 10h18"/>
-                            <path d="M5 18h2"/>
-                            <path d="M11 18h2"/>
-                            <path d="M17 18h2"/>
-                        </svg>
-                    </span>
-                    </div>
-                    <div class="flex items-end gap-3">
-                        <p class="text-3xl font-semibold text-slate-900">08</p>
-                        <span class="text-xs font-medium text-slate-500">12/11 → 25/11</span>
-                    </div>
-                    <p class="text-xs text-slate-500">2 ca thi hôm nay · 3 ca chưa phân đủ giám sát viên.</p>
-                </div>
-
-                <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-4">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Tỉ lệ hoàn thành</p>
-                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path d="M12 6v6l3.5 1.5"/>
-                            <path d="M4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Z"/>
-                        </svg>
-                    </span>
-                    </div>
-                    <div class="flex items-end gap-3">
-                        <p class="text-3xl font-semibold text-slate-900">94%</p>
-                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-600">
-                        +2.1%
-                    </span>
-                    </div>
-                    <p class="text-xs text-slate-500">Theo dõi lớp ôn & thi · mục tiêu tháng 11 ≥ 95%.</p>
-                </div>
-            </section>
-
-            <section class="grid gap-6 xl:grid-cols-3">
-                <div class="xl:col-span-2 rounded-3xl bg-white shadow-soft border border-blue-50 p-6">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div>
-                            <h3 class="text-lg font-semibold text-slate-900">Xu hướng đăng ký lớp & thi</h3>
-                            <p class="text-xs text-slate-500 mt-1">Dữ liệu 12 tuần gần nhất · cập nhật theo giờ.</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <select class="rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                                <option>12 tuần gần nhất</option>
-                                <option>6 tháng gần nhất</option>
-                                <option>12 tháng</option>
-                            </select>
-                            <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                    <path d="M4 4v16h16"/>
-                                    <path d="M8 16l4-4 3 3 5-6"/>
-                                </svg>
-                                Tải dữ liệu
-                            </button>
-                        </div>
-                    </div>
-                    <div class="mt-6 h-72 rounded-2xl border border-dashed border-blue-100 bg-primary.pale/60 flex items-center justify-center text-sm text-slate-400">
-                        Biểu đồ đường (line chart) sẽ hiển thị tại đây.
-                    </div>
-                </div>
-
-                <div class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-6">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-slate-900">Tỉ lệ lấp đầy lớp</h3>
-                        <select class="rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                            <option>Tháng này</option>
-                            <option>Quý này</option>
-                        </select>
-                    </div>
-                    <div class="h-64 rounded-2xl border border-dashed border-blue-100 bg-primary.pale/60 flex flex-col items-center justify-center text-sm text-slate-400 space-y-4">
-                        <span>Biểu đồ tròn (donut chart) sẽ hiển thị tại đây.</span>
-                        <div class="grid grid-cols-2 gap-4 text-xs text-slate-500">
-                            <div class="flex items-center gap-2">
-                                <span class="h-2 w-2 rounded-full bg-primary"></span> Lớp cơ bản · 78%
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="h-2 w-2 rounded-full bg-emerald-400"></span> Nâng cao · 92%
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="h-2 w-2 rounded-full bg-orange-400"></span> Cấp tốc · 65%
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="h-2 w-2 rounded-full bg-pink-400"></span> Online · 88%
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="grid gap-6 xl:grid-cols-3">
-                <div class="xl:col-span-2 rounded-3xl bg-white shadow-soft border border-blue-50 p-6">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-slate-900">Hoạt động gần đây</h3>
-                        <a href="#" class="text-xs font-semibold text-primary hover:text-primary/80 transition">Xem tất cả</a>
-                    </div>
-                    <div class="mt-6 space-y-5">
-                        <article class="flex items-start gap-4 rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm">
-                            <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary font-semibold">LN</div>
-                            <div class="flex-1 space-y-1">
-                                <p class="text-sm font-semibold text-slate-800">Lê Nam đăng ký lớp ôn cấp tốc</p>
-                                <p class="text-xs text-slate-500">Ca thi 12/12 · Mã ĐK: DK-20251109-1023</p>
-                            </div>
-                            <span class="text-xs font-medium text-slate-400">5 phút trước</span>
-                        </article>
-                        <article class="flex items-start gap-4 rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm">
-                            <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-500 font-semibold">ML</div>
-                            <div class="flex-1 space-y-1">
-                                <p class="text-sm font-semibold text-slate-800">Minh Long cập nhật sĩ số lớp NE3</p>
-                                <p class="text-xs text-slate-500">Thêm 3 học viên chuyển từ NE2 · buổi 4/20</p>
-                            </div>
-                            <span class="text-xs font-medium text-slate-400">32 phút trước</span>
-                        </article>
-                        <article class="flex items-start gap-4 rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm">
-                            <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-500 font-semibold">HQ</div>
-                            <div class="flex-1 space-y-1">
-                                <p class="text-sm font-semibold text-slate-800">Hoàng Quân kích hoạt lại ưu đãi thi lại</p>
-                                <p class="text-xs text-slate-500">Giảm 20% cho học viên thi lại trong 30 ngày.</p>
-                            </div>
-                            <span class="text-xs font-medium text-slate-400">1 giờ trước</span>
-                        </article>
-                    </div>
-                </div>
-
-                <div class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-5">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-slate-900">Tiến độ công việc</h3>
-                        <a href="#" class="text-xs font-semibold text-primary hover:text-primary/80 transition">Xem lịch</a>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-700">Chuẩn bị đề thi mới</p>
-                                <span class="text-xs font-semibold text-emerald-500">80%</span>
-                            </div>
-                            <div class="h-2 w-full rounded-full bg-primary.pale">
-                                <div class="h-full rounded-full bg-primary" style="width:80%;"></div>
-                            </div>
-                            <p class="text-[11px] text-slate-400">Đã hoàn tất 12/15 bộ đề · hạn 15/11.</p>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-700">Kiểm kê thiết bị phòng thi</p>
-                                <span class="text-xs font-semibold text-orange-500">48%</span>
-                            </div>
-                            <div class="h-2 w-full rounded-full bg-primary.pale">
-                                <div class="h-full rounded-full bg-orange-400" style="width:48%;"></div>
-                            </div>
-                            <p class="text-[11px] text-slate-400">Cần bổ sung 6 micro dự phòng trước 12/11.</p>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-slate-700">Thống kê kết quả thi quý IV</p>
-                                <span class="text-xs font-semibold text-pink-500">32%</span>
-                            </div>
-                            <div class="h-2 w-full rounded-full bg-primary.pale">
-                                <div class="h-full rounded-full bg-pink-400" style="width:32%;"></div>
-                            </div>
-                            <p class="text-[11px] text-slate-400">Đang chờ dữ liệu từ cơ sở Thủ Đức.</p>
-                        </div>
-                        <button class="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-blue-100 bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5 transition">
-                            Xem tất cả 12 nhiệm vụ
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="rounded-3xl bg-white shadow-soft border border-blue-50 p-6 space-y-6">
-                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div>
-                        <h3 class="text-lg font-semibold text-slate-900">Lịch ca thi & lớp ôn sắp tới</h3>
-                        <p class="text-xs text-slate-500 mt-1">Theo dõi các hoạt động quan trọng 7 ngày tới.</p>
+                        <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Tổng quan hệ thống</h1>
+                        <p class="text-sm text-slate-500 mt-1">Theo dõi tức thời hoạt động lớp ôn, ca thi và doanh thu</p>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <button class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-primary/5 transition">
-                            Tuần này
-                        </button>
-                        <button class="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                <path d="M4 4h16v16H4z"/>
-                                <path d="M16 2v4"/>
-                                <path d="M8 2v4"/>
-                                <path d="M4 10h16"/>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a href="<%= request.getContextPath() %>/admin/export-dashboard?period=${period}" 
+                           class="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm hover:border-primary/60 hover:bg-primary/5 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
                             </svg>
-                            Xuất lịch
-                        </button>
+                            Xuất báo cáo Excel
+                        </a>
+                        <div class="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2.5 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                            </svg>
+                            <select id="periodFilter" onchange="window.location.href='?period=' + this.value" 
+                                    class="border-none bg-transparent text-sm font-semibold text-slate-700 focus:outline-none cursor-pointer">
+                                <option value="today" ${period == 'today' ? 'selected' : ''}>Hôm nay</option>
+                                <option value="week" ${period == 'week' ? 'selected' : ''}>7 ngày qua</option>
+                                <option value="month" ${period == 'month' ? 'selected' : ''}>Tháng này</option>
+                                <option value="all" ${period == 'all' ? 'selected' : ''}>Tất cả</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <article class="rounded-2xl border border-blue-50 bg-white p-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between text-xs text-slate-400 uppercase tracking-wide">
-                            <span>12 · Thg 11 · 2025</span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-500">
-                            Sẵn sàng
-                        </span>
+                <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-blue-700 font-medium border border-blue-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Cập nhật lúc <fmt:formatDate value="<%= new java.util.Date() %>" pattern="HH:mm" /> · 
+                        <fmt:formatDate value="<%= new java.util.Date() %>" pattern="dd/MM/yyyy" />
+                    </span>
+                    <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-emerald-600 font-medium border border-emerald-100">
+                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Hệ thống hoạt động ổn định
+                    </span>
+                </div>
+            </section>
+
+            <!-- Key Metrics Cards -->
+            <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+                <!-- Total Students Card -->
+                <div class="group rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/60 p-6 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="h-12 w-12 rounded-xl bg-blue-500 flex items-center justify-center shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+                            </svg>
                         </div>
-                        <h4 class="text-sm font-semibold text-slate-800">Ca thi 12/11 - 08:00</h4>
-                        <p class="text-xs text-slate-500">Phòng A203 · 48/50 thí sinh · Giám sát: Phạm Khánh</p>
-                        <div class="flex items-center justify-between text-xs text-slate-400">
-                            <span>Mã ca: CA-1254</span>
-                            <button class="text-primary font-semibold">Chi tiết</button>
+                        <span class="text-xs font-semibold text-blue-600/70 uppercase tracking-wide">Học viên</span>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-3xl font-bold text-slate-900"><fmt:formatNumber value="${totalStudents}" /></p>
+                        <p class="text-xs text-slate-600">
+                            <c:choose>
+                                <c:when test="${totalClasses > 0}">
+                                    ${totalClasses} lớp · ${activeClasses} đang hoạt động
+                                </c:when>
+                                <c:otherwise>Chưa có dữ liệu</c:otherwise>
+                            </c:choose>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Revenue Card -->
+                <div class="group rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200/60 p-6 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="h-12 w-12 rounded-xl bg-emerald-500 flex items-center justify-center shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                         </div>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white p-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between text-xs text-slate-400 uppercase tracking-wide">
-                            <span>13 · Thg 11 · 2025</span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-1 text-[11px] font-semibold text-orange-500">
-                            Cần cập nhật
-                        </span>
+                        <span class="text-xs font-semibold text-emerald-600/70 uppercase tracking-wide">Doanh thu</span>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-3xl font-bold text-slate-900">
+                            <c:choose>
+                                <c:when test="${totalRevenue >= 1000000}">
+                                    <fmt:formatNumber value="${totalRevenue / 1000000}" maxFractionDigits="1" /> triệu
+                                </c:when>
+                                <c:when test="${totalRevenue >= 1000}">
+                                    <fmt:formatNumber value="${totalRevenue / 1000}" maxFractionDigits="0" />k
+                                </c:when>
+                                <c:otherwise>
+                                    <fmt:formatNumber value="${totalRevenue}" />
+                                </c:otherwise>
+                            </c:choose>
+                        </p>
+                        <p class="text-xs text-slate-600">
+                            Lớp: <fmt:formatNumber value="${classRevenue / 1000000}" maxFractionDigits="1" /> triệu · 
+                            Ca thi: <fmt:formatNumber value="${examRevenue / 1000000}" maxFractionDigits="1" /> triệu
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Upcoming Exams Card -->
+                <div class="group rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200/60 p-6 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="h-12 w-12 rounded-xl bg-orange-500 flex items-center justify-center shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                            </svg>
                         </div>
-                        <h4 class="text-sm font-semibold text-slate-800">NE3 - Buổi 4</h4>
-                        <p class="text-xs text-slate-500">Phòng B205 · 32 học viên · GV: Lê Thảo</p>
-                        <div class="flex items-center justify-between text-xs text-slate-400">
-                            <span>Mã lớp: LOP-NE3-2025</span>
-                            <button class="text-primary font-semibold">Cập nhật</button>
+                        <span class="text-xs font-semibold text-orange-600/70 uppercase tracking-wide">Ca thi</span>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-3xl font-bold text-slate-900">${upcomingExams}</p>
+                        <p class="text-xs text-slate-600">
+                            Tổng ${totalExams} ca thi · ${totalExamRegistrations} thí sinh đã đăng ký
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Completion Rate Card -->
+                <div class="group rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100/50 border border-purple-200/60 p-6 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="h-12 w-12 rounded-xl bg-purple-500 flex items-center justify-center shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                         </div>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white p-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between text-xs text-slate-400 uppercase tracking-wide">
-                            <span>15 · Thg 11 · 2025</span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-[11px] font-semibold text-primary">
-                            Chuẩn bị
-                        </span>
+                        <span class="text-xs font-semibold text-purple-600/70 uppercase tracking-wide">Hoàn thành</span>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-3xl font-bold text-slate-900">
+                            <c:choose>
+                                <c:when test="${totalClasses > 0}">
+                                    <fmt:formatNumber value="${(activeClasses * 100.0) / totalClasses}" maxFractionDigits="0" />%
+                                </c:when>
+                                <c:otherwise>0%</c:otherwise>
+                            </c:choose>
+                        </p>
+                        <p class="text-xs text-slate-600">
+                            ${activeClasses}/${totalClasses} lớp đang hoạt động
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="grid gap-6 xl:grid-cols-3">
+                <!-- Registration Trend Chart -->
+                <div class="xl:col-span-2 rounded-2xl bg-white border border-blue-100/80 p-6 shadow-sm">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Xu hướng đăng ký</h3>
+                            <p class="text-xs text-slate-500 mt-1">
+                                <c:choose>
+                                    <c:when test="${period == 'today'}">Dữ liệu hôm nay</c:when>
+                                    <c:when test="${period == 'week'}">Dữ liệu 7 ngày qua</c:when>
+                                    <c:when test="${period == 'month'}">Dữ liệu tháng này</c:when>
+                                    <c:otherwise>Dữ liệu 12 tuần gần nhất</c:otherwise>
+                                </c:choose>
+                            </p>
                         </div>
-                        <h4 class="text-sm font-semibold text-slate-800">Ca thi 15/11 - 14:00</h4>
-                        <p class="text-xs text-slate-500">Phòng C101 · 60 thí sinh · Giám sát: Vũ An</p>
-                        <div class="flex items-center justify-between text-xs text-slate-400">
-                            <span>Mã ca: CA-1278</span>
-                            <button class="text-primary font-semibold">Nhắc nhở</button>
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50">
+                                <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                                <span class="text-xs font-medium text-slate-700">Lớp ôn</span>
+                            </div>
+                            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50">
+                                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                                <span class="text-xs font-medium text-slate-700">Ca thi</span>
+                            </div>
                         </div>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white p-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between text-xs text-slate-400 uppercase tracking-wide">
-                            <span>16 · Thg 11 · 2025</span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-500">
-                            Đã gửi tài liệu
-                        </span>
+                    </div>
+                    <div class="h-80">
+                        <div id="registrationChart"></div>
+                    </div>
+                </div>
+
+                <!-- Fill Rate Chart -->
+                <div class="rounded-2xl bg-white border border-blue-100/80 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Tỉ lệ lấp đầy lớp</h3>
+                            <p class="text-xs text-slate-500 mt-1">Theo danh mục</p>
                         </div>
-                        <h4 class="text-sm font-semibold text-slate-800">Lớp ôn online - Ca tối</h4>
-                        <p class="text-xs text-slate-500">47 học viên · Zoom ID: 823 456 221 · GV: Ngô Tín</p>
-                        <div class="flex items-center justify-between text-xs text-slate-400">
-                            <span>Mã lớp: LOP-ONL-2205</span>
-                            <button class="text-primary font-semibold">Xem Zoom</button>
+                    </div>
+                    <div class="h-64 mb-4">
+                        <div id="fillRateChart"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <c:forEach var="item" items="${classFillRateData}">
+                            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition">
+                                <div class="flex items-center gap-2">
+                                    <c:set var="categoryColor" value="#ec4899" />
+                                    <c:if test="${item.category == 'Cơ bản'}"><c:set var="categoryColor" value="#3b82f6" /></c:if>
+                                    <c:if test="${item.category == 'Nâng cao'}"><c:set var="categoryColor" value="#10b981" /></c:if>
+                                    <c:if test="${item.category == 'Cấp tốc'}"><c:set var="categoryColor" value="#f97316" /></c:if>
+                                    <c:if test="${item.category == 'Online'}"><c:set var="categoryColor" value="#8b5cf6" /></c:if>
+                                    <span class="h-3 w-3 rounded-full" style="background-color: ${categoryColor}"></span>
+                                    <span class="text-sm font-medium text-slate-700">${item.category}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-bold text-slate-900"><fmt:formatNumber value="${item.rate}" maxFractionDigits="0" />%</span>
+                                    <p class="text-xs text-slate-500">${item.count}/${item.total}</p>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Revenue Chart -->
+            <section class="rounded-2xl bg-white border border-blue-100/80 p-6 shadow-sm">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Doanh thu theo ngày</h3>
+                        <p class="text-xs text-slate-500 mt-1">
+                            <c:choose>
+                                <c:when test="${period == 'today'}">Dữ liệu hôm nay</c:when>
+                                <c:when test="${period == 'week'}">Dữ liệu 7 ngày qua</c:when>
+                                <c:when test="${period == 'month'}">Dữ liệu tháng này</c:when>
+                                <c:otherwise>Dữ liệu 30 ngày gần nhất</c:otherwise>
+                            </c:choose>
+                        </p>
+                    </div>
+                </div>
+                <div class="h-80">
+                    <div id="revenueChart"></div>
+                </div>
+            </section>
+
+            <!-- Tables Section -->
+            <section class="grid gap-6 xl:grid-cols-2">
+                <!-- Classes Table -->
+                <div class="rounded-2xl bg-white border border-blue-100/80 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Thống kê lớp ôn</h3>
+                            <p class="text-xs text-slate-500 mt-1">Tổng ${totalClasses} lớp</p>
                         </div>
-                    </article>
+                        <a href="<%= request.getContextPath() %>/admin/classes" class="text-sm font-semibold text-primary hover:text-primary/80 transition">
+                            Xem tất cả →
+                        </a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-blue-100">
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Lớp</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-slate-700">Sĩ số</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-slate-700">Tỉ lệ</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-slate-700">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-blue-50">
+                                <c:forEach var="stat" items="${classStats}" begin="0" end="4">
+                                    <tr class="hover:bg-blue-50/50 transition">
+                                        <td class="py-3 px-4">
+                                            <div>
+                                                <p class="font-semibold text-slate-900">${stat.tieuDe}</p>
+                                                <p class="text-xs text-slate-500">${stat.maLop}</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 text-center">
+                                            <span class="font-medium text-slate-700">${stat.soLuongDangKy}/${stat.siSoToiDa}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-center">
+                                            <div class="inline-flex items-center gap-2">
+                                                <c:set var="fillRatePercent" value="${stat.fillRate}" />
+                                                <fmt:formatNumber var="fillRatePercentFormatted" value="${fillRatePercent}" maxFractionDigits="0" />
+                                                <div class="h-2 w-16 rounded-full bg-slate-200 overflow-hidden">
+                                                    <div class="h-full bg-blue-500" style="width: ${fillRatePercentFormatted}%"></div>
+                                                </div>
+                                                <span class="text-xs font-medium text-slate-600"><fmt:formatNumber value="${stat.fillRate}" maxFractionDigits="0" />%</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 text-center">
+                                            <c:choose>
+                                                <c:when test="${stat.tinhTrang != null && (stat.tinhTrang.contains('Đang') || stat.tinhTrang.contains('Hoạt động'))}">
+                                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                                        Đang hoạt động
+                                                    </span>
+                                                </c:when>
+                                                <c:when test="${stat.tinhTrang != null && stat.tinhTrang.contains('Sắp')}">
+                                                    <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                                                        <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                                                        Sắp khai giảng
+                                                    </span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                                                        <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                                                        ${stat.tinhTrang != null ? stat.tinhTrang : 'N/A'}
+                                                    </span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                                <c:if test="${empty classStats || classStats.size() == 0}">
+                                    <tr>
+                                        <td colspan="4" class="py-8 text-center text-slate-500">Chưa có dữ liệu lớp ôn</td>
+                                    </tr>
+                                </c:if>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Exams Table -->
+                <div class="rounded-2xl bg-white border border-blue-100/80 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Thống kê ca thi</h3>
+                            <p class="text-xs text-slate-500 mt-1">Tổng ${totalExams} ca thi</p>
+                        </div>
+                        <a href="<%= request.getContextPath() %>/admin/exams" class="text-sm font-semibold text-primary hover:text-primary/80 transition">
+                            Xem tất cả →
+                        </a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-blue-100">
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Ca thi</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-slate-700">Thí sinh</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-slate-700">Tỉ lệ</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-slate-700">Còn lại</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-blue-50">
+                                <c:forEach var="stat" items="${examStats}" begin="0" end="4">
+                                    <tr class="hover:bg-blue-50/50 transition">
+                                        <td class="py-3 px-4">
+                                            <div>
+                                                <p class="font-semibold text-slate-900">${stat.maCaThi}</p>
+                                                <p class="text-xs text-slate-500">
+                                                    <c:if test="${stat.ngayThi != null}">
+                                                        <fmt:formatDate value="${stat.ngayThi}" pattern="dd/MM/yyyy" />
+                                                    </c:if>
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 text-center">
+                                            <span class="font-medium text-slate-700">${stat.soLuongDangKy}/${stat.sucChua}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-center">
+                                            <div class="inline-flex items-center gap-2">
+                                                <c:set var="examFillRatePercent" value="${stat.fillRate}" />
+                                                <fmt:formatNumber var="examFillRatePercentFormatted" value="${examFillRatePercent}" maxFractionDigits="0" />
+                                                <div class="h-2 w-16 rounded-full bg-slate-200 overflow-hidden">
+                                                    <div class="h-full bg-emerald-500" style="width: ${examFillRatePercentFormatted}%"></div>
+                                                </div>
+                                                <span class="text-xs font-medium text-slate-600"><fmt:formatNumber value="${stat.fillRate}" maxFractionDigits="0" />%</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 text-center">
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700">
+                                                ${stat.choCon} chỗ
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                                <c:if test="${empty examStats || examStats.size() == 0}">
+                                    <tr>
+                                        <td colspan="4" class="py-8 text-center text-slate-500">Chưa có dữ liệu ca thi</td>
+                                    </tr>
+                                </c:if>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </main>
@@ -363,5 +395,302 @@
 </div>
 
 <%@ include file="layout/admin-scripts.jspf" %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Kiểm tra ApexCharts đã load chưa
+    if (typeof ApexCharts === 'undefined') {
+        console.error('ApexCharts is not loaded!');
+        return;
+    }
+    
+    // ========== BIỂU ĐỒ XU HƯỚNG ĐĂNG KÝ ==========
+    const weeklyData = [
+        <c:choose>
+        <c:when test="${not empty weeklyData}">
+        <c:forEach var="week" items="${weeklyData}" varStatus="status">
+        <c:set var="classRegs" value="${week.classRegistrations != null ? week.classRegistrations : 0}" />
+        <c:set var="examRegs" value="${week.examRegistrations != null ? week.examRegistrations : 0}" />
+        {
+            label: "<c:out value="${week.label}" escapeXml="false" />",
+            classRegs: <c:out value="${classRegs}" />,
+            examRegs: <c:out value="${examRegs}" />
+        }<c:if test="${!status.last}">,</c:if>
+        </c:forEach>
+        </c:when>
+        <c:otherwise>[]</c:otherwise>
+        </c:choose>
+    ];
+    
+    console.log('Weekly data:', weeklyData);
+    
+    const regChartEl = document.getElementById('registrationChart');
+    if (regChartEl && typeof ApexCharts !== 'undefined') {
+        const labels = weeklyData.length > 0 ? weeklyData.map(d => d.label) : ['Chưa có dữ liệu'];
+        const classData = weeklyData.length > 0 ? weeklyData.map(d => d.classRegs) : [0];
+        const examData = weeklyData.length > 0 ? weeklyData.map(d => d.examRegs) : [0];
+        
+        try {
+            const registrationChart = new ApexCharts(regChartEl, {
+                chart: {
+                    type: 'line',
+                    height: 320,
+                    toolbar: { show: false },
+                    zoom: { enabled: false }
+                },
+                series: [
+                    {
+                        name: 'Đăng ký lớp ôn',
+                        data: classData
+                    },
+                    {
+                        name: 'Đăng ký ca thi',
+                        data: examData
+                    }
+                ],
+                colors: ['#3b82f6', '#10b981'],
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.3,
+                        stops: [0, 90, 100]
+                    }
+                },
+                markers: {
+                    size: 4,
+                    hover: {
+                        size: 6
+                    }
+                },
+                xaxis: {
+                    categories: labels,
+                    labels: {
+                        style: {
+                            colors: '#64748b',
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#64748b',
+                            fontSize: '12px'
+                        }
+                    },
+                    forceNiceScale: true
+                },
+                grid: {
+                    borderColor: '#e2e8f0',
+                    strokeDashArray: 3,
+                    xaxis: {
+                        lines: {
+                            show: false
+                        }
+                    }
+                },
+                legend: {
+                    show: false
+                },
+                tooltip: {
+                    theme: 'light',
+                    style: {
+                        fontSize: '12px'
+                    }
+                }
+            });
+            registrationChart.render();
+        } catch (error) {
+            console.error('Error creating registration chart:', error);
+        }
+    } else {
+        console.warn('Registration chart element not found or ApexCharts not loaded');
+    }
+    
+    // ========== BIỂU ĐỒ TỈ LỆ LẤP ĐẦY LỚP ==========
+    const fillRateData = [
+        <c:choose>
+        <c:when test="${not empty classFillRateData}">
+        <c:forEach var="item" items="${classFillRateData}" varStatus="status">
+        <c:set var="itemRate" value="${item.rate != null ? item.rate : 0}" />
+        <c:set var="itemCount" value="${item.count != null ? item.count : 0}" />
+        <c:set var="itemTotal" value="${item.total != null ? item.total : 0}" />
+        {
+            category: "<c:out value="${item.category}" escapeXml="false" />",
+            rate: <c:out value="${itemRate}" />,
+            count: <c:out value="${itemCount}" />,
+            total: <c:out value="${itemTotal}" />
+        }<c:if test="${!status.last}">,</c:if>
+        </c:forEach>
+        </c:when>
+        <c:otherwise>[]</c:otherwise>
+        </c:choose>
+    ];
+    
+    console.log('Fill rate data:', fillRateData);
+    
+    const fillRateChartEl = document.getElementById('fillRateChart');
+    if (fillRateChartEl && typeof ApexCharts !== 'undefined') {
+        const colors = ['#3b82f6', '#10b981', '#f97316', '#8b5cf6', '#ec4899'];
+        const labels = fillRateData.length > 0 ? fillRateData.map(d => d.category) : ['Chưa có dữ liệu'];
+        const values = fillRateData.length > 0 ? fillRateData.map(d => d.rate) : [0];
+        
+        try {
+            const fillRateChart = new ApexCharts(fillRateChartEl, {
+                chart: {
+                    type: 'donut',
+                    height: 260
+                },
+                series: values,
+                labels: labels,
+                colors: colors.slice(0, labels.length),
+                legend: {
+                    show: false
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '70%',
+                            labels: {
+                                show: true,
+                                total: {
+                                    show: true,
+                                    label: 'Tổng',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: '#64748b'
+                                }
+                            }
+                        }
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val, opts) {
+                            const data = fillRateData[opts.dataPointIndex];
+                            if (data) {
+                                return data.category + ': ' + val + '% (' + data.count + '/' + data.total + ')';
+                            }
+                            return val + '%';
+                        }
+                    }
+                }
+            });
+            fillRateChart.render();
+        } catch (error) {
+            console.error('Error creating fill rate chart:', error);
+        }
+    } else {
+        console.warn('Fill rate chart element not found or ApexCharts not loaded');
+    }
+    
+    // ========== BIỂU ĐỒ DOANH THU THEO NGÀY ==========
+    const dailyRevenueData = [
+        <c:choose>
+        <c:when test="${not empty dailyRevenueData}">
+        <c:forEach var="day" items="${dailyRevenueData}" varStatus="status">
+        <c:set var="dayRevenue" value="${day.revenue != null ? day.revenue : 0}" />
+        {
+            date: "<c:out value="${day.date}" escapeXml="false" />",
+            revenue: <c:out value="${dayRevenue}" />
+        }<c:if test="${!status.last}">,</c:if>
+        </c:forEach>
+        </c:when>
+        <c:otherwise>[]</c:otherwise>
+        </c:choose>
+    ];
+    
+    console.log('Daily revenue data:', dailyRevenueData);
+    
+    const revenueChartEl = document.getElementById('revenueChart');
+    if (revenueChartEl && typeof ApexCharts !== 'undefined') {
+        const dates = dailyRevenueData.length > 0 ? dailyRevenueData.map(d => d.date) : ['Chưa có dữ liệu'];
+        const revenues = dailyRevenueData.length > 0 ? dailyRevenueData.map(d => d.revenue) : [0];
+        
+        try {
+            const revenueChart = new ApexCharts(revenueChartEl, {
+                chart: {
+                    type: 'bar',
+                    height: 320,
+                    toolbar: { show: false }
+                },
+                series: [{
+                    name: 'Doanh thu',
+                    data: revenues
+                }],
+                colors: ['#10b981'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 6,
+                        columnWidth: '60%'
+                    }
+                },
+                xaxis: {
+                    categories: dates,
+                    labels: {
+                        style: {
+                            colors: '#64748b',
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#64748b',
+                            fontSize: '12px'
+                        },
+                        formatter: function(val) {
+                            if (val >= 1000000) {
+                                return (val / 1000000).toFixed(1) + 'M';
+                            } else if (val >= 1000) {
+                                return (val / 1000).toFixed(0) + 'k';
+                            }
+                            return val;
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#e2e8f0',
+                    strokeDashArray: 3,
+                    xaxis: {
+                        lines: {
+                            show: false
+                        }
+                    }
+                },
+                legend: {
+                    show: false
+                },
+                tooltip: {
+                    theme: 'light',
+                    y: {
+                        formatter: function(val) {
+                            if (val >= 1000000) {
+                                return 'Doanh thu: ' + (val / 1000000).toFixed(1) + ' triệu VNĐ';
+                            } else if (val >= 1000) {
+                                return 'Doanh thu: ' + (val / 1000).toFixed(0) + 'k VNĐ';
+                            }
+                            return 'Doanh thu: ' + val.toLocaleString('vi-VN') + ' VNĐ';
+                        }
+                    }
+                }
+            });
+            revenueChart.render();
+        } catch (error) {
+            console.error('Error creating revenue chart:', error);
+        }
+    } else {
+        console.warn('Revenue chart element not found or ApexCharts not loaded');
+    }
+});
+</script>
+
 </body>
 </html>

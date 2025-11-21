@@ -1,4 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setTimeZone value="Asia/Ho_Chi_Minh" />
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -31,7 +34,7 @@
                         </svg>
                         Nhập lịch thi
                     </button>
-                    <button data-modal-target="exam-modal"
+                    <a href="${pageContext.request.contextPath}/admin/exams/create"
                             class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -39,59 +42,47 @@
                             <path d="M6 12h12"/>
                         </svg>
                         Tạo ca thi
-                    </button>
+                    </a>
                 </div>
             </div>
             <div class="flex flex-wrap gap-3 text-xs text-slate-500">
                 <span class="inline-flex items-center gap-2 rounded-full bg-primary.pale px-3 py-1 text-primary">
-                    18 ca thi trong tháng 11 · cập nhật lúc 14:45
+                    <c:out value="${not empty totalExams ? totalExams : 0}" /> ca thi · cập nhật
+                    <fmt:formatDate value="${lastUpdatedAt}" pattern="HH:mm" />
                 </span>
                 <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 border border-blue-100 text-slate-500">
-                    3 ca cần bổ sung giám sát viên
+                    <c:out value="${not empty totalRegistrations ? totalRegistrations : 0}" /> đăng ký
                 </span>
             </div>
         </section>
 
         <section class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Ca thi tháng này</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Tổng ca thi</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">18 ca</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-                        +4 ca mới
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <c:out value="${not empty totalExams ? totalExams : 0}" />
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">Từ 01/11 đến 30/11 · gồm 11 ca thi giấy, 7 ca thi máy.</p>
+                <p class="text-xs text-slate-400">Tất cả ca thi trong hệ thống.</p>
             </div>
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
                 <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Thí sinh đăng ký</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">952</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-                        +12.6%
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <c:out value="${not empty totalRegistrations ? totalRegistrations : 0}" />
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">Tỉ lệ lấp đầy đạt 92% · 48 thí sinh đang chờ thanh toán.</p>
+                <p class="text-xs text-slate-400">Tổng số đăng ký ca thi.</p>
             </div>
             <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Ca cần xử lý</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Tổng doanh thu</p>
                 <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">03 ca</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-semibold text-orange-500">
-                        Ưu tiên hôm nay
-                    </span>
+                    <p class="text-3xl font-semibold text-slate-900">
+                        <fmt:formatNumber value="${not empty totalRevenue ? totalRevenue : 0}" type="number" groupingUsed="true" />đ
+                    </p>
                 </div>
-                <p class="text-xs text-slate-400">Thiếu giám sát viên hoặc phòng thi dự phòng.</p>
-            </div>
-            <div class="rounded-3xl bg-white shadow-soft border border-blue-50 px-6 py-5 space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary/70">Đánh giá thí sinh</p>
-                <div class="flex items-end gap-3">
-                    <p class="text-3xl font-semibold text-slate-900">4.6 / 5</p>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-                        +0.3 điểm
-                    </span>
-                </div>
-                <p class="text-xs text-slate-400">Khảo sát 428 thí sinh · tăng 8% so với kỳ trước.</p>
+                <p class="text-xs text-slate-400">Tổng số tiền từ đăng ký ca thi.</p>
             </div>
         </section>
 
@@ -158,65 +149,70 @@
                     </button>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
-                    <article class="rounded-2xl border border-blue-50 bg-primary.pale/40 px-4 py-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between text-xs text-slate-500 uppercase tracking-wide">
-                            <span>12 · Thg 11 · 08:00</span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-600">
-                                Đang mở
-                            </span>
-                        </div>
-                        <h4 class="text-sm font-semibold text-slate-900">Ca thi CA-1254 · Thi giấy</h4>
-                        <p class="text-xs text-slate-500">Phòng A203 · 48/50 thí sinh · Giám sát: Phạm Khánh</p>
-                        <div class="flex items-center justify-between text-xs text-slate-400">
-                            <span>Đăng ký trước 10/11</span>
-                            <div class="flex items-center gap-2">
-                                <button data-modal-target="exam-modal" class="text-primary font-semibold">Cập nhật</button>
-                                <button data-modal-target="assign-modal" class="text-primary font-semibold">Phân công</button>
+                    <c:choose>
+                        <c:when test="${not empty examsWithDetails}">
+                            <c:forEach var="examDetail" items="${examsWithDetails}">
+                                <c:set var="caThi" value="${examDetail.caThi}" />
+                                <c:set var="soLuongDangKy" value="${examDetail.soLuongDangKy}" />
+                                <c:set var="trangThai" value="${soLuongDangKy >= caThi.sucChua ? 'Đã đầy' : (soLuongDangKy >= caThi.sucChua * 0.8 ? 'Gần đầy' : 'Đang mở')}" />
+                                <article class="rounded-2xl border border-blue-50 ${soLuongDangKy >= caThi.sucChua ? 'bg-slate-50' : 'bg-white'} px-4 py-4 shadow-sm space-y-3">
+                                    <div class="flex items-center justify-between text-xs text-slate-500 uppercase tracking-wide">
+                                        <span>
+                                            <c:if test="${not empty caThi.ngayThi}">
+                                                <fmt:formatDate value="${caThi.ngayThi}" pattern="dd · MMM · " />
+                                            </c:if>
+                                            <c:if test="${not empty caThi.gioBatDau}">
+                                                <fmt:formatDate value="${caThi.gioBatDau}" pattern="HH:mm" />
+                                            </c:if>
+                                        </span>
+                                        <span class="inline-flex items-center gap-1 rounded-full ${trangThai == 'Đã đầy' ? 'bg-blue-100 text-primary' : (trangThai == 'Gần đầy' ? 'bg-orange-100 text-orange-500' : 'bg-emerald-100 text-emerald-600')} px-2 py-1 text-[11px] font-semibold">
+                                            ${trangThai}
+                                        </span>
+                                    </div>
+                                    <h4 class="text-sm font-semibold text-slate-900">
+                                        <c:choose>
+                                            <c:when test="${not empty caThi.maCaThi}">
+                                                <c:out value="${caThi.maCaThi}" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                Ca thi #<c:out value="${caThi.id}" />
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </h4>
+                                    <p class="text-xs text-slate-500">
+                                        <c:out value="${not empty caThi.diaDiem ? caThi.diaDiem : 'Chưa có địa điểm'}" /> · 
+                                        <c:out value="${soLuongDangKy}" />/<c:out value="${caThi.sucChua}" /> thí sinh
+                                    </p>
+                                    <div class="flex items-center justify-between text-xs text-slate-400">
+                                        <span>
+                                            <fmt:formatNumber value="${caThi.giaGoc}" type="number" groupingUsed="true" />đ
+                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            <a href="${pageContext.request.contextPath}/admin/export-exam-students?caThiId=${caThi.id}"
+                                               class="inline-flex items-center gap-1 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-600 hover:bg-emerald-100 transition"
+                                               title="Xuất danh sách thí sinh ra Excel">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                                                    <path d="M12 3v12m0 0l-5-5m5 5l5-5M3 21h18"/>
+                                                </svg>
+                                                Excel
+                                            </a>
+                                            <form method="post" action="${pageContext.request.contextPath}/admin/ca-thi" style="display:inline" class="js-delete-exam-form" data-exam-id="${caThi.id}">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="id" value="${caThi.id}">
+                                                <button type="submit" 
+                                                        class="text-red-500 font-semibold hover:text-red-700">Xóa</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </article>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="col-span-2 text-center py-12 text-slate-400">
+                                <p class="text-sm">Chưa có ca thi nào</p>
                             </div>
-                        </div>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between text-xs text-slate-500 uppercase tracking-wide">
-                            <span>13 · Thg 11 · 13:30</span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-1 text-[11px] font-semibold text-orange-500">
-                                Cần bổ sung
-                            </span>
-                        </div>
-                        <h4 class="text-sm font-semibold text-slate-900">Ca thi CA-1261 · Thi máy</h4>
-                        <p class="text-xs text-slate-500">Phòng B102 · 52/60 thí sinh · Giám sát: Chưa phân</p>
-                        <div class="flex items-center justify-between text-xs text-slate-400">
-                            <span>Hạn xử lý 12/11 · 17:00</span>
-                            <button data-modal-target="assign-modal" class="text-primary font-semibold">Phân công</button>
-                        </div>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between text-xs text-slate-500 uppercase tracking-wide">
-                            <span>11 · Thg 11 · 14:00</span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-[11px] font-semibold text-primary">
-                                Đã khoá
-                            </span>
-                        </div>
-                        <h4 class="text-sm font-semibold text-slate-900">Ca thi CA-1248 · Thi giấy</h4>
-                        <p class="text-xs text-slate-500">Phòng C101 · 60/60 thí sinh · Giám sát: Vũ An</p>
-                        <div class="flex items-center justify-between text-xs text-slate-400">
-                            <span>In danh sách trước 10/11</span>
-                            <button class="text-primary font-semibold">Xuất danh sách</button>
-                        </div>
-                    </article>
-                    <article class="rounded-2xl border border-blue-50 bg-white px-4 py-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between text-xs text-slate-500 uppercase tracking-wide">
-                            <span>15 · Thg 11 · 09:00</span>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-600">
-                                Đang mở
-                            </span>
-                        </div>
-                        <h4 class="text-sm font-semibold text-slate-900">Ca thi CA-1263 · Thi máy</h4>
-                        <p class="text-xs text-slate-500">Phòng D205 · 35/45 thí sinh · Giám sát: Lâm Dung</p>
-                        <div class="flex items-center justify-between text-xs text-slate-400">
-                            <span>Còn 10 suất · ưu tiên học viên thi lại</span>
-                            <button class="text-primary font-semibold">Gửi thông báo</button>
-                        </div>
-                    </article>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
 
@@ -254,113 +250,6 @@
     </div>
 </div>
 
-<!-- Create/Edit exam modal -->
-<div id="exam-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/30 backdrop-blur">
-    <div class="max-w-3xl w-full mx-4 rounded-3xl bg-white shadow-2xl border border-blue-50 overflow-hidden">
-        <div class="flex items-center justify-between px-6 py-5 border-b border-blue-50 bg-primary.pale/60">
-            <div>
-                <h3 class="text-xl font-semibold text-slate-900">Thêm hoặc chỉnh sửa ca thi</h3>
-                <p class="text-xs text-slate-500 mt-1">Điền thông tin chi tiết để lên lịch thi mới.</p>
-            </div>
-            <button data-modal-close="exam-modal"
-                    class="h-10 w-10 rounded-full border border-blue-100 bg-white text-slate-500 hover:text-primary transition">
-                ×
-            </button>
-        </div>
-        <form class="px-6 py-6 space-y-6">
-            <div class="grid gap-6 md:grid-cols-2">
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Mã ca thi</label>
-                    <input type="text" placeholder="CA-XXXX"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Đợt thi</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Tháng 11/2025</option>
-                        <option>Tháng 12/2025</option>
-                        <option>Tháng 01/2026</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ngày thi</label>
-                    <input type="date"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Giờ bắt đầu</label>
-                    <input type="time"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Hình thức</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Thi giấy</option>
-                        <option>Thi trên máy</option>
-                        <option>Kết hợp</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Phòng thi</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>A203 · 50 chỗ</option>
-                        <option>B102 · 60 chỗ</option>
-                        <option>C101 · 60 chỗ</option>
-                        <option>D205 · 45 chỗ</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Số lượng tối đa</label>
-                    <input type="number" min="10" max="120" value="50"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Giám sát chính</label>
-                    <select class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option>Phạm Khánh</option>
-                        <option>Vũ An</option>
-                        <option>Lý Hưng</option>
-                        <option>Lâm Dung</option>
-                    </select>
-                </div>
-            </div>
-            <div class="grid gap-6 md:grid-cols-2">
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Đề thi</label>
-                    <input type="text" placeholder="Phiếu nghe số 04, phiếu đọc số 07"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ghi chú chuẩn bị</label>
-                    <input type="text" placeholder="Chuẩn bị tivi, máy chiếu dự phòng"
-                           class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                </div>
-            </div>
-            <div>
-                <label class="text-xs font-semibold uppercase tracking-widest text-slate-500">Thông điệp gửi thí sinh</label>
-                <textarea rows="3" placeholder="Nhập hướng dẫn chi tiết, thời gian có mặt, giấy tờ cần mang theo..."
-                          class="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/30"></textarea>
-            </div>
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <label class="inline-flex items-center gap-3 text-xs text-slate-500">
-                    <input type="checkbox" class="h-4 w-4 rounded border-blue-100 text-primary focus:ring-primary/30">
-                    Tự động gửi email thông báo cho thí sinh
-                </label>
-                <div class="flex items-center gap-3">
-                    <button data-modal-close="exam-modal"
-                            type="button"
-                            class="rounded-full border border-blue-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-primary transition">
-                        Huỷ
-                    </button>
-                    <button type="submit"
-                            class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-primary/90 transition">
-                        Lưu ca thi
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
 
 <!-- Import exam modal -->
 <div id="exam-import-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/30 backdrop-blur">
@@ -461,6 +350,98 @@
 </div>
 
 <%@ include file="layout/admin-scripts.jspf" %>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Kiểm tra SweetAlert2 đã được load
+        if (typeof Swal === 'undefined') {
+            console.error('SweetAlert2 chưa được load!');
+            return;
+        }
+
+        // Xử lý xác nhận xóa ca thi
+        const deleteForms = document.querySelectorAll('.js-delete-exam-form');
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const examId = form.dataset.examId || '';
+
+                Swal.fire({
+                    title: 'Bạn chắc chắn?',
+                    html: `<p class="text-sm text-slate-500">Bạn sắp xoá ca thi <span class="font-semibold text-slate-700">#${examId}</span> khỏi hệ thống.</p>
+                           <p class="text-xs text-slate-400 mt-2">Thao tác này không thể hoàn tác.</p>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    focusCancel: true,
+                    confirmButtonText: 'Xoá ca thi',
+                    cancelButtonText: 'Huỷ',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-rose-100',
+                        confirmButton: 'swal2-confirm-btn',
+                        cancelButton: 'swal2-cancel-btn'
+                    },
+                    buttonsStyling: false,
+                    didOpen: () => {
+                        const confirmBtn = Swal.getConfirmButton();
+                        const cancelBtn = Swal.getCancelButton();
+                        if (confirmBtn) {
+                            confirmBtn.className = 'rounded-full bg-rose-500 text-white px-5 py-2 text-sm font-semibold hover:bg-rose-600 transition';
+                        }
+                        if (cancelBtn) {
+                            cancelBtn.className = 'rounded-full border border-slate-200 bg-white text-slate-600 px-5 py-2 text-sm font-semibold hover:text-primary transition';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Tạo form mới để submit, tránh conflict
+                        const formData = new FormData(form);
+                        const action = form.getAttribute('action');
+                        const method = form.getAttribute('method') || 'post';
+                        
+                        const hiddenForm = document.createElement('form');
+                        hiddenForm.method = method;
+                        hiddenForm.action = action;
+                        hiddenForm.style.display = 'none';
+                        
+                        formData.forEach((value, key) => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = value;
+                            hiddenForm.appendChild(input);
+                        });
+                        
+                        document.body.appendChild(hiddenForm);
+                        hiddenForm.submit();
+                    }
+                });
+            });
+        });
+
+        // Xử lý flash messages
+        <c:if test="${not empty examFlashMessage}">
+            const flashType = '${examFlashType}';
+            const flashMessage = '${examFlashMessage}';
+            const icon = flashType === 'success' ? 'success' : flashType === 'error' ? 'error' : 'info';
+            
+            Swal.fire({
+                icon: icon,
+                title: flashType === 'success' ? 'Thành công!' : flashType === 'error' ? 'Lỗi!' : 'Thông báo',
+                text: flashMessage,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded-2xl shadow-lg'
+                }
+            });
+        </c:if>
+    });
+</script>
+
 </body>
 </html>
 

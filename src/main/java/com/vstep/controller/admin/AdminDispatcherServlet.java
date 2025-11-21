@@ -11,13 +11,19 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.vstep.filter.ClassFilters;
+import com.vstep.model.CaThi;
 import com.vstep.model.DangKyLop;
+import com.vstep.model.DangKyThi;
 import com.vstep.model.LopOn;
 import com.vstep.model.NguoiDung;
+import com.vstep.service.CaThiService;
 import com.vstep.service.DangKyLopService;
+import com.vstep.service.DangKyThiService;
 import com.vstep.service.LopOnService;
 import com.vstep.service.NguoiDungService;
+import com.vstep.serviceImpl.CaThiServiceImpl;
 import com.vstep.serviceImpl.DangKyLopServiceImpl;
+import com.vstep.serviceImpl.DangKyThiServiceImpl;
 import com.vstep.serviceImpl.LopOnServiceImpl;
 import com.vstep.serviceImpl.NguoiDungServiceImpl;
 
@@ -35,16 +41,19 @@ public class AdminDispatcherServlet extends HttpServlet {
     private LopOnService lopOnService;
     private DangKyLopService dangKyLopService;
     private NguoiDungService nguoiDungService;
+    private CaThiService caThiService;
+    private DangKyThiService dangKyThiService;
 
     static {
         VIEW_MAP.put("", "/WEB-INF/views/admin/admin-login.jsp");
         VIEW_MAP.put("/", "/WEB-INF/views/admin/admin-login.jsp");
         VIEW_MAP.put("/login", "/WEB-INF/views/admin/admin-login.jsp");
-        VIEW_MAP.put("/dashboard", "/WEB-INF/views/admin/admin-dashboard.jsp");
+        // /dashboard được xử lý bởi AdminDashboardServlet riêng
         VIEW_MAP.put("/classes", "/WEB-INF/views/admin/admin-classes.jsp");
         VIEW_MAP.put("/classes/create", "/WEB-INF/views/admin/admin-classes-create.jsp");
         VIEW_MAP.put("/classes/edit", "/WEB-INF/views/admin/admin-classes-edit.jsp");
         VIEW_MAP.put("/exams", "/WEB-INF/views/admin/admin-exams.jsp");
+        VIEW_MAP.put("/exams/create", "/WEB-INF/views/admin/admin-exams-create.jsp");
         VIEW_MAP.put("/registrations", "/WEB-INF/views/admin/admin-registrations.jsp");
         VIEW_MAP.put("/config", "/WEB-INF/views/admin/admin-config.jsp");
         VIEW_MAP.put("/statistics", "/WEB-INF/views/admin/admin-statistics.jsp");
@@ -56,6 +65,8 @@ public class AdminDispatcherServlet extends HttpServlet {
         lopOnService = new LopOnServiceImpl();
         dangKyLopService = new DangKyLopServiceImpl();
         nguoiDungService = new NguoiDungServiceImpl();
+        caThiService = new CaThiServiceImpl();
+        dangKyThiService = new DangKyThiServiceImpl();
     }
 
     @Override
@@ -98,6 +109,8 @@ public class AdminDispatcherServlet extends HttpServlet {
             if (resp.isCommitted()) {
                 return;
             }
+        } else if ("/exams".equals(pathInfo)) {
+            prepareExamsData(req);
         } else if ("/registrations".equals(pathInfo)) {
             prepareRegistrationsData(req);
         }
@@ -108,6 +121,16 @@ public class AdminDispatcherServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        String pathInfo = req.getPathInfo();
+        if (pathInfo == null) {
+            pathInfo = "";
+        }
+
+        if ("/registrations".equals(pathInfo)) {
+            handleRegistrationsPost(req, resp);
+            return;
+        }
+
         doGet(req, resp);
     }
 
@@ -115,7 +138,16 @@ public class AdminDispatcherServlet extends HttpServlet {
         if (lopOnService == null) {
             lopOnService = new LopOnServiceImpl();
         }
+        if (dangKyLopService == null) {
+            dangKyLopService = new DangKyLopServiceImpl();
+        }
         List<LopOn> allClasses = lopOnService.findAll();
+
+        // Derive status from dates for every class
+        for (LopOn lop : allClasses) {
+            String derived = deriveLopStatus(lop);
+            lop.setTinhTrang(derived);
+        }
 
         ClassFilters filters = ClassFilters.fromRequest(req);
         List<LopOn> filteredClasses = filters.apply(allClasses);
@@ -142,6 +174,14 @@ public class AdminDispatcherServlet extends HttpServlet {
         }
 
         req.setAttribute("lopOnList", paginatedClasses);
+
+        // Đếm số người đăng ký hiện tại cho từng lớp trên trang
+        java.util.Map<Long, Integer> registeredCounts = new java.util.HashMap<>();
+        for (LopOn lop : paginatedClasses) {
+            int count = dangKyLopService.countByLopOnId(lop.getId());
+            registeredCounts.put(lop.getId(), count);
+        }
+        req.setAttribute("registeredCounts", registeredCounts);
         req.setAttribute("classFilterParams", filters);
         req.setAttribute("activeFilterChips",
                 filters.toChips(req.getContextPath() + "/admin/classes"));
@@ -166,13 +206,14 @@ public class AdminDispatcherServlet extends HttpServlet {
 
         for (LopOn lop : filteredClasses) {
             totalCapacity += lop.getSiSoToiDa();
-            String normalizedStatus = normalizeStatus(lop.getTinhTrang());
-            switch (normalizedStatus) {
-                case "dangmo" -> dangMoCount++;
-                case "sapmo" -> sapMoCount++;
-                case "daketthuc", "ketthuc" -> daKetThucCount++;
-                default -> {
-                }
+            String status = lop.getTinhTrang() != null ? lop.getTinhTrang().trim() : "";
+            String normalizedStatus = com.vstep.util.FilterUtils.normalizeForComparison(status);
+            if ("đang mở".equalsIgnoreCase(status) || "dangmo".equals(normalizedStatus)) {
+                dangMoCount++;
+            } else if ("chuẩn bị".equalsIgnoreCase(status) || "sapmo".equals(normalizedStatus) || "chuanbi".equals(normalizedStatus)) {
+                sapMoCount++;
+            } else if ("kết thúc".equalsIgnoreCase(status) || "ketthuc".equals(normalizedStatus) || "daketthuc".equals(normalizedStatus)) {
+                daKetThucCount++;
             }
             if (lop.getSiSoToiDa() >= 40) {
                 nearlyFullCount++;
@@ -207,6 +248,26 @@ public class AdminDispatcherServlet extends HttpServlet {
             req.setAttribute("classFlashType", type != null ? type : "info");
             session.removeAttribute("classFlashMessage");
             session.removeAttribute("classFlashType");
+        }
+        
+        // Flash messages cho exams
+        Object examMessage = session.getAttribute("examFlashMessage");
+        if (examMessage != null) {
+            req.setAttribute("examFlashMessage", examMessage);
+            Object examType = session.getAttribute("examFlashType");
+            req.setAttribute("examFlashType", examType != null ? examType : "info");
+            session.removeAttribute("examFlashMessage");
+            session.removeAttribute("examFlashType");
+        }
+        
+        // Flash messages cho config
+        Object configMessage = session.getAttribute("configFlashMessage");
+        if (configMessage != null) {
+            req.setAttribute("configFlashMessage", configMessage);
+            Object configType = session.getAttribute("configFlashType");
+            req.setAttribute("configFlashType", configType != null ? configType : "info");
+            session.removeAttribute("configFlashMessage");
+            session.removeAttribute("configFlashType");
         }
     }
 
@@ -310,24 +371,37 @@ public class AdminDispatcherServlet extends HttpServlet {
     }
 
     private void prepareRegistrationsData(HttpServletRequest req) {
-        if (dangKyLopService == null) {
-            dangKyLopService = new DangKyLopServiceImpl();
-        }
-        if (lopOnService == null) {
-            lopOnService = new LopOnServiceImpl();
-        }
-        if (nguoiDungService == null) {
-            nguoiDungService = new NguoiDungServiceImpl();
-        }
+        try {
+            if (dangKyLopService == null) {
+                dangKyLopService = new DangKyLopServiceImpl();
+            }
+            if (dangKyThiService == null) {
+                dangKyThiService = new DangKyThiServiceImpl();
+            }
+            if (lopOnService == null) {
+                lopOnService = new LopOnServiceImpl();
+            }
+            if (caThiService == null) {
+                caThiService = new CaThiServiceImpl();
+            }
+            if (nguoiDungService == null) {
+                nguoiDungService = new NguoiDungServiceImpl();
+            }
 
-        // Lấy tất cả đăng ký
-        List<DangKyLop> allRegistrations = dangKyLopService.findAll();
+            // Lấy tất cả đăng ký lớp ôn
+            List<DangKyLop> allRegistrationsLop = dangKyLopService.findAll();
+            
+            // Lấy tất cả đăng ký ca thi
+            List<DangKyThi> allRegistrationsThi = dangKyThiService.findAll();
         
-        // Tạo danh sách với thông tin đầy đủ
+        // Tạo danh sách với thông tin đầy đủ (bao gồm cả lớp ôn và ca thi)
         List<Map<String, Object>> registrationsWithDetails = new ArrayList<>();
-        for (DangKyLop dk : allRegistrations) {
+        
+        // Xử lý đăng ký lớp ôn
+        for (DangKyLop dk : allRegistrationsLop) {
             Map<String, Object> detail = new HashMap<>();
             detail.put("dangKy", dk);
+            detail.put("loai", "lop"); // Đánh dấu là đăng ký lớp ôn
             
             // Load thông tin người dùng
             NguoiDung user = nguoiDungService.findById(dk.getNguoiDungId());
@@ -336,17 +410,71 @@ public class AdminDispatcherServlet extends HttpServlet {
             // Load thông tin lớp
             LopOn lop = lopOnService.findById(dk.getLopOnId());
             detail.put("lopOn", lop);
+            if (lop != null) {
+                detail.put("lopStatus", deriveLopStatus(lop));
+            }
             
             registrationsWithDetails.add(detail);
         }
+        
+        // Xử lý đăng ký ca thi
+        for (DangKyThi dk : allRegistrationsThi) {
+            Map<String, Object> detail = new HashMap<>();
+            detail.put("dangKyThi", dk);
+            detail.put("loai", "thi"); // Đánh dấu là đăng ký ca thi
+            
+            // Load thông tin người dùng
+            NguoiDung user = nguoiDungService.findById(dk.getNguoiDungId());
+            detail.put("nguoiDung", user);
+            
+            // Load thông tin ca thi
+            CaThi caThi = caThiService.findById(dk.getCaThiId());
+            detail.put("caThi", caThi);
+            
+            registrationsWithDetails.add(detail);
+        }
+        
+        // Sắp xếp theo ngày đăng ký (mới nhất trước)
+        registrationsWithDetails.sort((a, b) -> {
+            java.sql.Timestamp dateA = null;
+            java.sql.Timestamp dateB = null;
+            
+            if ("lop".equals(a.get("loai"))) {
+                DangKyLop dk = (DangKyLop) a.get("dangKy");
+                dateA = dk.getNgayDangKy();
+            } else {
+                DangKyThi dk = (DangKyThi) a.get("dangKyThi");
+                dateA = dk.getNgayDangKy();
+            }
+            
+            if ("lop".equals(b.get("loai"))) {
+                DangKyLop dk = (DangKyLop) b.get("dangKy");
+                dateB = dk.getNgayDangKy();
+            } else {
+                DangKyThi dk = (DangKyThi) b.get("dangKyThi");
+                dateB = dk.getNgayDangKy();
+            }
+            
+            if (dateA == null && dateB == null) return 0;
+            if (dateA == null) return 1;
+            if (dateB == null) return -1;
+            return dateB.compareTo(dateA); // Mới nhất trước
+        });
 
         // Filter theo trạng thái (nếu có)
         String trangThaiFilter = req.getParameter("trangThai");
         if (trangThaiFilter != null && !trangThaiFilter.isEmpty()) {
             List<Map<String, Object>> filtered = new ArrayList<>();
             for (Map<String, Object> reg : registrationsWithDetails) {
-                DangKyLop dk = (DangKyLop) reg.get("dangKy");
-                if (trangThaiFilter.equals(dk.getTrangThai())) {
+                String trangThai = null;
+                if ("lop".equals(reg.get("loai"))) {
+                    DangKyLop dk = (DangKyLop) reg.get("dangKy");
+                    trangThai = dk.getTrangThai();
+                } else {
+                    DangKyThi dk = (DangKyThi) reg.get("dangKyThi");
+                    trangThai = dk.getTrangThai();
+                }
+                if (trangThaiFilter.equals(trangThai)) {
                     filtered.add(reg);
                 }
             }
@@ -359,8 +487,16 @@ public class AdminDispatcherServlet extends HttpServlet {
             String searchLower = searchQuery.toLowerCase().trim();
             List<Map<String, Object>> filtered = new ArrayList<>();
             for (Map<String, Object> reg : registrationsWithDetails) {
-                DangKyLop dk = (DangKyLop) reg.get("dangKy");
                 NguoiDung user = (NguoiDung) reg.get("nguoiDung");
+                String maXacNhan = null;
+                
+                if ("lop".equals(reg.get("loai"))) {
+                    DangKyLop dk = (DangKyLop) reg.get("dangKy");
+                    maXacNhan = dk.getMaXacNhan();
+                } else {
+                    DangKyThi dk = (DangKyThi) reg.get("dangKyThi");
+                    maXacNhan = dk.getMaXacNhan();
+                }
                 
                 boolean matches = false;
                 if (user != null) {
@@ -371,7 +507,7 @@ public class AdminDispatcherServlet extends HttpServlet {
                         matches = true;
                     }
                 }
-                if (dk.getMaXacNhan() != null && dk.getMaXacNhan().toLowerCase().contains(searchLower)) {
+                if (maXacNhan != null && maXacNhan.toLowerCase().contains(searchLower)) {
                     matches = true;
                 }
                 
@@ -409,14 +545,14 @@ public class AdminDispatcherServlet extends HttpServlet {
         req.setAttribute("startRecord", totalRecords > 0 ? startIndex + 1 : 0);
         req.setAttribute("endRecord", Math.min(endIndex, totalRecords));
 
-        // Thống kê
-        int totalRegistrations = allRegistrations.size();
+        // Thống kê (bao gồm cả lớp ôn và ca thi)
+        int totalRegistrations = allRegistrationsLop.size() + allRegistrationsThi.size();
         int choDuyetCount = 0;
         int daDuyetCount = 0;
         int daHuyCount = 0;
         long totalRevenue = 0;
         
-        for (DangKyLop dk : allRegistrations) {
+        for (DangKyLop dk : allRegistrationsLop) {
             String trangThai = dk.getTrangThai();
             if (trangThai != null) {
                 if (trangThai.contains("Chờ") || trangThai.contains("chờ")) {
@@ -431,6 +567,25 @@ public class AdminDispatcherServlet extends HttpServlet {
             }
             totalRevenue += dk.getSoTienDaTra();
         }
+        
+        for (DangKyThi dk : allRegistrationsThi) {
+            String trangThai = dk.getTrangThai();
+            if (trangThai != null) {
+                if (trangThai.contains("Chờ") || trangThai.contains("chờ")) {
+                    choDuyetCount++;
+                } else if (trangThai.contains("Đã") || trangThai.contains("đã")) {
+                    if (trangThai.contains("Hủy") || trangThai.contains("hủy")) {
+                        daHuyCount++;
+                    } else {
+                        daDuyetCount++;
+                        // Chỉ tính doanh thu khi đã duyệt
+                        if (trangThai.equals("Đã duyệt") || trangThai.equals("Đã xác nhận")) {
+                            totalRevenue += dk.getSoTienPhaiTra();
+                        }
+                    }
+                }
+            }
+        }
 
         req.setAttribute("totalRegistrations", totalRegistrations);
         req.setAttribute("choDuyetCount", choDuyetCount);
@@ -438,13 +593,218 @@ public class AdminDispatcherServlet extends HttpServlet {
         req.setAttribute("daHuyCount", daHuyCount);
         req.setAttribute("totalRevenue", totalRevenue);
         
-        // Lấy danh sách trạng thái unique để filter
+        // Lấy danh sách trạng thái unique để filter (từ cả lớp ôn và ca thi)
         Set<String> statusOptions = new LinkedHashSet<>();
-        for (DangKyLop dk : allRegistrations) {
+        for (DangKyLop dk : allRegistrationsLop) {
+            if (dk.getTrangThai() != null && !dk.getTrangThai().isEmpty()) {
+                statusOptions.add(dk.getTrangThai());
+            }
+        }
+        for (DangKyThi dk : allRegistrationsThi) {
             if (dk.getTrangThai() != null && !dk.getTrangThai().isEmpty()) {
                 statusOptions.add(dk.getTrangThai());
             }
         }
         req.setAttribute("statusOptions", statusOptions);
+        // Mốc cập nhật hiển thị trên trang
+        req.setAttribute("lastUpdatedAt", new java.util.Date());
+        } catch (Exception e) {
+            // Xử lý lỗi và log
+            java.util.logging.Logger.getLogger(AdminDispatcherServlet.class.getName())
+                .log(java.util.logging.Level.SEVERE, "Lỗi khi chuẩn bị dữ liệu đăng ký", e);
+            
+            // Set giá trị mặc định để tránh lỗi JSP
+            req.setAttribute("registrations", new java.util.ArrayList<>());
+            req.setAttribute("totalRegistrations", 0);
+            req.setAttribute("choDuyetCount", 0);
+            req.setAttribute("daDuyetCount", 0);
+            req.setAttribute("daHuyCount", 0);
+            req.setAttribute("totalRevenue", 0);
+            req.setAttribute("currentPage", 1);
+            req.setAttribute("totalPages", 1);
+            req.setAttribute("pageSize", 10);
+            req.setAttribute("totalRecords", 0);
+            req.setAttribute("startRecord", 0);
+            req.setAttribute("endRecord", 0);
+            req.setAttribute("statusOptions", new java.util.ArrayList<>());
+            req.setAttribute("lastUpdatedAt", new java.util.Date());
+        }
+    }
+
+    private void prepareExamsData(HttpServletRequest req) {
+        if (caThiService == null) {
+            caThiService = new CaThiServiceImpl();
+        }
+        if (dangKyThiService == null) {
+            dangKyThiService = new DangKyThiServiceImpl();
+        }
+
+        // Lấy tất cả ca thi
+        List<CaThi> allExams = caThiService.findAll();
+        
+        // Tạo danh sách với thông tin đầy đủ (bao gồm số lượng đăng ký)
+        List<Map<String, Object>> examsWithDetails = new ArrayList<>();
+        int totalRegistrations = 0;
+        long totalRevenue = 0;
+        
+        for (CaThi caThi : allExams) {
+            Map<String, Object> detail = new HashMap<>();
+            detail.put("caThi", caThi);
+            
+            int count = dangKyThiService.countByCaThiId(caThi.getId());
+            detail.put("soLuongDangKy", count);
+            totalRegistrations += count;
+            
+            // Tính doanh thu từ đăng ký ca thi
+            List<DangKyThi> registrations = dangKyThiService.findByCaThiId(caThi.getId());
+            for (DangKyThi dk : registrations) {
+                totalRevenue += dk.getSoTienPhaiTra();
+            }
+            
+            examsWithDetails.add(detail);
+        }
+
+        req.setAttribute("examsWithDetails", examsWithDetails);
+        req.setAttribute("totalExams", allExams.size());
+        req.setAttribute("totalRegistrations", totalRegistrations);
+        req.setAttribute("totalRevenue", totalRevenue);
+        req.setAttribute("lastUpdatedAt", new java.util.Date());
+    }
+
+    private String deriveLopStatus(LopOn lop) {
+        java.util.Date now = new java.util.Date();
+        java.util.Date start = lop.getNgayKhaiGiang();
+        java.util.Date end = lop.getNgayKetThuc();
+
+        if (start != null && now.before(start)) {
+            return "Chuẩn bị";
+        }
+        if (start != null && end != null) {
+            boolean afterStart = !now.before(start);
+            boolean beforeEnd = now.before(end) || now.equals(end);
+            if (afterStart && beforeEnd) {
+                return "Đang mở";
+            }
+        }
+        if (end != null && now.after(end)) {
+            return "Kết thúc";
+        }
+        // Fallback nếu thiếu dữ liệu ngày
+        if (start == null && end == null) {
+            return "Không xác định";
+        }
+        if (start != null && (end == null)) {
+            return now.before(start) ? "Chuẩn bị" : "Đang mở";
+        }
+        return "Kết thúc";
+    }
+
+    private void handleRegistrationsPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        if (dangKyLopService == null) {
+            dangKyLopService = new DangKyLopServiceImpl();
+        }
+        if (lopOnService == null) {
+            lopOnService = new LopOnServiceImpl();
+        }
+        if (nguoiDungService == null) {
+            nguoiDungService = new NguoiDungServiceImpl();
+        }
+
+        String action = req.getParameter("action");
+        if (action == null) {
+            resp.sendRedirect(req.getContextPath() + "/admin/registrations");
+            return;
+        }
+
+        int success = 0;
+        int total = 0;
+
+        if ("approve".equals(action)) {
+            String idStr = req.getParameter("id");
+            total = 1;
+            success = approveOne(idStr) ? 1 : 0;
+        } else if ("approve-bulk".equals(action)) {
+            String[] ids = req.getParameterValues("ids");
+            if (ids != null && ids.length > 0) {
+                total = ids.length;
+                for (String idStr : ids) {
+                    if (approveOne(idStr)) {
+                        success++;
+                    }
+                }
+            }
+        }
+
+        // Flash & redirect
+        HttpSession session = req.getSession();
+        session.setAttribute("classFlashType", success == total ? "success" : (success > 0 ? "warning" : "error"));
+        if (total <= 1) {
+            session.setAttribute("classFlashMessage", success == 1 ? "Duyệt đăng ký thành công." : "Duyệt đăng ký thất bại.");
+        } else {
+            session.setAttribute("classFlashMessage", "Duyệt hàng loạt: thành công " + success + "/" + total + " đăng ký.");
+        }
+        resp.sendRedirect(req.getContextPath() + "/admin/registrations");
+    }
+
+    private boolean approveOne(String idStr) {
+        long id = parseLong(idStr);
+        if (id <= 0) return false;
+
+        DangKyLop dk = dangKyLopService.findById(id);
+        if (dk == null) return false;
+
+        // Cập nhật trạng thái
+        dk.setTrangThai("Đã duyệt");
+        // Không ghi đè thời gian đăng ký ban đầu
+
+        // Nếu duyệt coi như đã thanh toán: cộng đủ học phí lớp
+        LopOn lopForPayment = lopOnService.findById(dk.getLopOnId());
+        if (lopForPayment != null) {
+            long hocPhi = lopForPayment.getHocPhi();
+            long currentPaid = dk.getSoTienDaTra();
+            if (hocPhi > 0 && currentPaid < hocPhi) {
+                dk.setSoTienDaTra(hocPhi);
+            }
+        }
+
+        boolean updated = dangKyLopService.update(dk);
+        if (!updated) return false;
+
+        // Gửi email xác nhận
+        NguoiDung user = nguoiDungService.findById(dk.getNguoiDungId());
+        LopOn lop = lopOnService.findById(dk.getLopOnId());
+        if (user != null && user.getEmail() != null && !user.getEmail().isBlank()) {
+            String scheduleText = lop != null ? buildScheduleText(lop) : "";
+            Long totalFee = lop != null ? lop.getHocPhi() : null;
+            String classCode = lop != null ? lop.getMaLop() : "";
+            String classTitle = lop != null ? lop.getTieuDe() : "";
+            com.vstep.util.EmailService.sendClassApprovalEmail(
+                    user.getEmail(),
+                    user.getHoTen(),
+                    classTitle,
+                    classCode,
+                    scheduleText,
+                    dk.getSoTienDaTra(),
+                    totalFee,
+                    dk.getMaXacNhan()
+            );
+        }
+        return true;
+    }
+
+    private String buildScheduleText(LopOn lop) {
+        StringBuilder sb = new StringBuilder();
+        if (lop.getNgayKhaiGiang() != null) {
+            sb.append("Khai giảng ").append(new java.text.SimpleDateFormat("dd/MM/yyyy").format(lop.getNgayKhaiGiang()));
+        }
+        if (lop.getThoiGianHoc() != null && !lop.getThoiGianHoc().isBlank()) {
+            if (!sb.isEmpty()) sb.append(" · ");
+            sb.append(lop.getThoiGianHoc());
+        }
+        if (lop.getHinhThuc() != null && !lop.getHinhThuc().isBlank()) {
+            if (!sb.isEmpty()) sb.append(" · ");
+            sb.append(lop.getHinhThuc());
+        }
+        return sb.toString();
     }
 }

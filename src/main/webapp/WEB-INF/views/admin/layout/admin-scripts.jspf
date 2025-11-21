@@ -152,3 +152,73 @@
     })();
 </script>
 
+<script>
+    (function () {
+        // Generic modal open/close handler using data attributes
+        const openers = document.querySelectorAll('[data-modal-target]');
+        const closers = document.querySelectorAll('[data-modal-close]');
+
+        function showModalById(id) {
+            if (!id) return;
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            // Ensure it uses flex to center (.hidden items-center justify-center ...)
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function hideModalByEl(modal) {
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function hideModalById(id) {
+            if (!id) return;
+            const modal = document.getElementById(id);
+            hideModalByEl(modal);
+        }
+
+        openers.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = btn.getAttribute('data-modal-target');
+                showModalById(id);
+            });
+        });
+
+        closers.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = btn.getAttribute('data-modal-close');
+                if (id) {
+                    hideModalById(id);
+                } else {
+                    const modal = btn.closest('.fixed.inset-0');
+                    hideModalByEl(modal);
+                }
+            });
+        });
+
+        // Close when clicking on backdrop
+        document.addEventListener('click', (e) => {
+            const modal = e.target.closest('.fixed.inset-0');
+            if (!modal) return;
+            const content = modal.querySelector('.max-w-3xl, .max-w-xl, .max-w-lg, .max-w-3xl');
+            // If clicked exactly on modal backdrop (not inside the content card)
+            if (e.target === modal) {
+                hideModalByEl(modal);
+            }
+        });
+
+        // Close on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.fixed.inset-0.flex').forEach(m => hideModalByEl(m));
+            }
+        });
+    })();
+</script>
+

@@ -4,7 +4,7 @@
               type="javax.sql.DataSource"
               factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
               driverClassName="com.mysql.cj.jdbc.Driver"
-              url="jdbc:mysql://localhost:3306/vstepdb?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC"
+              url="jdbc:mysql://localhost:3306/vstepdb?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh"
               username="root"
               password="01265737697Khoa"
               maxTotal="20"

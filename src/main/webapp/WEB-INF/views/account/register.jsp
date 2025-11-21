@@ -7,28 +7,13 @@
     <title>Đăng ký - VSTEP System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(14px); }
-        .toast {
-            position: fixed; top: 1.5rem; right: 1.5rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 500; font-size: 0.875rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            opacity: 0; transform: translateY(-20px);
-            transition: all 0.4s ease;
-            display: flex; align-items: center; gap: 0.5rem;
-        }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        .toast-success { background-color: #22c55e; color: white; }
-        .toast-error { background-color: #ef4444; color: white; }
     </style>
 </head>
 <body class="bg-gradient-to-b from-gray-50 to-white flex items-center justify-center min-h-screen px-4">
-
-<!-- Toast -->
-<div id="toast" class="toast"></div>
 
 <div class="w-full max-w-md p-8 glass rounded-3xl shadow-2xl">
     <h2 class="text-3xl font-bold text-blue-700 text-center mb-6 tracking-wide">Đăng ký VSTEP</h2>
@@ -70,29 +55,40 @@
     </p>
 </div>
 
-<!-- Hiển thị toast sau redirect -->
+<!-- Hiển thị thông báo sau redirect -->
 <script>
-    const params = new URLSearchParams(window.location.search);
-    const toast = document.getElementById("toast");
-    let message = '', type = '';
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        let message = '', type = '';
 
-    if(params.get('success') === 'register') {
-        message = '✅ Đăng ký thành công! Vui lòng đăng nhập.';
-        type = 'success';
-    } else if(params.get('error')) {
-        type = 'error';
-        switch(params.get('error')) {
-            case 'confirm': message = '❌ Mật khẩu không khớp!'; break;
-            case 'exists': message = '❌ Email đã tồn tại!'; break;
-            case 'server': message = '⚠️ Có lỗi xảy ra! Vui lòng thử lại.'; break;
+        if(params.get('success') === 'register') {
+            message = 'Đăng ký thành công! Vui lòng đăng nhập.';
+            type = 'success';
+        } else if(params.get('error')) {
+            type = 'error';
+            switch(params.get('error')) {
+                case 'confirm': message = 'Mật khẩu không khớp!'; break;
+                case 'exists': message = 'Email đã tồn tại!'; break;
+                case 'server': message = 'Có lỗi xảy ra! Vui lòng thử lại.'; break;
+            }
         }
-    }
 
-    if(message) {
-        toast.textContent = message;
-        toast.classList.add(type === 'success' ? 'toast-success' : 'toast-error', 'show');
-        setTimeout(() => toast.classList.remove('show'), 4000);
-    }
+        if(message) {
+            Swal.fire({
+                icon: type,
+                title: type === 'success' ? 'Thành công!' : 'Lỗi!',
+                text: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded-2xl shadow-lg'
+                }
+            });
+        }
+    });
 </script>
 
 </body>

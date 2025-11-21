@@ -2,6 +2,8 @@ package com.vstep.controller.admin;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Time;
 import java.util.Random;
 
@@ -70,9 +72,19 @@ public class AdminLopOnServlet extends HttpServlet {
                     resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID lớp ôn không hợp lệ.");
                     return;
                 }
-                success = lopOnService.deleteById(id);
-                type = success ? "success" : "error";
-                message = success ? "Xoá lớp ôn thành công." : "Không thể xoá lớp ôn. Vui lòng thử lại.";
+                try {
+                    success = lopOnService.deleteById(id);
+                    type = success ? "success" : "error";
+                    message = success ? "Xoá lớp ôn thành công. Tất cả đăng ký liên quan đã được xóa tự động." : "Không thể xoá lớp ôn. Vui lòng thử lại.";
+                } catch (SQLIntegrityConstraintViolationException e) {
+                    success = false;
+                    type = "error";
+                    message = "Không thể xoá lớp ôn này. Có lỗi xảy ra khi xóa các đăng ký liên quan.";
+                } catch (SQLException e) {
+                    success = false;
+                    type = "error";
+                    message = "Không thể xoá lớp ôn. Có lỗi xảy ra: " + e.getMessage();
+                }
             }
             default -> {
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Hành động không được hỗ trợ.");
